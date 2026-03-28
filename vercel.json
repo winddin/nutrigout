@@ -1,4 +1,9 @@
 {
   "version": 2,
-  "outputDirectory": "public"
+  "buildCommand": "",
+  "installCommand": "",
+  "framework": null,
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/public/index.html" }
+  ]
 }
