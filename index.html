@@ -462,14 +462,23 @@ function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u03
 function findFood(q) {
   const nq = norm(q.trim());
   if (!nq) return null;
+  // 1. Exact match
   let r = foods.find(f => norm(f.name) === nq);
   if (r) return r;
+  // 2. DB name contains full query string
   r = foods.find(f => norm(f.name).includes(nq));
   if (r) return r;
-  const words = nq.split(/\s+/).filter(w => w.length > 1);
-  if (words.length > 1) { r = foods.find(f => words.every(w => norm(f.name).includes(w))); if (r) return r; }
-  r = foods.find(f => words.some(w => w.length > 2 && norm(f.name).includes(w)));
-  return r || null;
+  // 3. Query contains full DB name (minimum 4 chars to avoid false positives)
+  r = foods.find(f => nq.includes(norm(f.name)) && norm(f.name).length >= 4);
+  if (r) return r;
+  // 4. ALL words must match (strict, minimum 2 words, each >2 chars)
+  const words = nq.split(/\s+/).filter(w => w.length > 2);
+  if (words.length >= 2) {
+    r = foods.find(f => words.every(w => norm(f.name).includes(w)));
+    if (r) return r;
+  }
+  // No local match -> call AI
+  return null;
 }
 
 function renderFood(f, isAI = false) {
