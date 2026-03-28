@@ -1,9 +1,152 @@
-{
-  "version": 2,
-  "buildCommand": "",
-  "installCommand": "",
-  "framework": null,
-  "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/public/index.html" }
-  ]
-}
+# NutriGout — Deploy lên Vercel
+
+Web tra cứu dinh dưỡng & Purin cho người bị Gút.  
+AI search được proxy qua Vercel serverless function — API key bí mật, người dùng không thấy.
+
+---
+
+## Cấu trúc project
+
+```
+nutrigout-vercel/
+├── api/
+│   └── search.js        ← Serverless function: proxy + rate limit
+├── public/
+│   └── index.html       ← Frontend (2 tabs: Tra cứu + Xếp hạng)
+├── vercel.json          ← Routing config
+├── package.json
+└── .gitignore
+```
+
+---
+
+## Deploy lên Vercel (step-by-step)
+
+### Bước 1 — Tạo GitHub repository
+
+1. Vào https://github.com → **New repository**
+2. Tên: `nutrigout` (hoặc tùy ý)
+3. Để Private nếu muốn, nhấn **Create repository**
+4. Upload toàn bộ folder này lên (drag & drop hoặc dùng git)
+
+```bash
+cd nutrigout-vercel
+git init
+git add .
+git commit -m "Initial commit"
+git remote add origin https://github.com/YOUR_USERNAME/nutrigout.git
+git push -u origin main
+```
+
+### Bước 2 — Tạo tài khoản Vercel
+
+1. Vào https://vercel.com → **Sign Up** bằng GitHub account
+2. Authorize Vercel truy cập GitHub
+
+### Bước 3 — Deploy
+
+1. Vercel dashboard → **Add New Project**
+2. Chọn repo `nutrigout` vừa tạo → **Import**
+3. Settings:
+   - Framework Preset: **Other**
+   - Root Directory: `.` (để mặc định)
+   - Build Command: để trống
+   - Output Directory: `public`
+4. Nhấn **Deploy** → chờ ~30 giây
+
+### Bước 4 — Thêm API Key (QUAN TRỌNG)
+
+Sau khi deploy xong:
+
+1. Vào project dashboard → **Settings** → **Environment Variables**
+2. Thêm variable:
+   - Name: `OPENAI_API_KEY`
+   - Value: `sk-proj-...` (API key từ https://platform.openai.com/api-keys)
+   - Environments: chọn **Production**, **Preview**, **Development**
+3. Nhấn **Save**
+4. Vào **Deployments** → chọn deployment mới nhất → **Redeploy** (để apply env var)
+
+### Bước 5 — Thêm domain vào whitelist CORS
+
+Sau khi Vercel cấp domain (vd: `nutrigout.vercel.app`):
+
+1. Mở file `api/search.js`
+2. Tìm dòng `ALLOWED_ORIGINS`:
+   ```js
+   const ALLOWED_ORIGINS = [
+     'https://nutrigout.vercel.app',  // ← thay bằng domain thật của bạn
+     ...
+   ];
+   ```
+3. Đổi thành domain Vercel của bạn
+4. Commit + push → Vercel tự deploy lại
+
+---
+
+## Cấu hình Rate Limit
+
+Trong `api/search.js`, tìm block `RATE_LIMIT` để điều chỉnh:
+
+```js
+const RATE_LIMIT = {
+  perIP: {
+    requestsPerHour: 10,   // mỗi người dùng: 10 lần AI search/giờ
+    requestsPerDay: 30,    // mỗi người dùng: 30 lần AI search/ngày
+  },
+  global: {
+    requestsPerHour: 100,  // toàn bộ user: 100 lần/giờ
+    requestsPerDay: 300,   // toàn bộ user: 300 lần/ngày
+  }
+};
+```
+
+**Ước tính chi phí OpenAI:**
+- `gpt-4o-mini`: $0.15/1M input tokens, $0.60/1M output tokens (rất rẻ)
+- `gpt-4o`: $2.50/1M input tokens, $10/1M output tokens (chính xác hơn)
+- Mỗi AI search (gpt-4o-mini): ~300 tokens ≈ **$0.0001** (1/10 xu)
+- 300 lần/ngày ≈ **~$0.03/ngày** ≈ **<$1/tháng** (max, với gpt-4o-mini)
+- Thực tế thường thấp hơn nhiều vì 80%+ search dùng local database
+
+---
+
+## Nâng cấp Rate Limit với Vercel KV (tùy chọn)
+
+Rate limit mặc định dùng in-memory — **reset khi Vercel cold start**.  
+Để limit chắc chắn hơn, dùng **Vercel KV** (Redis):
+
+1. Vercel dashboard → **Storage** → **Create KV Database**
+2. Gắn vào project → Vercel tự thêm env vars
+3. Trong `api/search.js`, uncomment phần KV code và xóa in-memory store
+
+---
+
+## Test local (optional)
+
+```bash
+npm i -g vercel
+vercel dev
+# Tạo file .env.local:
+echo "OPENAI_API_KEY=sk-proj-..." > .env.local
+# Mở http://localhost:3000
+```
+
+---
+
+## Cách người dùng dùng
+
+- Truy cập URL Vercel của bạn (vd: `https://nutrigout.vercel.app`)
+- Tìm thực phẩm trong database → kết quả ngay, không cần AI
+- Tìm thực phẩm lạ → app gọi AI qua proxy → kết quả hiện
+- Nếu quá giới hạn → thông báo rõ ràng bằng tiếng Việt
+- **API key của bạn hoàn toàn ẩn** — không ai thấy trong source code
+
+---
+
+## Troubleshooting
+
+| Vấn đề | Nguyên nhân | Giải pháp |
+|--------|-------------|-----------|
+| AI search báo lỗi 500 | API key chưa set | Kiểm tra Environment Variables |
+| CORS error | Domain chưa trong whitelist | Thêm domain vào `ALLOWED_ORIGINS` |
+| AI không trả lời | Rate limit | Chờ hoặc tăng limit |
+| Deploy fail | Build error | Xem logs trong Vercel dashboard |

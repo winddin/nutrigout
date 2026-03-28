@@ -1,4 +1,5 @@
-node_modules/
-.env
-.env.local
-.vercel
+{
+  "name": "nutrigout",
+  "version": "1.0.0",
+  "private": true
+}
