@@ -180,8 +180,6 @@ button{font-family:'Inter',sans-serif;}
 .subtab-pane{display:none;}.subtab-pane.active{display:block;}.fridge-tab-pane{display:none;}.fridge-tab-pane.active{display:block;}
 
 /* Section header */
-.fridge-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fridge-section-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);}
 .add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--accent);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .add-btn:active{background:rgba(74,222,128,.2);}
 
@@ -604,6 +602,7 @@ let rankOpenRow = null;
 let fridgeTab = 'inv';
 let fridgeLoaded = false;
 let inventory = [];
+let trips = [];
 let adjustTarget = null;
 let adjustMode = 'minus';
 let invFilter = 'all';
@@ -641,13 +640,16 @@ async function initAuth() {
     showAuthGate();
   }
 
-  // Listen for auth changes (redirect callback)
-  sbClient.auth.onAuthStateChange((_event, session) => {
-    if (session) {
-      handleSignedIn(session.user);
-    } else {
+  // Listen for auth changes — only reset on actual sign in/out, not token refresh
+  sbClient.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
       handleSignedOut();
+    } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+      if (session && (!currentUser || currentUser.id !== session.user.id)) {
+        handleSignedIn(session.user);
+      }
     }
+    // TOKEN_REFRESH, USER_UPDATED etc. → do nothing, keep existing inventory
   });
 }
 
@@ -660,23 +662,26 @@ function handleSignedIn(user) {
   currentUser = user;
   document.getElementById('authGate').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
-  // Show user info in header
-  const bar = document.getElementById('userBar');
+  const bar    = document.getElementById('userBar');
   const avatar = document.getElementById('userAvatar');
-  const name = document.getElementById('userName');
-  if (bar) bar.style.display = 'flex';
+  const uname  = document.getElementById('userName');
+  if (bar)    bar.style.display = 'flex';
   if (avatar && user.user_metadata?.avatar_url) avatar.src = user.user_metadata.avatar_url;
-  if (name) name.textContent = user.user_metadata?.full_name?.split(' ').pop() || user.email?.split('@')[0] || 'Bạn';
-  // Reset fridge so it reloads with correct user data
+  if (uname)  uname.textContent = user.user_metadata?.full_name?.split(' ').pop() || user.email?.split('@')[0] || 'Bạn';
+  // Reset state so fridge reloads with correct user data
   fridgeLoaded = false;
   inventory = [];
-  }
+  trips = [];
+  foodsCache = [];
+}
 
 function handleSignedOut() {
   currentUser = null;
   fridgeLoaded = false;
   inventory = [];
-    showAuthGate();
+  trips = [];
+  foodsCache = [];
+  showAuthGate();
 }
 
 async function signInWithGoogle() {
@@ -1236,13 +1241,6 @@ function setCat(cat, btn) {
 }
 
 
-const catMeta = {
-  1:{icon:'🥩',label:'Thịt, Cá & Hải sản'},
-  2:{icon:'🥦',label:'Rau củ, Đậu & Ngũ cốc'},
-  3:{icon:'🍉',label:'Trái cây'},
-  4:{icon:'🥚',label:'Trứng, Sữa & Đồ uống'},
-};
-
 
 function buildRow(f, i, rid) {
   const ratio = f.kcal > 0 ? (f.protein/f.kcal*100).toFixed(1) : 0;
@@ -1302,7 +1300,6 @@ function fmtQty(n) {
 // ─── FRIDGE & SHOPPING ──────────────────────────────────────────────
 
 const LEDGER_API = '/api/ledger';
-let trips = [];
 
 function setFridgeTab(tab, btn) {
   fridgeTab = tab;
@@ -1342,11 +1339,14 @@ async function loadFridgeData() {
       apiCall('GET', null, '?type=inventory'),
       apiCall('GET', null, '?type=shopping'),
     ]);
-    inventory = inv || [];
-    trips = shop || [];
+    // Only update if we got valid arrays back
+    if (Array.isArray(inv))  inventory = inv;
+    if (Array.isArray(shop)) trips = shop;
+    console.log('loadFridgeData:', inventory.length, 'items,', trips.length, 'trips');
   } catch(e) {
-    console.error('loadFridgeData:', e.message);
-    showToast('Không tải được dữ liệu', false);
+    console.error('loadFridgeData error:', e.message);
+    showToast('⚠️ Không tải được dữ liệu', false);
+    // Do NOT clear inventory — keep existing state
   }
 }
 
@@ -1377,59 +1377,140 @@ function setInvFilter(f) {
   renderInv();
 }
 
+// ── COLLAPSE STATE ──────────────────────────────────────────
+const collapsedCats = new Set(JSON.parse(localStorage.getItem('ng_cc')||'[]'));
+function saveCollapsedCats() { localStorage.setItem('ng_cc', JSON.stringify([...collapsedCats])); }
+function toggleCat(cat) {
+  if (collapsedCats.has(cat)) collapsedCats.delete(cat);
+  else collapsedCats.add(cat);
+  saveCollapsedCats();
+  const el = document.getElementById('cat-items-'+cat);
+  const ch = document.getElementById('cat-chev-'+cat);
+  const collapsed = collapsedCats.has(cat);
+  if (collapsed) {
+    el.style.maxHeight = el.scrollHeight + 'px';
+    requestAnimationFrame(() => { el.style.maxHeight = '0'; });
+  } else {
+    el.style.maxHeight = el.scrollHeight + 'px';
+    setTimeout(() => { if (!collapsedCats.has(cat)) el.style.maxHeight = ''; }, 260);
+  }
+  if (ch) ch.textContent = collapsed ? '▶' : '▼';
+}
+
+// ── DRAG & DROP ──────────────────────────────────────────────
+let _dragId = null, _dragCat = null;
+function onDragStart(e, id, cat) {
+  _dragId = id; _dragCat = cat;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => document.getElementById('inv-'+id)?.classList.add('dragging'), 0);
+}
+function onDragEnd(e) {
+  if (_dragId) document.getElementById('inv-'+_dragId)?.classList.remove('dragging');
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+function onDragOver(e, id, cat) {
+  if (_dragCat !== cat || _dragId === id) return;
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  document.getElementById('inv-'+id)?.classList.add('drag-over');
+}
+function onDrop(e, targetId, cat) {
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  if (_dragCat !== cat || _dragId === targetId || !_dragId) return;
+  const di = inventory.findIndex(i => i.id === _dragId);
+  const ti = inventory.findIndex(i => i.id === targetId);
+  if (di < 0 || ti < 0) return;
+  const [moved] = inventory.splice(di, 1);
+  inventory.splice(ti, 0, moved);
+  inventory.forEach((item, idx) => { item.sort_order = idx; });
+  renderInv();
+  saveSortOrder();
+  _dragId = null; _dragCat = null;
+}
+let _sortTimer;
+function saveSortOrder() {
+  clearTimeout(_sortTimer);
+  _sortTimer = setTimeout(async () => {
+    try {
+      await apiCall('POST', { type:'update_sort_order', items: inventory.map((it,i) => ({id:it.id, sort_order:i})) });
+    } catch(e) { console.warn('saveSortOrder:', e.message); }
+  }, 800);
+}
+
+// ── BUILD ITEM HTML ──────────────────────────────────────────
+function buildInvItem(item, cat) {
+  const isOut = item.qty <= 0;
+  const isLow = !isOut && item.qty <= (item.minQty||item.min_qty||0);
+  const qc = isOut?'empty':isLow?'low':'ok';
+  const ic = isOut?'out-of-stock':isLow?'low-stock':'';
+  let exp = '';
+  if (item.expiry) {
+    const d = Math.ceil((new Date(item.expiry)-new Date())/86400000);
+    exp = `<span class="inv-expiry ${d<=2?'expiring':''}">${d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày'}</span>`;
+  }
+  const sid = item.id.replace(/'/g,"\\'");
+  const sname = item.name.replace(/'/g,"\\'");
+  return `<div class="inv-item ${ic}" id="inv-${item.id}"
+    draggable="true"
+    ondragstart="onDragStart(event,'${sid}','${cat}')"
+    ondragend="onDragEnd(event)"
+    ondragover="onDragOver(event,'${sid}','${cat}')"
+    ondrop="onDrop(event,'${sid}','${cat}')">
+    <span class="inv-drag-handle" title="Kéo để sắp xếp">⠿</span>
+    <span class="inv-icon" onclick="showItemLog('${sid}','${sname}')" style="cursor:pointer" title="Xem lịch sử">${item.emoji||'🍱'}</span>
+    <div class="inv-info">
+      <div class="inv-name">${item.name}</div>
+      <div class="inv-meta">
+        <span class="inv-qty ${qc}">${fmtQty(item.qty)}${item.unit}</span>
+        ${isLow?'<span style="font-size:.65rem;color:var(--amber)">⚠ Sắp hết</span>':''}
+        ${isOut?'<span style="font-size:.65rem;color:var(--red)">✕ Hết rồi</span>':''}
+        ${exp}
+      </div>
+    </div>
+    <div class="inv-controls">
+      <button class="inv-btn minus" onclick="openAdjustModal('${sid}','minus')">−</button>
+      <button class="inv-btn plus"  onclick="openAdjustModal('${sid}','plus')">+</button>
+      <button class="inv-btn delete" onclick="deleteInvItem('${sid}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+// ── RENDER INVENTORY ─────────────────────────────────────────
 function renderInv() {
   const el = document.getElementById('invList');
   updateSummary();
-  let items = [...inventory];
-  if (invFilter === 'ok')  items = items.filter(i => i.qty > (i.minQty||0));
-  if (invFilter === 'low') items = items.filter(i => i.qty > 0 && i.qty <= (i.minQty||0));
-  if (invFilter === 'out') items = items.filter(i => i.qty <= 0);
+  let items = [...inventory].sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  if (invFilter==='ok')  items = items.filter(i=>i.qty>(i.minQty||0));
+  if (invFilter==='low') items = items.filter(i=>i.qty>0&&i.qty<=(i.minQty||0));
+  if (invFilter==='out') items = items.filter(i=>i.qty<=0);
   if (!items.length) {
     el.innerHTML = `<div class="fridge-empty"><div class="ei">${invFilter!=='all'?'🔍':'🧊'}</div><p>${invFilter!=='all'?'Không có món nào':'Chưa có gì trong tủ lạnh<br>Bấm "+ Thêm" để bắt đầu'}</p></div>`;
     return;
   }
-  const cats = {meat:'🥩 Thịt & Cá',veg:'🥦 Rau củ',fruit:'🍎 Trái cây',dairy:'🥛 Trứng & Sữa',other:'📦 Khác'};
+  const CM = {meat:{i:'🥩',l:'Thịt & Cá'},veg:{i:'🥦',l:'Rau củ'},fruit:{i:'🍎',l:'Trái cây'},dairy:{i:'🥛',l:'Trứng & Sữa'},other:{i:'📦',l:'Khác'}};
   const catOrder = ['meat','veg','fruit','dairy','other'];
   const grouped = {};
-  items.forEach(item => { const c=item.category||'other'; if(!grouped[c]) grouped[c]=[]; grouped[c].push(item); });
-  let html = '';
+  items.forEach(item => { const c=item.category||'other'; if(!grouped[c])grouped[c]=[]; grouped[c].push(item); });
+  let out = '';
   catOrder.forEach(cat => {
     if (!grouped[cat]?.length) return;
-    html += `<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:12px 0 7px">${cats[cat]}</div>`;
-    grouped[cat].forEach(item => {
-      const isOut = item.qty <= 0;
-      const isLow = !isOut && item.qty <= (item.minQty||item.min_qty||0);
-      const qc = isOut?'empty':isLow?'low':'ok';
-      const ic = isOut?'out-of-stock':isLow?'low-stock':'';
-      let exp = '';
-      if (item.expiry) {
-        const d = Math.ceil((new Date(item.expiry)-new Date())/86400000);
-        exp = `<span class="inv-expiry ${d<=2?'expiring':''}">${d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày'}</span>`;
-      }
-      const safeId = item.id.replace(/'/g,"\\'");
-      const safeName = item.name.replace(/'/g,"\\'");
-      html += `<div class="inv-item ${ic}" id="inv-${item.id}">
-        <span class="inv-icon" onclick="showItemLog('${safeId}','${safeName}')" style="cursor:pointer" title="Xem lịch sử">${item.emoji||'🍱'}</span>
-        <div class="inv-info">
-          <div class="inv-name">${item.name}</div>
-          <div class="inv-meta">
-            <span class="inv-qty ${qc}">${fmtQty(item.qty)}${item.unit}</span>
-            ${isLow?'<span style="font-size:.65rem;color:var(--amber)">⚠ Sắp hết</span>':''}
-            ${isOut?'<span style="font-size:.65rem;color:var(--red)">✕ Hết rồi</span>':''}
-            ${exp}
-          </div>
-        </div>
-        <div class="inv-controls">
-          <button class="inv-btn minus" onclick="openAdjustModal('${safeId}','minus')">−</button>
-          <button class="inv-btn plus"  onclick="openAdjustModal('${safeId}','plus')">+</button>
-          <button class="inv-btn delete" onclick="deleteInvItem('${safeId}')">🗑</button>
-        </div>
-      </div>`;
-    });
+    const m = CM[cat];
+    const collapsed = collapsedCats.has(cat);
+    out += `<div class="cat-group">
+      <div class="cat-header" onclick="toggleCat('${cat}')">
+        <span class="cat-header-icon">${m.i}</span>
+        <span class="cat-header-label">${m.l}</span>
+        <span class="cat-header-count">${grouped[cat].length}</span>
+        <span id="cat-chev-${cat}">${collapsed?'▶':'▼'}</span>
+      </div>
+      <div class="cat-items" id="cat-items-${cat}" style="max-height:${collapsed?'0':'none'};overflow:hidden;transition:max-height .25s ease;">
+        ${grouped[cat].map(item=>buildInvItem(item,cat)).join('')}
+      </div>
+    </div>`;
   });
-  el.innerHTML = html;
+  el.innerHTML = out;
 }
-
 async function showItemLog(itemId, itemName) {
   openModalFn();
   document.getElementById('modalContent').innerHTML = `
@@ -1570,6 +1651,7 @@ async function confirmAddInv() {
     await apiCall('POST', { type:'add_inventory_item', item, initialQty: qty, note:'Khởi tạo' });
     item.qty = qty;
     inventory.push(item);
+    fridgeLoaded = true; // mark loaded so renderFridge won't reload and wipe state
     closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
     showToast(`✓ Đã thêm ${name}`, true);
   } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
