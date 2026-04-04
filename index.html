@@ -1015,8 +1015,17 @@ function setFridgeTab(tab, btn) {
   fridgeTab = tab;
   document.querySelectorAll('.fridge-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('fridge-inv-pane').style.display  = tab === 'inv'  ? '' : 'none';
-  document.getElementById('fridge-shop-pane').style.display = tab === 'shop' ? '' : 'none';
+  // Toggle active class on panes (CSS handles display)
+  const invPane  = document.getElementById('fridge-inv-pane');
+  const shopPane = document.getElementById('fridge-shop-pane');
+  if (tab === 'inv') {
+    invPane.classList.add('active');
+    shopPane.classList.remove('active');
+  } else {
+    shopPane.classList.add('active');
+    invPane.classList.remove('active');
+    renderShop(); // ensure shop list is rendered when tab opens
+  }
 }
 
 // ─── LOAD DATA FROM SERVER ─────────────────────
