@@ -174,7 +174,7 @@ button{font-family:'Inter',sans-serif;}
 
 /* Summary bar */
 .fridge-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
-.summary-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px;text-align:center;}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px;text-align:center;transition:all .15s;}.summary-card.active-filter{border-color:var(--accent);background:rgba(74,222,128,.08);}.summary-card:active{opacity:.8;}
 .summary-val{font-size:1.2rem;font-weight:800;display:block;}
 .summary-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-top:1px;}
 .sv-ok{color:var(--accent);}
@@ -470,15 +470,15 @@ button{font-family:'Inter',sans-serif;}
 
       <!-- Summary bar -->
       <div class="fridge-summary">
-        <div class="summary-card">
+        <div class="summary-card" id="sum-card-ok" onclick="setInvFilter('ok')" style="cursor:pointer">
           <span class="summary-val sv-ok" id="sumOk">0</span>
           <span class="summary-lbl">Còn đủ</span>
         </div>
-        <div class="summary-card">
+        <div class="summary-card" id="sum-card-low" onclick="setInvFilter('low')" style="cursor:pointer">
           <span class="summary-val sv-low" id="sumLow">0</span>
           <span class="summary-lbl">Sắp hết ⚠️</span>
         </div>
-        <div class="summary-card">
+        <div class="summary-card" id="sum-card-out" onclick="setInvFilter('out')" style="cursor:pointer">
           <span class="summary-val sv-out" id="sumOut">0</span>
           <span class="summary-lbl">Hết rồi</span>
         </div>
@@ -550,6 +550,7 @@ let inventory = [];
 let shopping  = [];
 let adjustTarget = null;
 let adjustMode = 'minus';
+let invFilter = 'all'; // 'all' | 'ok' | 'low' | 'out'
 
 function switchScreen(name, btn) {
   currentScreen = name;
@@ -1036,6 +1037,7 @@ async function renderFridge() {
   }
   renderInv();
   renderShop();
+  updateSummary();
   updateFridgeBadge();
 }
 
@@ -1090,12 +1092,57 @@ function updateFridgeBadge() {
 }
 
 // ─── RENDER INVENTORY ──────────────────────────
+// ─── UPDATE SUMMARY COUNTS ───────────────────
+function updateSummary() {
+  const okCount  = inventory.filter(i => i.qty > i.minQty).length;
+  const lowCount = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty).length;
+  const outCount = inventory.filter(i => i.qty <= 0).length;
+  const okEl  = document.getElementById('sumOk');
+  const lowEl = document.getElementById('sumLow');
+  const outEl = document.getElementById('sumOut');
+  if (okEl)  okEl.textContent  = okCount;
+  if (lowEl) lowEl.textContent = lowCount;
+  if (outEl) outEl.textContent = outCount;
+}
+
+// ─── FILTER ──────────────────────────────────
+function setInvFilter(f) {
+  invFilter = invFilter === f ? 'all' : f;
+  ['ok','low','out'].forEach(s => {
+    const card = document.getElementById('sum-card-' + s);
+    if (card) card.classList.toggle('active-filter', invFilter === s);
+  });
+  renderInv();
+}
+
 function renderInv() {
   const el = document.getElementById('invList');
+  updateSummary();
+  // Apply filter
+  let items = inventory;
+  if (invFilter === 'ok')  items = inventory.filter(i => i.qty > i.minQty);
+  if (invFilter === 'low') items = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty);
+  if (invFilter === 'out') items = inventory.filter(i => i.qty <= 0);
+  if (!items.length && invFilter !== 'all') {
+    el.innerHTML = '<div class="fridge-empty"><div class="ei">🔍</div><p>Không có món nào</p></div>';
+    return;
+  }
   if (!inventory.length) {
     el.innerHTML = '<div class="fridge-empty"><div class="ei">🧊</div><p>Chưa có gì trong tủ lạnh<br>Bấm "+ Thêm đồ" để bắt đầu</p></div>';
     return;
   }
+  // Apply filter
+  let items = inventory;
+  if (invFilter === 'ok')  items = inventory.filter(i => i.qty > i.minQty);
+  if (invFilter === 'low') items = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty);
+  if (invFilter === 'out') items = inventory.filter(i => i.qty <= 0);
+
+  if (!items.length && invFilter !== 'all') {
+    el.innerHTML = '<div class="fridge-empty"><div class="ei">🔍</div><p>Không có món nào trong nhóm này</p></div>';
+    updateSummary();
+    return;
+  }
+
   // Group by category
   const cats = { meat:'🥩 Thịt & Cá', veg:'🥦 Rau củ', fruit:'🍎 Trái cây', dairy:'🥛 Trứng & Sữa', other:'📦 Khác' };
   const catOrder = ['meat','veg','fruit','dairy','other'];
@@ -1143,6 +1190,7 @@ function renderInv() {
     });
   });
   el.innerHTML = html;
+  updateSummary();
 }
 
 // ─── RENDER SHOPPING LIST ──────────────────────
@@ -1487,6 +1535,7 @@ async function confirmMarkBought(shopId, name, emoji) {
   await saveShopping();
   renderInv();
   renderShop();
+  updateSummary();
   updateFridgeBadge();
   showToast(`✓ Đã thêm ${name} vào tủ lạnh`, true);
 }
