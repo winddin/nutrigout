@@ -377,7 +377,6 @@ button{font-family:'Inter',sans-serif;}
 .signout-btn{padding:4px 10px;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text3);font-size:.68rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
 .signout-btn:hover{color:var(--red);border-color:var(--red);}
 </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div id="authGate">
@@ -572,6 +571,7 @@ button{font-family:'Inter',sans-serif;}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
 // ════════════════════════════════════════════
@@ -579,12 +579,26 @@ button{font-family:'Inter',sans-serif;}
 // ════════════════════════════════════════════
 const SUPABASE_URL = 'https://wvabjrxyymhpdpvuswfr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_MMQYoRIvqb-gVByG-HV1Jg_iASCuCGE';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+let supabase = null;
 let currentUser = null;
+
+function initSupabase() {
+  if (!window.supabase) {
+    console.error('Supabase SDK not loaded');
+    return false;
+  }
+  if (!supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return true;
+}
 
 // Init auth on load
 async function initAuth() {
+  if (!initSupabase()) {
+    showToast('Lỗi kết nối SDK', false);
+    return;
+  }
   // Check for existing session
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
@@ -634,6 +648,7 @@ function handleSignedOut() {
 }
 
 async function signInWithGoogle() {
+  if (!initSupabase()) { showToast('Lỗi kết nối SDK', false); return; }
   const btn = document.querySelector('.google-btn');
   if (btn) { btn.textContent = 'Đang kết nối...'; btn.disabled = true; }
   const { error } = await supabase.auth.signInWithOAuth({
@@ -649,6 +664,7 @@ async function signInWithGoogle() {
 }
 
 async function signOut() {
+  if (!initSupabase()) return;
   await supabase.auth.signOut();
   showToast('Đã đăng xuất', true);
 }
@@ -1160,6 +1176,7 @@ async function renderFridge() {
 }
 
 async function getAuthHeaders() {
+  if (!initSupabase()) return { 'Content-Type': 'application/json' };
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token || '';
   return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
