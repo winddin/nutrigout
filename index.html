@@ -575,13 +575,33 @@ button{font-family:'Inter',sans-serif;}
 <script>
 
 // ════════════════════════════════════════════
+// ALL STATE VARS — declared first to avoid TDZ
+// ════════════════════════════════════════════
+// Auth
+let sbClient = null;
+let currentUser = null;
+// Navigation
+let currentScreen = 'search';
+let lastSearchedFood = null;
+let rankCat = 'all';
+let rankOpenRow = null;
+// Fridge
+let fridgeTab = 'inv';
+let fridgeLoaded = false;
+let inventory = [];
+let shopping  = [];
+let adjustTarget = null;
+let adjustMode = 'minus';
+let invFilter = 'all';
+// Foods cache
+let foodsCache = [];
+// Toast timer
+
+// ════════════════════════════════════════════
 // AUTH — Supabase Google OAuth
 // ════════════════════════════════════════════
 const SUPABASE_URL = 'https://wvabjrxyymhpdpvuswfr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_MMQYoRIvqb-gVByG-HV1Jg_iASCuCGE';
-let sbClient = null;
-let currentUser = null;
-
 function initSupabase() {
   if (!window.supabase) {
     console.error('Supabase SDK not loaded');
@@ -656,8 +676,8 @@ async function signInWithGoogle() {
     const btn = document.getElementById('googleSignInBtn');
     if (btn) { btn.textContent = 'Đang kết nối...'; btn.disabled = true; }
 
-    const redirectTo = window.location.origin + window.location.pathname;
-    console.log('Redirecting to:', redirectTo);
+    // Always redirect to production URL, not localhost
+    const redirectTo = 'https://nutrigout.vercel.app';
 
     const { data, error } = await sbClient.auth.signInWithOAuth({
       provider: 'google',
@@ -695,18 +715,6 @@ window.signOut = signOut;
 })();
 
 // ─── NAVIGATION ───────────────────────────────────────────────────
-let currentScreen = 'search';
-let lastSearchedFood = null;
-let rankCat = 'all';
-let rankOpenRow = null;
-// Fridge state
-let fridgeTab = 'inv';
-let fridgeLoaded = false;
-let inventory = [];
-let shopping  = [];
-let adjustTarget = null;
-let adjustMode = 'minus';
-let invFilter = 'all'; // 'all' | 'ok' | 'low' | 'out'
 
 function switchScreen(name, btn) {
   currentScreen = name;
@@ -722,9 +730,6 @@ function switchScreen(name, btn) {
 // ─── FOOD DATABASE ──────────────────────────────────────────────────
 // Foods are now stored in Supabase (foods table).
 // Loaded on demand via /api/foods endpoint.
-// Local cache for current session:
-let foodsCache = []; // populated on first load
-
 
 
 // ─── SEARCH LOGIC ─────────────────────────────────────────────────
