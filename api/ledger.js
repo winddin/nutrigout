@@ -103,7 +103,7 @@ module.exports = async function handler(req, res) {
       // GET inventory — master list + computed balance from log
       if (type === 'inventory') {
         const [items, logs] = await Promise.all([
-          sbGet('inventory', `?user_id=eq.${userId}&order=name.asc`),
+          sbGet('inventory', `?user_id=eq.${userId}&order=sort_order.asc,name.asc`),
           sbGet('inventory_log', `?user_id=eq.${userId}&order=created_at.asc`),
         ]);
         // Compute balance per item_id
@@ -153,17 +153,20 @@ module.exports = async function handler(req, res) {
         const { item, initialQty, note } = body;
         if (!item?.id || !item?.name) return res.status(400).json({ error: 'item required' });
         // Upsert master record — only send known DB columns
+        // Build row with only columns that exist in DB
+        // sort_order = timestamp ms → always unique, always newest last
         const invRow = {
-          id:       item.id,
-          user_id:  userId,
-          name:     item.name,
-          unit:     item.unit     || 'g',
-          min_qty:  item.min_qty  || item.minQty || 0,
-          category: item.category || 'other',
-          emoji:    item.emoji    || null,
-          expiry:   item.expiry   || null,
-          qty:      0,
+          id:         item.id,
+          user_id:    userId,
+          name:       item.name,
+          unit:       item.unit     || 'g',
+          min_qty:    item.min_qty  || item.minQty || 0,
+          category:   item.category || 'other',
+          sort_order: Date.now(),
+          qty:        0,
         };
+        if (item.emoji)  invRow.emoji  = item.emoji;
+        if (item.expiry) invRow.expiry = item.expiry;
         await sbPost('inventory', invRow);
         // Log initial quantity
         if (initialQty && initialQty !== 0) {
@@ -269,6 +272,17 @@ module.exports = async function handler(req, res) {
         if (!item_id) return res.status(400).json({ error: 'item_id required' });
         await sbDelete('shopping_items', `?id=eq.${item_id}&user_id=eq.${userId}`);
         return res.status(200).json({ ok: true });
+      }
+
+      // Bulk update sort_order — single upsert call instead of N patches
+      if (type === 'update_sort_order') {
+        const { items } = body;
+        if (!Array.isArray(items) || items.length === 0) {
+          return res.status(400).json({ error: 'items[] required' });
+        }
+        const rows = items.map(({ id, sort_order }) => ({ id, user_id: userId, sort_order }));
+        await sbPost('inventory', rows, 'resolution=merge-duplicates');
+        return res.status(200).json({ ok: true, updated: items.length });
       }
 
       return res.status(400).json({ error: 'unknown type: ' + type });
