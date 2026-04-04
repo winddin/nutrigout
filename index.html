@@ -579,7 +579,7 @@ button{font-family:'Inter',sans-serif;}
 // ════════════════════════════════════════════
 const SUPABASE_URL = 'https://wvabjrxyymhpdpvuswfr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_MMQYoRIvqb-gVByG-HV1Jg_iASCuCGE';
-let supabase = null;
+let sbClient = null;
 let currentUser = null;
 
 function initSupabase() {
@@ -587,8 +587,8 @@ function initSupabase() {
     console.error('Supabase SDK not loaded');
     return false;
   }
-  if (!supabase) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if (!sbClient) {
+    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
   return true;
 }
@@ -600,7 +600,7 @@ async function initAuth() {
     return;
   }
   // Check for existing session
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sbClient.auth.getSession();
   if (session) {
     handleSignedIn(session.user);
   } else {
@@ -608,7 +608,7 @@ async function initAuth() {
   }
 
   // Listen for auth changes (redirect callback)
-  supabase.auth.onAuthStateChange((_event, session) => {
+  sbClient.auth.onAuthStateChange((_event, session) => {
     if (session) {
       handleSignedIn(session.user);
     } else {
@@ -659,7 +659,7 @@ async function signInWithGoogle() {
     const redirectTo = window.location.origin + window.location.pathname;
     console.log('Redirecting to:', redirectTo);
 
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await sbClient.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo }
     });
@@ -679,7 +679,7 @@ async function signInWithGoogle() {
 
 async function signOut() {
   if (!initSupabase()) return;
-  await supabase.auth.signOut();
+  await sbClient.auth.signOut();
   showToast('Đã đăng xuất', true);
 }
 
@@ -1134,7 +1134,7 @@ async function renderFridge() {
 
 async function getAuthHeaders() {
   if (!initSupabase()) return { 'Content-Type': 'application/json' };
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sbClient.auth.getSession();
   const token = session?.access_token || '';
   return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 }
