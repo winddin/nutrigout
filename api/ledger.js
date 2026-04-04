@@ -1,1928 +1,297 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>NutriGout – Tra cứu dinh dưỡng & Purin</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0d1117;--card:#161b22;--card2:#1c2330;--border:#262d37;
-  --accent:#4ade80;--amber:#f59e0b;--red:#f87171;--blue:#60a5fa;
-  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
-  --r:14px;--rr:20px;
-  --safe-bottom:env(safe-area-inset-bottom,0px);
-}
-/* ── LIGHT THEME ── */
-.light{
-  --bg:#f4f6f9;--card:#ffffff;--card2:#f0f2f5;--border:#e1e5eb;
-  --accent:#16a34a;--amber:#d97706;--red:#dc2626;--blue:#2563eb;
-  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
-}
-.light body{background:var(--bg);}
-.light .bottom-nav{background:rgba(244,246,249,.97);}
-.light #authGate{background:var(--bg);}
-.light .app-header{background:var(--bg);}
-/* Theme toggle button */
-.theme-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:var(--card2);color:var(--text2);font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
-.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;background:var(--bg);}
-body{font-family:'Inter',sans-serif;color:var(--text);display:flex;flex-direction:column;}
-button{font-family:'Inter',sans-serif;}
-
-/* APP */
-#app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;width:100%;}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(70px + var(--safe-bottom));}
-@media(min-width:480px){#app{border-left:1px solid var(--border);border-right:1px solid var(--border);}
-  .bottom-nav{width:480px;}}
-
-/* HEADER */
-.app-header{flex-shrink:0;padding:14px 18px 10px;background:var(--bg);border-bottom:1px solid var(--border);}
-.app-header h1{font-size:1.15rem;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline;}
-.header-sub{font-size:.68rem;color:var(--text3);margin-top:2px;}
-
-/* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(13,17,23,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;cursor:pointer;border:none;background:none;color:var(--text3);transition:color .15s;}
-.nav-item.active{color:var(--accent);}
-.nav-icon{font-size:1.3rem;line-height:1;}
-.nav-label{font-size:.6rem;font-weight:600;letter-spacing:.02em;}
-
-/* SCREENS */
-.screen{display:none;padding:14px 14px 0;}
-.screen.active{display:block;animation:fadeIn .18s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
-
-/* ─── SEARCH SCREEN ─── */
-.search-bar{position:relative;margin-bottom:14px;}
-.search-bar input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:50px;padding:12px 52px 12px 18px;color:var(--text);font-size:.92rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
-.search-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,222,128,.1);}
-.search-bar input::placeholder{color:var(--text3);}
-.sbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:50px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:opacity .15s;}
-.sbtn:active{opacity:.8;}
-
-.chips-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px;font-weight:600;}
-.chips-scroll{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-.chips-scroll::-webkit-scrollbar{display:none;}
-.chip{flex-shrink:0;padding:6px 13px;background:var(--card);border:1px solid var(--border);border-radius:50px;font-size:.78rem;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.chip:active{border-color:var(--accent);color:var(--accent);background:rgba(74,222,128,.08);}
-
-/* RESULT CARD */
-.result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rr);padding:18px;margin-top:14px;animation:slideUp .22s ease;}
-@keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.ai-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:50px;padding:3px 10px;font-size:.67rem;color:var(--blue);margin-bottom:11px;}
-.rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:14px;}
-.rc-name{font-size:1.2rem;font-weight:700;line-height:1.25;flex:1;}
-.rc-unit{font-size:.7rem;color:var(--text2);margin-top:3px;}
-.kcal-pill{background:linear-gradient(135deg,var(--amber),#d97706);color:#000;font-weight:800;font-size:.9rem;padding:6px 13px;border-radius:50px;white-space:nowrap;flex-shrink:0;}
-.macro-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
-.macro-card{background:var(--card2);border-radius:11px;padding:11px;text-align:center;border:1px solid var(--border);}
-.mc-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;font-weight:600;}
-.mc-val{font-size:1.15rem;font-weight:700;}
-.mc-pct{font-size:.65rem;margin-top:2px;font-weight:500;}
-.mc-bar{margin-top:5px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
-.mc-fill{height:100%;border-radius:3px;transition:width .7s ease;}
-.purin-box{border-radius:11px;padding:13px 15px;margin-bottom:11px;display:flex;align-items:center;gap:11px;}
-.purin-box.low{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);}
-.purin-box.mid{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);}
-.purin-box.high{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);}
-.pb-icon{font-size:1.7rem;flex-shrink:0;}
-.pb-info{flex:1;min-width:0;}
-.pb-label{font-size:.6rem;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;font-weight:600;}
-.pb-val{font-size:.9rem;font-weight:700;margin:2px 0;}
-.purin-box.low .pb-val{color:var(--accent);}
-.purin-box.mid .pb-val{color:var(--amber);}
-.purin-box.high .pb-val{color:var(--red);}
-.pb-desc{font-size:.7rem;color:var(--text2);line-height:1.45;}
-.pb-badge{padding:4px 10px;border-radius:50px;font-size:.68rem;font-weight:600;flex-shrink:0;}
-.badge-ok{background:rgba(74,222,128,.12);color:var(--accent);}
-.badge-mod{background:rgba(245,158,11,.12);color:var(--amber);}
-.badge-bad{background:rgba(248,113,113,.12);color:var(--red);}
-.tip-box{background:var(--card2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:11px 13px;font-size:.78rem;color:var(--text2);line-height:1.55;}
-.tip-box strong{color:var(--text);}
-
-/* RATE LIMIT BANNER */
-.rl-banner{margin-top:10px;padding:10px 13px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:.74rem;color:var(--amber);display:none;line-height:1.5;}
-.rl-banner.show{display:block;}
-.rl-remaining{margin-top:8px;padding:8px 12px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:9px;font-size:.7rem;color:var(--text3);}
-.rl-remaining span{color:var(--accent);font-weight:700;}
-
-/* CROSSLINK */
-.crosslink-btn{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.2);border-radius:10px;font-size:.75rem;color:var(--accent);cursor:pointer;width:100%;transition:background .15s;}
-.crosslink-btn:active{background:rgba(74,222,128,.12);}
-
-/* LOADING & EMPTY */
-.loading-wrap{text-align:center;padding:44px 20px;color:var(--text2);display:none;}
-.loading-wrap.show{display:block;}
-.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 11px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-msg{font-size:.83rem;}
-.ai-tag{display:inline-block;margin-top:5px;padding:2px 9px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:50px;font-size:.66rem;color:var(--blue);}
-.empty-wrap{text-align:center;padding:44px 20px;color:var(--text2);display:none;}
-.empty-wrap.show{display:block;}
-.empty-icon{font-size:2.6rem;margin-bottom:9px;}
-
-/* ─── RANKING SCREEN ─── */
-.cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;}
-.cat-tabs::-webkit-scrollbar{display:none;}
-.cat-tab{flex-shrink:0;padding:7px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:50px;font-size:.78rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.cat-tab.active{background:rgba(74,222,128,.1);border-color:var(--accent);color:var(--accent);}
-.sort-bar{display:flex;align-items:center;gap:6px;margin-bottom:12px;background:var(--card);border-radius:11px;padding:9px 13px;border:1px solid var(--border);}
-.sort-bar select{flex:1;background:transparent;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;outline:none;cursor:pointer;}
-.sort-bar select option{background:var(--card2);}
-.sort-icon{font-size:.95rem;color:var(--text2);}
-.sec-header{display:flex;align-items:center;gap:8px;margin:14px 0 9px;padding-bottom:8px;border-bottom:1px solid var(--border);}
-.sec-icon{font-size:1.25rem;}.sec-title{font-size:.92rem;font-weight:700;}
-.sec-count{font-size:.68rem;color:var(--text3);background:var(--card2);padding:2px 7px;border-radius:50px;border:1px solid var(--border);}
-.food-list{display:flex;flex-direction:column;gap:0;}
-.food-row{background:var(--card);border-radius:var(--r);margin-bottom:5px;border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:border-color .15s;}
-.food-row:active{border-color:var(--accent);}
-.food-row-main{display:flex;align-items:center;gap:9px;padding:11px 13px;}
-.row-rank{font-size:.7rem;font-weight:700;color:var(--text3);width:20px;text-align:center;flex-shrink:0;}
-.rank-1{color:#fbbf24;}.rank-2{color:#9ca3af;}.rank-3{color:#b45309;}
-.row-info{flex:1;min-width:0;}
-.row-name{font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.row-unit{font-size:.66rem;color:var(--text3);margin-top:1px;}
-.row-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
-.row-kcal{font-size:.8rem;font-weight:700;color:var(--amber);}
-.row-ratio{font-size:.7rem;font-weight:700;color:var(--accent);}
-.row-purin-dot{width:7px;height:7px;border-radius:50%;margin-left:3px;display:inline-block;vertical-align:middle;}
-.dot-low{background:var(--accent);}.dot-mid{background:var(--amber);}.dot-high{background:var(--red);}
-.row-chevron{font-size:.65rem;color:var(--text3);margin-left:3px;transition:transform .2s;}
-.food-row.open .row-chevron{transform:rotate(180deg);}
-.food-row-detail{display:none;padding:0 13px 13px;border-top:1px solid var(--border);background:rgba(22,27,34,.6);}
-.food-row.open .food-row-detail{display:block;}
-.detail-macro-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px;margin-top:11px;}
-.dm-cell{background:var(--card2);border-radius:9px;padding:9px;text-align:center;border:1px solid var(--border);}
-.dm-label{font-size:.58rem;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;font-weight:600;margin-bottom:2px;}
-.dm-val{font-size:.95rem;font-weight:700;}
-.dm-pct{font-size:.62rem;color:var(--text3);margin-top:1px;}
-.dm-bar{margin-top:4px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
-.dm-fill{height:100%;border-radius:3px;transition:width .6s ease;}
-.detail-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px;}
-.ds-cell{background:var(--card2);border-radius:9px;padding:9px;border:1px solid var(--border);}
-.ds-label{font-size:.58rem;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;font-weight:600;margin-bottom:2px;}
-.ds-val{font-size:.9rem;font-weight:700;}
-.detail-tip{background:var(--bg);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:9px 11px;font-size:.73rem;color:var(--text2);line-height:1.5;}
-.detail-tip strong{color:var(--text);}
-.find-in-search{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.25);border-radius:9px;font-size:.72rem;color:var(--accent);cursor:pointer;width:100%;transition:background .15s;}
-.find-in-search:active{background:rgba(74,222,128,.12);}
-
-/* ═══════════════════════════════════════════════
-   FRIDGE & SHOPPING TAB
-   ═══════════════════════════════════════════════ */
-
-/* Sub-tabs inside fridge screen */
-.subtab-bar{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--border);}
-.subtab-btn{flex:1;padding:8px 4px;border:none;background:none;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .15s;font-family:'Inter',sans-serif;}
-.subtab-btn.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3);}
-.subtab-pane{display:none;}.subtab-pane.active{display:block;}.fridge-tab-pane{display:none;}.fridge-tab-pane.active{display:block;}
-
-/* Section header */
-.add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--accent);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
-.add-btn:active{background:rgba(74,222,128,.2);}
-
-/* Summary bar */
-.fridge-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
-.summary-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px;text-align:center;transition:all .15s;}.summary-card.active-filter{border-color:var(--accent);background:rgba(74,222,128,.08);}.summary-card:active{opacity:.8;}
-.summary-val{font-size:1.2rem;font-weight:800;display:block;}
-.summary-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-top:1px;}
-.sv-ok{color:var(--accent);}
-.sv-low{color:var(--amber);}
-.sv-out{color:var(--red);}
-
-/* Inventory item card */
-.inv-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;margin-bottom:7px;transition:border-color .15s;}
-.inv-item.status-low{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04);}
-.inv-item.status-out{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.04);}
-.inv-top{display:flex;align-items:center;gap:8px;}
-.inv-emoji{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center;}
-.inv-info{flex:1;min-width:0;}
-.inv-name{font-size:.9rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.inv-meta{font-size:.68rem;color:var(--text3);margin-top:1px;}
-.inv-badge{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:50px;flex-shrink:0;}
-.badge-ok{background:rgba(74,222,128,.12);color:var(--accent);}
-.badge-low{background:rgba(245,158,11,.15);color:var(--amber);}
-.badge-out{background:rgba(248,113,113,.15);color:var(--red);}
-.inv-controls{display:flex;align-items:center;gap:6px;margin-top:10px;}
-.qty-display{flex:1;display:flex;align-items:center;gap:7px;}
-.qty-val{font-size:1rem;font-weight:700;color:var(--text);min-width:28px;text-align:center;}
-.qty-unit{font-size:.72rem;color:var(--text2);}
-.qty-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Inter',sans-serif;font-weight:700;flex-shrink:0;}
-.qty-btn:active{background:var(--border);}
-.qty-btn.minus:active{background:rgba(248,113,113,.2);color:var(--red);}
-.qty-btn.plus:active{background:rgba(74,222,128,.15);color:var(--accent);}
-.inv-actions{display:flex;gap:5px;margin-left:auto;}
-.inv-action-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:background .15s;}
-.inv-action-btn:active{background:var(--border);}
-/* Threshold bar */
-.threshold-bar{margin-top:8px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
-.threshold-fill{height:100%;border-radius:3px;transition:width .4s ease;}
-
-/* Empty state */
-.empty-fridge{text-align:center;padding:40px 20px;color:var(--text3);}
-.empty-fridge .ei{font-size:2.5rem;margin-bottom:8px;}
-.empty-fridge p{font-size:.82rem;}
-
-/* ── MODAL / DRAWER ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center;}
-.modal-overlay.show{display:flex;}
-.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px calc(20px + var(--safe-bottom));animation:slideUp .22s ease;}
-.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px;}
-.modal-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;}
-.form-group{margin-bottom:13px;}
-.form-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;display:block;}
-.form-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
-.form-input:focus{border-color:var(--accent);}
-.form-input::placeholder{color:var(--text3);}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.form-select{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;}
-.form-select:focus{border-color:var(--accent);}
-.emoji-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px;}
-.emoji-opt{width:38px;height:38px;border-radius:9px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;font-size:1.15rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.emoji-opt.selected{border-color:var(--accent);background:rgba(74,222,128,.1);}
-.modal-actions{display:flex;gap:8px;margin-top:16px;}
-.modal-btn{flex:1;padding:12px;border:none;border-radius:11px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
-.modal-btn:active{opacity:.8;}
-.btn-cancel{background:var(--card2);color:var(--text2);border:1px solid var(--border);}
-.btn-save{background:var(--accent);color:#000;}
-.btn-danger{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.2);}
-
-/* ── SHOPPING LIST ── */
-.trip-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;}
-.trip-header{padding:12px 13px;display:flex;align-items:center;gap:9px;cursor:pointer;}
-.trip-date-badge{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;white-space:nowrap;}
-.trip-date-badge.today{background:rgba(74,222,128,.12);color:var(--accent);border-color:rgba(74,222,128,.2);}
-.trip-date-badge.overdue{background:rgba(248,113,113,.12);color:var(--red);border-color:rgba(248,113,113,.2);}
-.trip-info{flex:1;}
-.trip-name{font-size:.88rem;font-weight:600;color:var(--text);}
-.trip-count{font-size:.68rem;color:var(--text3);margin-top:1px;}
-.trip-chevron{font-size:.65rem;color:var(--text3);transition:transform .2s;}
-.trip-card.open .trip-chevron{transform:rotate(180deg);}
-.trip-items-wrap{display:none;padding:0 13px 13px;border-top:1px solid var(--border);}
-.trip-card.open .trip-items-wrap{display:block;}
-
-.shop-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.shop-item:last-child{border-bottom:none;}
-.shop-check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);background:var(--card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;color:var(--bg);transition:all .15s;}
-.shop-item.bought .shop-check{background:var(--accent);border-color:var(--accent);}
-.shop-item.bought .shop-name{text-decoration:line-through;color:var(--text3);}
-.shop-emoji{font-size:1.1rem;flex-shrink:0;}
-.shop-name{flex:1;font-size:.84rem;font-weight:500;color:var(--text);}
-.shop-qty{font-size:.75rem;color:var(--text3);white-space:nowrap;}
-.shop-del{font-size:.8rem;cursor:pointer;color:var(--text3);padding:4px;transition:color .15s;}
-.shop-del:active{color:var(--red);}
-
-.trip-footer{display:flex;gap:7px;margin-top:11px;}
-.trip-done-btn{flex:1;padding:9px;border:none;border-radius:9px;background:rgba(74,222,128,.12);color:var(--accent);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(74,222,128,.2);font-family:'Inter',sans-serif;transition:background .15s;}
-.trip-done-btn:active{background:rgba(74,222,128,.2);}
-.trip-del-btn{padding:9px 13px;border-radius:9px;background:rgba(248,113,113,.08);color:var(--red);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(248,113,113,.15);font-family:'Inter',sans-serif;}
-
-/* Toast notification */
-.toast{position:fixed;bottom:calc(76px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(10px);background:var(--card2);border:1px solid var(--border);border-radius:50px;padding:9px 18px;font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;z-index:300;opacity:0;transition:all .25s;pointer-events:none;max-width:320px;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.toast.success{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.3);color:var(--accent);}
-
-/* ─── NAV BADGE ─── */
-.nav-badge{position:absolute;top:4px;right:12px;min-width:16px;height:16px;background:var(--red);border-radius:50px;font-size:.58rem;font-weight:800;color:#fff;display:none;align-items:center;justify-content:center;padding:0 4px;}
-.nav-badge.show{display:flex;}
-
-/* ─── FRIDGE SCREEN ─── */
-.fridge-tabs{display:flex;background:var(--card);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--border);}
-.fridge-tab{flex:1;padding:8px;border:none;background:none;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .15s;font-family:'Inter',sans-serif;}
-.fridge-tab.active{background:var(--card2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3);}
-
-/* SECTION HEADERS */
-.fridge-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fridge-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);}
-.fridge-add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:50px;font-size:.78rem;font-weight:600;color:var(--accent);cursor:pointer;transition:all .15s;}
-.fridge-add-btn:active{background:rgba(74,222,128,.18);}
-
-/* CATEGORY HEADERS — collapse/expand */
-.cat-group{margin-bottom:2px;}
-.cat-header{display:flex;align-items:center;gap:9px;padding:10px 4px 8px;cursor:pointer;user-select:none;border-bottom:1px solid var(--border);margin-bottom:8px;-webkit-tap-highlight-color:transparent;}
-.cat-header-icon{font-size:1rem;flex-shrink:0;}
-.cat-header-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text2);flex:1;}
-.cat-header-count{font-size:.65rem;color:var(--text3);background:var(--card2);border:1px solid var(--border);padding:1px 8px;border-radius:50px;}
-/* Redesigned collapse toggle pill */
-.cat-toggle{display:flex;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--border);border-radius:50px;padding:3px 9px 3px 7px;font-size:.65rem;color:var(--text3);transition:all .15s;flex-shrink:0;}
-.cat-toggle .arrow{display:inline-block;transition:transform .2s;font-size:.55rem;}
-.cat-toggle.collapsed .arrow{transform:rotate(-90deg);}
-.cat-toggle:hover{border-color:var(--accent);color:var(--accent);}
-.cat-items{overflow:hidden;transition:max-height .25s ease;}
-
-/* DRAG & DROP */
-.inv-drag-handle{cursor:grab;color:var(--text3);font-size:1.1rem;padding:0 2px;flex-shrink:0;touch-action:none;line-height:1;}
-.inv-drag-handle:active{cursor:grabbing;}
-.inv-item.dragging{opacity:.35;border-style:dashed;border-color:var(--accent);}
-.inv-item.drag-over{border-color:var(--accent);background:rgba(74,222,128,.06);transform:scale(1.01);}
-
-/* INVENTORY ITEMS */
-.inv-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
-.inv-item.low-stock{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.04);}
-.inv-item.out-of-stock{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04);opacity:.7;}
-.inv-icon{font-size:1.4rem;flex-shrink:0;}
-.inv-info{flex:1;min-width:0;}
-.inv-name{font-size:.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.inv-meta{display:flex;align-items:center;gap:7px;margin-top:3px;}
-.inv-qty{font-size:.78rem;font-weight:700;}
-.inv-qty.ok{color:var(--accent);}
-.inv-qty.low{color:var(--amber);}
-.inv-qty.empty{color:var(--red);}
-.inv-unit{font-size:.7rem;color:var(--text3);}
-.inv-expiry{font-size:.67rem;color:var(--text3);background:var(--card2);padding:1px 7px;border-radius:50px;}
-.inv-expiry.expiring{color:var(--amber);background:rgba(245,158,11,.1);}
-.inv-controls{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.inv-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.inv-btn.minus:active{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red);}
-.inv-btn.plus:active{background:rgba(74,222,128,.15);border-color:var(--accent);color:var(--accent);}
-.inv-btn.delete:active{background:rgba(248,113,113,.15);}
-.inv-qty-display{min-width:44px;text-align:center;font-size:.82rem;font-weight:700;color:var(--text);}
-
-/* SHOPPING LIST */
-.shop-date-group{margin-bottom:18px;}
-.shop-date-label{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);}
-.shop-date-badge{padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:700;}
-.badge-today{background:rgba(74,222,128,.15);color:var(--accent);}
-.badge-soon{background:rgba(245,158,11,.15);color:var(--amber);}
-.badge-later{background:var(--card2);color:var(--text3);}
-.shop-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
-.shop-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:all .15s;}
-.shop-check:active{background:rgba(74,222,128,.2);}
-.shop-item-info{flex:1;min-width:0;}
-.shop-item-name{font-size:.87rem;font-weight:600;color:var(--text);}
-.shop-item-meta{font-size:.7rem;color:var(--text3);margin-top:2px;}
-.shop-item-qty{font-size:.8rem;font-weight:700;color:var(--amber);flex-shrink:0;}
-.shop-del{width:26px;height:26px;border-radius:7px;border:none;background:none;color:var(--text3);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
-.shop-del:active{color:var(--red);}
-
-/* EMPTY STATE */
-.fridge-empty{text-align:center;padding:36px 20px;color:var(--text3);}
-.fridge-empty .ei{font-size:2.4rem;margin-bottom:8px;}
-.fridge-empty p{font-size:.82rem;}
-
-/* MODAL FORM */
-.modal-title{font-size:1.05rem;font-weight:700;margin-bottom:16px;color:var(--text);}
-.modal-field{margin-bottom:12px;}
-.modal-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px;}
-.modal-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
-.modal-input:focus{border-color:var(--accent);}
-.modal-input::placeholder{color:var(--text3);}
-.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.modal-btn-row{display:flex;gap:8px;margin-top:16px;}
-.modal-btn{flex:1;padding:11px;border-radius:11px;border:none;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
-.modal-btn.cancel{background:var(--card2);color:var(--text2);border:1px solid var(--border);}
-.modal-btn.confirm{background:var(--accent);color:#0d1117;}
-.modal-btn.confirm:active{opacity:.85;}
-.modal-btn.danger{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.25);}
-
-/* ADJUST MODAL */
-.adjust-food-name{font-size:1rem;font-weight:700;margin-bottom:4px;}
-.adjust-current{font-size:.8rem;color:var(--text3);margin-bottom:16px;}
-.adjust-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px;}
-.adj-quick-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text2);font-size:.8rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;font-family:'Inter',sans-serif;}
-.adj-quick-btn:active,.adj-quick-btn.selected{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red);}
-.adjust-custom{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
-.adj-custom-input{flex:1;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
-.adj-custom-input:focus{border-color:var(--accent);}
-.adj-unit-label{font-size:.8rem;color:var(--text3);flex-shrink:0;}
-.adj-result-preview{font-size:.75rem;color:var(--text3);text-align:center;margin-bottom:14px;}
-.adj-result-preview span{color:var(--accent);font-weight:700;}
-
-/* ─── AUTH ─── */
-#authGate{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;}
-.auth-logo{font-size:3rem;margin-bottom:12px;}
-.auth-title{font-family:'Inter',sans-serif;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
-.auth-sub{font-size:.82rem;color:var(--text3);margin-bottom:36px;text-align:center;line-height:1.6;}
-.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1f1f1f;border:none;border-radius:12px;padding:14px 24px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.25);transition:all .15s;width:100%;max-width:300px;justify-content:center;}
-.google-btn:hover{box-shadow:0 4px 20px rgba(0,0,0,.35);transform:translateY(-1px);}
-.google-btn:active{transform:translateY(0);}
-.google-icon{width:20px;height:20px;flex-shrink:0;}
-.auth-note{font-size:.7rem;color:var(--text3);margin-top:20px;text-align:center;}
-/* User avatar in header */
-.user-bar{display:flex;align-items:center;gap:8px;margin-left:auto;}
-.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);object-fit:cover;}
-.user-name{font-size:.72rem;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.signout-btn{padding:4px 10px;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text3);font-size:.68rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
-.signout-btn:hover{color:var(--red);border-color:var(--red);}
-</style>
-</head>
-<body>
-<div id="authGate">
-  <div class="auth-logo">🥗</div>
-  <div class="auth-title">NutriGout</div>
-  <div class="auth-sub">Tra cứu dinh dưỡng & Purin<br>Quản lý tủ lạnh cá nhân của bạn</div>
-  <button class="google-btn" id="googleSignInBtn">
-    <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-    Đăng nhập bằng Google
-  </button>
-  <div class="auth-note">Dữ liệu của bạn được lưu riêng tư,<br>chỉ bạn mới xem được.</div>
-  <button class="theme-btn" onclick="toggleTheme()" style="margin-top:20px" title="Đổi giao diện">🌙</button>
-</div>
-<div id="app" style="display:none">
-  <!-- HEADER -->
-  <div class="app-header" style="display:flex;align-items:center;gap:10px;">
-    <div>
-      <h1>🥗 NutriGout</h1>
-      <div class="header-sub">Tra cứu dinh dưỡng, Calories & Purin • Gút & thừa cân</div>
-    </div>
-    <div class="user-bar" id="userBar" style="display:none">
-      <img class="user-avatar" id="userAvatar" src="" alt="">
-      <span class="user-name" id="userName"></span>
-      <button class="signout-btn" onclick="signOut()">Đăng xuất</button>
-    </div>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
-  </div>
-
-  <div class="content" id="contentArea">
-
-    <!-- ══ SEARCH SCREEN ══ -->
-    <div class="screen active" id="screen-search">
-      <div style="height:4px"></div>
-      <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Tìm thực phẩm (rau muống, tôm, bún bò...)" autocomplete="off">
-        <button class="sbtn" onclick="doSearch()">🔍</button>
-      </div>
-      <div class="chips-label">Gợi ý nhanh</div>
-      <div class="chips-scroll">
-        <span class="chip" onclick="quickSearch('Gà luộc')">🐔 Gà luộc</span>
-        <span class="chip" onclick="quickSearch('Cá basa')">🐟 Cá basa</span>
-        <span class="chip" onclick="quickSearch('Rau muống')">🥬 Rau muống</span>
-        <span class="chip" onclick="quickSearch('Trứng gà')">🥚 Trứng gà</span>
-        <span class="chip" onclick="quickSearch('Đậu phụ')">🫘 Đậu phụ</span>
-        <span class="chip" onclick="quickSearch('Tôm sú')">🦐 Tôm sú</span>
-        <span class="chip" onclick="quickSearch('Cá hồi')">🐟 Cá hồi</span>
-        <span class="chip" onclick="quickSearch('Cơm trắng')">🍚 Cơm trắng</span>
-        <span class="chip" onclick="quickSearch('Nước atiso')">🌿 Atiso</span>
-        <span class="chip" onclick="quickSearch('Cà phê đen')">☕ Cà phê</span>
-        <span class="chip" onclick="quickSearch('Sữa chua')">🥛 Sữa chua</span>
-        <span class="chip" onclick="quickSearch('Bia')">🍺 Bia</span>
-        <span class="chip" onclick="quickSearch('Dưa hấu')">🍉 Dưa hấu</span>
-        <span class="chip" onclick="quickSearch('Gan heo')">⚠️ Gan heo</span>
-        <span class="chip" onclick="quickSearch('Khoai lang')">🍠 Khoai lang</span>
-        <span class="chip" onclick="quickSearch('Bơ quả')">🥑 Bơ</span>
-      </div>
-
-      <div class="loading-wrap" id="loading">
-        <div class="spinner"></div>
-        <div class="loading-msg" id="loadingMsg">Đang tra cứu...</div>
-        <div class="ai-tag" id="aiTag" style="display:none">🤖 Đang hỏi AI Claude...</div>
-      </div>
-
-      <div class="result-card" id="resultCard" style="display:none">
-        <div id="aiBadgeWrap" style="display:none"><div class="ai-pill">🤖 AI Claude – ước tính tham khảo</div></div>
-        <div class="rc-top">
-          <div><div class="rc-name" id="foodName">—</div><div class="rc-unit" id="foodUnit">—</div></div>
-          <div class="kcal-pill" id="kcalBadge">—</div>
-        </div>
-        <div class="macro-row">
-          <div class="macro-card"><div class="mc-label">Protein</div><div class="mc-val" id="protein" style="color:var(--accent)">—</div><div class="mc-pct" id="proteinPct" style="color:var(--accent)">—</div><div class="mc-bar"><div class="mc-fill" id="barP" style="width:0%;background:var(--accent)"></div></div></div>
-          <div class="macro-card"><div class="mc-label">Carb</div><div class="mc-val" id="carb" style="color:var(--amber)">—</div><div class="mc-pct" id="carbPct" style="color:var(--amber)">—</div><div class="mc-bar"><div class="mc-fill" id="barC" style="width:0%;background:var(--amber)"></div></div></div>
-          <div class="macro-card"><div class="mc-label">Chất béo</div><div class="mc-val" id="fat" style="color:var(--red)">—</div><div class="mc-pct" id="fatPct" style="color:var(--red)">—</div><div class="mc-bar"><div class="mc-fill" id="barF" style="width:0%;background:var(--red)"></div></div></div>
-        </div>
-        <div class="purin-box" id="purinBox">
-          <div class="pb-icon" id="pbIcon">—</div>
-          <div class="pb-info"><div class="pb-label">Hàm lượng Purin</div><div class="pb-val" id="pbVal">—</div><div class="pb-desc" id="pbDesc">—</div></div>
-          <div class="pb-badge" id="pbBadge">—</div>
-        </div>
-        <div class="tip-box" id="tipBox">—</div>
-        <div class="rl-remaining" id="rlRemaining" style="display:none">
-          AI còn: <span id="rlHour">—</span> lần/giờ · <span id="rlDay">—</span> lần/ngày
-        </div>
-        <button class="crosslink-btn" id="crosslinkBtn" onclick="goToRankFromSearch()" style="display:none">📊 Xem trong bảng xếp hạng →</button>
-      </div>
-
-      <div class="rl-banner" id="rlBanner"></div>
-
-      <div class="empty-wrap" id="emptyState">
-        <div class="empty-icon">🤷</div>
-        <p id="emptyMsg" style="font-size:.83rem">Không tìm thấy thực phẩm này.</p>
-      </div>
-      <div style="height:16px"></div>
-    </div>
-
-    <!-- ══ RANKING SCREEN ══ -->
-    <div class="screen" id="screen-rank">
-      <div style="height:4px"></div>
-      <div class="cat-tabs" id="catTabs">
-        <button class="cat-tab active" onclick="setCat('all',this)">🍽️ Tất cả</button>
-        <button class="cat-tab" onclick="setCat(1,this)">🥩 Thịt &amp; Cá</button>
-        <button class="cat-tab" onclick="setCat(2,this)">🥦 Rau củ</button>
-        <button class="cat-tab" onclick="setCat(3,this)">🍉 Trái cây</button>
-        <button class="cat-tab" onclick="setCat(4,this)">🥚 Trứng &amp; Sữa</button>
-      </div>
-      <div class="sort-bar">
-        <span class="sort-icon">↕️</span>
-        <select id="sortSel" onchange="renderRank()">
-          <option value="ratio">🏆 Protein/Kcal cao nhất</option>
-          <option value="protein">💪 Protein nhiều nhất</option>
-          <option value="kcal_asc">🔥 Calo thấp nhất</option>
-          <option value="kcal_desc">🔥 Calo cao nhất</option>
-          <option value="fat_asc">🧈 Ít chất béo nhất</option>
-          <option value="carb_asc">🍚 Ít carb nhất</option>
-          <option value="purin_asc">✅ Purin thấp nhất</option>
-          <option value="purin_desc">⚠️ Purin cao nhất</option>
-          <option value="name">🔤 Tên A–Z</option>
-        </select>
-      </div>
-      <div id="rankContent"></div>
-      <div style="height:16px"></div>
-    </div>
-
-
-    <div class="screen" id="screen-fridge">
-      <div style="height:4px"></div>
-
-      <!-- Summary bar -->
-      <div class="fridge-summary">
-        <div class="summary-card" id="sum-card-ok" onclick="setInvFilter('ok')" style="cursor:pointer">
-          <span class="summary-val sv-ok" id="sumOk">0</span>
-          <span class="summary-lbl">Còn đủ</span>
-        </div>
-        <div class="summary-card" id="sum-card-low" onclick="setInvFilter('low')" style="cursor:pointer">
-          <span class="summary-val sv-low" id="sumLow">0</span>
-          <span class="summary-lbl">Sắp hết ⚠️</span>
-        </div>
-        <div class="summary-card" id="sum-card-out" onclick="setInvFilter('out')" style="cursor:pointer">
-          <span class="summary-val sv-out" id="sumOut">0</span>
-          <span class="summary-lbl">Hết rồi</span>
-        </div>
-      </div>
-
-      <!-- Sub-tabs -->
-      <div class="subtab-bar">
-        <button class="fridge-tab active" id="ftab-inv" onclick="setFridgeTab('inv',this)">🧊 Tủ lạnh</button>
-        <button class="fridge-tab" id="ftab-shop" onclick="setFridgeTab('shop',this)">🛍️ Đi chợ</button>
-      </div>
-
-      <!-- SUB-PANE: INVENTORY -->
-      <div class="fridge-tab-pane active" id="fridge-inv-pane">
-        <div class="fridge-section-header">
-          <span class="fridge-section-title">Đồ đang có ở nhà</span>
-          <button class="add-btn" onclick="openAddInventoryModal()">+ Thêm</button>
-        </div>
-        <div id="invList"></div>
-      </div>
-
-      <!-- SUB-PANE: SHOPPING -->
-      <div class="fridge-tab-pane" id="fridge-shop-pane">
-        <div class="fridge-section-header">
-          <span class="fridge-section-title">Lịch đi chợ</span>
-          <button class="add-btn" onclick="openAddTripModal()">+ Chuyến mới</button>
-        </div>
-        <div id="shopList"></div>
-      </div>
-
-      <div style="height:20px"></div>
-    </div>
-
-  </div><!-- /content -->
-
-  <!-- BOTTOM NAV -->
-  <div class="bottom-nav">
-    <button class="nav-item active" id="nav-search" onclick="switchScreen('search',this)">
-      <span class="nav-icon">🔍</span><span class="nav-label">Tra cứu</span>
-    </button>
-    <button class="nav-item" id="nav-rank" onclick="switchScreen('rank',this)">
-      <span class="nav-icon">📊</span><span class="nav-label">Xếp hạng</span>
-    </button>
-    <button class="nav-item" id="nav-fridge" onclick="switchScreen('fridge',this)" style="position:relative">
-      <span class="nav-icon">🧊</span><span class="nav-label">Tủ lạnh</span>
-      <span class="nav-badge" id="fridgeBadge"></span>
-    </button>
-  </div>
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
-  <!-- Modals -->
-  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-    <div class="modal-sheet" id="modalSheet" onclick="event.stopPropagation()">
-      <div class="modal-handle"></div>
-      <div id="modalContent"></div>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-
-// ════════════════════════════════════════════
-// ALL STATE VARS — declared first to avoid TDZ
-// ════════════════════════════════════════════
-// Auth
-let sbClient = null;
-let currentUser = null;
-// Navigation
-let currentScreen = 'search';
-let lastSearchedFood = null;
-let rankCat = 'all';
-let rankOpenRow = null;
-// Fridge
-let fridgeTab = 'inv';
-let fridgeLoaded = false;
-let inventory = [];
-let trips = [];
-let adjustTarget = null;
-let adjustMode = 'minus';
-let invFilter = 'all';
-// Foods cache
-let foodsCache = [];
-// Toast timer
-
-// ════════════════════════════════════════════
-// AUTH — Supabase Google OAuth
-// ════════════════════════════════════════════
-const SUPABASE_URL = 'https://wvabjrxyymhpdpvuswfr.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_MMQYoRIvqb-gVByG-HV1Jg_iASCuCGE';
-function initSupabase() {
-  if (!window.supabase) {
-    console.error('Supabase SDK not loaded');
-    return false;
-  }
-  if (!sbClient) {
-    sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-  return true;
-}
-
-// Init auth on load
-async function initAuth() {
-  if (!initSupabase()) {
-    showToast('Lỗi kết nối SDK', false);
-    return;
-  }
-  // Check for existing session
-  const { data: { session } } = await sbClient.auth.getSession();
-  if (session) {
-    handleSignedIn(session.user);
-  } else {
-    showAuthGate();
-  }
-
-  // Listen for auth changes — only reset on actual sign in/out, not token refresh
-  sbClient.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT') {
-      handleSignedOut();
-    } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-      if (session && (!currentUser || currentUser.id !== session.user.id)) {
-        handleSignedIn(session.user);
-      }
-    }
-    // TOKEN_REFRESH, USER_UPDATED etc. → do nothing, keep existing inventory
-  });
-}
-
-function showAuthGate() {
-  document.getElementById('authGate').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-}
-
-function handleSignedIn(user) {
-  currentUser = user;
-  document.getElementById('authGate').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  const bar    = document.getElementById('userBar');
-  const avatar = document.getElementById('userAvatar');
-  const uname  = document.getElementById('userName');
-  if (bar)    bar.style.display = 'flex';
-  if (avatar && user.user_metadata?.avatar_url) avatar.src = user.user_metadata.avatar_url;
-  if (uname)  uname.textContent = user.user_metadata?.full_name?.split(' ').pop() || user.email?.split('@')[0] || 'Bạn';
-  // Reset state so fridge reloads with correct user data
-  fridgeLoaded = false;
-  inventory = [];
-  trips = [];
-  foodsCache = [];
-}
-
-function handleSignedOut() {
-  currentUser = null;
-  fridgeLoaded = false;
-  inventory = [];
-  trips = [];
-  foodsCache = [];
-  showAuthGate();
-}
-
-async function signInWithGoogle() {
-  try {
-    if (!initSupabase()) {
-      alert('Lỗi: Supabase SDK chưa load. Thử reload trang.');
-      return;
-    }
-    const btn = document.getElementById('googleSignInBtn');
-    if (btn) { btn.textContent = 'Đang kết nối...'; btn.disabled = true; }
-
-    // Always redirect to production URL, not localhost
-    const redirectTo = 'https://nutrigout.vercel.app';
-
-    const { data, error } = await sbClient.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo }
-    });
-
-    if (error) {
-      alert('Lỗi đăng nhập: ' + error.message);
-      if (btn) { btn.textContent = 'Đăng nhập bằng Google'; btn.disabled = false; }
-    }
-    // If no error: browser will redirect to Google — no code needed here
-  } catch(e) {
-    console.error('signInWithGoogle error:', e);
-    alert('Lỗi: ' + e.message);
-  }
-}
-
-async function signOut() {
-  if (!initSupabase()) return;
-  await sbClient.auth.signOut();
-  showToast('Đã đăng xuất', true);
-}
-
-// Expose auth functions to window scope
-window.signInWithGoogle = signInWithGoogle;
-window.signOut = signOut;
-
-// ── THEME TOGGLE ──────────────────────────────────
-function toggleTheme() {
-  const isLight = document.documentElement.classList.toggle('light');
-  const btn = document.getElementById('themeBtn');
-  // Also update auth gate theme button
-  document.querySelectorAll('.theme-btn').forEach(b => b.textContent = isLight ? '🌞' : '🌙');
-  localStorage.setItem('ng_theme', isLight ? 'light' : 'dark');
-}
-
-function applyStoredTheme() {
-  const stored = localStorage.getItem('ng_theme');
-  if (stored === 'light') {
-    document.documentElement.classList.add('light');
-    document.querySelectorAll('.theme-btn').forEach(b => b.textContent = '🌞');
-  }
-}
-applyStoredTheme();
-
-// Bind button and start auth — script is at end of body so DOM is ready
-(function() {
-  var btn = document.getElementById('googleSignInBtn');
-  if (btn) btn.addEventListener('click', signInWithGoogle);
-  initAuth();
-})();
-
-// ─── BUILTIN FOOD DATABASE (fallback when Supabase unavailable) ────
-const BUILTIN_FOODS = [
-{name:"Gà luộc",unit:"100g không da",kcal:165.0,protein:31.0,carb:0.0,fat:3.6,purin:150.0,purinLevel:"mid",cat:1,tip:"Thịt gà không da tốt hơn thịt đỏ. Ăn 100–150g/bữa, ưu tiên luộc/hấp."},
-{name:"Thịt gà xào",unit:"100g",kcal:195.0,protein:28.0,carb:3.0,fat:8.0,purin:155.0,purinLevel:"mid",cat:1,tip:"Xào ít dầu, không ướp nhiều muối."},
-{name:"Thịt bò nạc",unit:"100g",kcal:250.0,protein:26.0,carb:0.0,fat:15.0,purin:110.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế ≤2 lần/tuần, tránh nước hầm xương bò."},
-{name:"Bò nướng",unit:"100g",kcal:270.0,protein:26.0,carb:1.0,fat:17.0,purin:115.0,purinLevel:"mid",cat:1,tip:"Ăn ít, tránh nướng cháy. Kết hợp rau xanh và uống nhiều nước."},
-{name:"Thịt heo nạc",unit:"100g thăn nạc",kcal:143.0,protein:22.0,carb:0.0,fat:5.5,purin:90.0,purinLevel:"low",cat:1,tip:"Purin thấp hơn thịt đỏ khác. Chọn phần nạc, tránh da và mỡ."},
-{name:"Thịt heo ba chỉ",unit:"100g",kcal:310.0,protein:17.0,carb:0.0,fat:26.0,purin:105.0,purinLevel:"mid",cat:1,tip:"Nhiều mỡ, không tốt cho người thừa cân. Ăn rất hạn chế."},
-{name:"Sườn heo",unit:"100g",kcal:292.0,protein:19.0,carb:0.0,fat:23.0,purin:100.0,purinLevel:"low",cat:1,tip:"Nhiều mỡ. Luộc/hấp tốt hơn chiên."},
-{name:"Heo quay",unit:"100g",kcal:335.0,protein:18.0,carb:0.0,fat:29.0,purin:110.0,purinLevel:"mid",cat:1,tip:"Rất nhiều chất béo bão hòa. Người thừa cân nên tránh."},
-{name:"Chả lụa",unit:"100g",kcal:190.0,protein:14.0,carb:4.0,fat:13.0,purin:95.0,purinLevel:"low",cat:1,tip:"Nhiều muối và chất béo ẩn. Chọn loại ít béo, ăn vừa phải."},
-{name:"Thịt vịt",unit:"100g bỏ da",kcal:201.0,protein:23.0,carb:0.0,fat:11.0,purin:138.0,purinLevel:"mid",cat:1,tip:"Bỏ da để giảm chất béo đáng kể."},
-{name:"Thịt trâu",unit:"100g",kcal:118.0,protein:21.0,carb:0.0,fat:3.0,purin:100.0,purinLevel:"mid",cat:1,tip:"Ít béo hơn thịt bò. Purin trung bình, ăn vừa phải."},
-{name:"Thịt dê",unit:"100g",kcal:143.0,protein:27.0,carb:0.0,fat:3.0,purin:120.0,purinLevel:"mid",cat:1,tip:"Ít béo hơn thịt bò. Hạn chế ≤1 lần/tuần."},
-{name:"Gan heo",unit:"100g",kcal:134.0,protein:20.0,carb:3.8,fat:3.6,purin:290.0,purinLevel:"high",cat:1,tip:"⚠️ Purin CỰC CAO. Người bị gút TRÁNH HOÀN TOÀN."},
-{name:"Thận heo",unit:"100g",kcal:97.0,protein:17.0,carb:0.0,fat:3.0,purin:340.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cao nhất nhóm nội tạng. TRÁNH HOÀN TOÀN."},
-{name:"Tim heo",unit:"100g",kcal:136.0,protein:17.0,carb:0.0,fat:7.0,purin:260.0,purinLevel:"high",cat:1,tip:"⚠️ Purin rất cao. Người bị gút không nên ăn."},
-{name:"Gan gà",unit:"100g",kcal:119.0,protein:17.0,carb:1.0,fat:5.0,purin:312.0,purinLevel:"high",cat:1,tip:"⚠️ Gan gà purin cao. Người bị gút không nên ăn."},
-{name:"Lòng heo",unit:"100g",kcal:94.0,protein:15.0,carb:2.0,fat:3.0,purin:145.0,purinLevel:"mid",cat:1,tip:"Purin trung bình–cao. Người bị gút nên rất hạn chế."},
-{name:"Thịt thỏ",unit:"100g",kcal:173.0,protein:33.0,carb:0.0,fat:3.5,purin:132.0,purinLevel:"mid",cat:1,tip:"Ít béo hơn thịt đỏ. Purin trung bình."},
-{name:"Thịt ngan",unit:"100g",kcal:185.0,protein:20.0,carb:0.0,fat:11.0,purin:130.0,purinLevel:"mid",cat:1,tip:"Bỏ da để giảm chất béo."},
-{name:"Huyết heo",unit:"100g",kcal:62.0,protein:12.0,carb:0.0,fat:0.7,purin:48.0,purinLevel:"low",cat:1,tip:"Purin thấp. Giàu sắt nhưng nhiều cholesterol."},
-{name:"Chân giò heo",unit:"100g",kcal:338.0,protein:19.0,carb:0.0,fat:29.0,purin:95.0,purinLevel:"low",cat:1,tip:"Purin thấp nhưng rất nhiều chất béo. Người thừa cân ăn rất ít."},
-{name:"Thịt bắp bò",unit:"100g",kcal:185.0,protein:26.0,carb:0.0,fat:8.5,purin:110.0,purinLevel:"mid",cat:1,tip:"Phổ biến trong phở. Purin trung bình."},
-{name:"Gân bò",unit:"100g",kcal:150.0,protein:25.0,carb:0.0,fat:5.0,purin:102.0,purinLevel:"mid",cat:1,tip:"Giàu collagen, purin trung bình. Tránh nước hầm đặc."},
-{name:"Xúc xích",unit:"1 cái 50g",kcal:155.0,protein:6.0,carb:2.0,fat:14.0,purin:80.0,purinLevel:"low",cat:1,tip:"Nhiều muối và chất béo bão hòa. Hạn chế tối đa."},
-{name:"Cá hồi",unit:"100g phi lê",kcal:208.0,protein:20.0,carb:0.0,fat:13.0,purin:170.0,purinLevel:"mid",cat:1,tip:"Omega-3 tốt. Purin trung bình, ăn 1–2 lần/tuần ≤150g."},
-{name:"Cá ngừ đóng hộp",unit:"100g",kcal:116.0,protein:26.0,carb:0.0,fat:1.0,purin:142.0,purinLevel:"mid",cat:1,tip:"Chọn loại ngâm nước. Ăn ≤2 lần/tuần."},
-{name:"Cá basa",unit:"100g phi lê",kcal:90.0,protein:15.0,carb:0.0,fat:3.0,purin:80.0,purinLevel:"low",cat:1,tip:"Purin thấp, ít béo. Rất phù hợp cho người bị gút."},
-{name:"Cá tra",unit:"100g",kcal:96.0,protein:16.0,carb:0.0,fat:3.5,purin:85.0,purinLevel:"low",cat:1,tip:"Tương tự cá basa, purin thấp và ít béo."},
-{name:"Cá rô phi",unit:"100g",kcal:128.0,protein:26.0,carb:0.0,fat:2.7,purin:95.0,purinLevel:"low",cat:1,tip:"Ít purin, giàu protein. Một trong những cá phù hợp nhất cho gút."},
-{name:"Cá kèo",unit:"100g",kcal:100.0,protein:18.0,carb:0.0,fat:3.0,purin:110.0,purinLevel:"mid",cat:1,tip:"Đặc trưng miền Nam, purin trung bình."},
-{name:"Cá lóc",unit:"100g",kcal:92.0,protein:19.0,carb:0.0,fat:1.5,purin:105.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Tránh uống nước canh cá lóc đậm đặc."},
-{name:"Cá diêu hồng",unit:"100g",kcal:128.0,protein:21.0,carb:0.0,fat:4.0,purin:88.0,purinLevel:"low",cat:1,tip:"Purin thấp. Hấp gừng hoặc nướng muối ớt rất tốt."},
-{name:"Cá thu",unit:"100g",kcal:205.0,protein:19.0,carb:0.0,fat:14.0,purin:145.0,purinLevel:"mid",cat:1,tip:"Nhiều Omega-3. Purin trung bình."},
-{name:"Cá trích",unit:"100g",kcal:158.0,protein:18.0,carb:0.0,fat:9.0,purin:210.0,purinLevel:"high",cat:1,tip:"⚠️ Cá trích purin cao. Người bị gút nên tránh."},
-{name:"Cá cơm khô",unit:"100g",kcal:284.0,protein:59.0,carb:0.0,fat:4.0,purin:480.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cực cao. TRÁNH HOÀN TOÀN khi bị gút."},
-{name:"Mực ống tươi",unit:"100g",kcal:92.0,protein:16.0,carb:3.0,fat:1.4,purin:193.0,purinLevel:"mid",cat:1,tip:"Tránh mực khô. Tươi thì ăn ít, ≤80g/lần."},
-{name:"Mực khô",unit:"100g",kcal:336.0,protein:60.0,carb:5.0,fat:8.0,purin:350.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cực cao. TRÁNH HOÀN TOÀN."},
-{name:"Tôm sú",unit:"100g tươi",kcal:99.0,protein:24.0,carb:0.0,fat:0.3,purin:147.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Ăn hạn chế 50–80g/lần."},
-{name:"Tôm thẻ",unit:"100g",kcal:85.0,protein:18.0,carb:1.0,fat:0.9,purin:140.0,purinLevel:"mid",cat:1,tip:"Hạn chế ≤80g/lần."},
-{name:"Tôm khô",unit:"100g",kcal:299.0,protein:63.0,carb:0.0,fat:3.0,purin:350.0,purinLevel:"high",cat:1,tip:"⚠️ TRÁNH HOÀN TOÀN khi bị gút. Purin cực cao."},
-{name:"Tôm hùm",unit:"100g thịt",kcal:89.0,protein:19.0,carb:1.2,fat:0.9,purin:160.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hấp/luộc thay vì nướng bơ."},
-{name:"Cua biển",unit:"100g thịt",kcal:83.0,protein:18.0,carb:0.0,fat:0.8,purin:152.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế 50–100g/lần."},
-{name:"Cua đồng",unit:"100g",kcal:79.0,protein:14.0,carb:2.0,fat:1.6,purin:148.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế uống nước canh."},
-{name:"Ghẹ",unit:"100g thịt",kcal:87.0,protein:18.0,carb:0.0,fat:1.5,purin:160.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế ≤100g/lần."},
-{name:"Nghêu",unit:"100g thịt",kcal:74.0,protein:12.6,carb:3.9,fat:1.0,purin:210.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cao. Người bị gút nên tránh."},
-{name:"Hàu",unit:"100g",kcal:81.0,protein:9.0,carb:4.9,fat:2.3,purin:107.0,purinLevel:"mid",cat:1,tip:"Purin trung bình, giàu kẽm. Ăn ≤100g/lần."},
-{name:"Sò huyết",unit:"100g",kcal:76.0,protein:10.0,carb:6.0,fat:1.2,purin:220.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cao. Người bị gút nên tránh."},
-{name:"Bạch tuộc",unit:"100g",kcal:82.0,protein:15.0,carb:2.0,fat:1.0,purin:137.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Ăn hạn chế."},
-{name:"Ốc hương",unit:"100g",kcal:90.0,protein:16.0,carb:3.0,fat:1.2,purin:175.0,purinLevel:"mid",cat:1,tip:"Purin trung bình–cao. Không ăn nước ốc hầm."},
-{name:"Sứa biển",unit:"100g",kcal:30.0,protein:3.8,carb:2.0,fat:0.1,purin:48.0,purinLevel:"low",cat:1,tip:"Purin thấp, ít calo. Thích hợp người bị gút."},
-{name:"Ếch",unit:"100g thịt",kcal:73.0,protein:16.0,carb:0.0,fat:0.5,purin:80.0,purinLevel:"low",cat:1,tip:"Ít calo và purin thấp. Rất phù hợp người bị gút."},
-{name:"Lươn",unit:"100g",kcal:185.0,protein:18.0,carb:0.0,fat:12.0,purin:92.0,purinLevel:"low",cat:1,tip:"Purin thấp nhưng nhiều chất béo. Ăn vừa phải."},
-{name:"Cá bống",unit:"100g",kcal:85.0,protein:17.0,carb:0.0,fat:1.5,purin:95.0,purinLevel:"low",cat:1,tip:"Cá nhỏ miền Nam. Purin thấp."},
-{name:"Trứng cá",unit:"100g",kcal:143.0,protein:25.0,carb:1.0,fat:5.0,purin:300.0,purinLevel:"high",cat:1,tip:"⚠️ Trứng cá purin rất cao. Người bị gút nên TRÁNH."},
-{name:"Nước hầm xương",unit:"240ml",kcal:35.0,protein:6.0,carb:0.0,fat:1.0,purin:290.0,purinLevel:"high",cat:1,tip:"⚠️ TRÁNH HOÀN TOÀN! Hầm xương lâu cô đặc purin trong nước."},
-{name:"Rau muống",unit:"100g",kcal:19.0,protein:2.6,carb:3.1,fat:0.2,purin:22.0,purinLevel:"low",cat:2,tip:"Rau quốc dân Việt Nam, purin rất thấp. Xào tỏi hoặc luộc đều tuyệt vời."},
-{name:"Bắp cải",unit:"100g",kcal:25.0,protein:1.3,carb:5.8,fat:0.1,purin:18.0,purinLevel:"low",cat:2,tip:"Ít purin và ít calo. Lý tưởng cho người bị gút và thừa cân."},
-{name:"Bông cải xanh",unit:"100g",kcal:34.0,protein:2.8,carb:7.0,fat:0.4,purin:70.0,purinLevel:"low",cat:2,tip:"Giàu vitamin C giúp đào thải uric acid. Hấp giữ dinh dưỡng tốt nhất."},
-{name:"Bông cải trắng",unit:"100g",kcal:25.0,protein:1.9,carb:5.0,fat:0.3,purin:51.0,purinLevel:"low",cat:2,tip:"Purin thấp, ít calo. Thay thế cơm trong chế độ low-carb."},
-{name:"Cải bó xôi",unit:"100g",kcal:23.0,protein:2.9,carb:3.6,fat:0.4,purin:57.0,purinLevel:"low",cat:2,tip:"Giàu folate và sắt, purin thấp."},
-{name:"Rau cải xanh",unit:"100g",kcal:20.0,protein:1.8,carb:3.7,fat:0.2,purin:25.0,purinLevel:"low",cat:2,tip:"Phổ biến trong bữa cơm Việt. Luộc chấm mắm hoặc xào tỏi."},
-{name:"Cải thìa",unit:"100g",kcal:13.0,protein:1.5,carb:2.2,fat:0.2,purin:20.0,purinLevel:"low",cat:2,tip:"Rất ít calo và purin."},
-{name:"Rau lang",unit:"100g",kcal:25.0,protein:2.8,carb:4.3,fat:0.2,purin:18.0,purinLevel:"low",cat:2,tip:"Ngọn khoai lang xào tỏi ít purin và ít calo."},
-{name:"Mồng tơi",unit:"100g",kcal:19.0,protein:1.8,carb:3.4,fat:0.3,purin:22.0,purinLevel:"low",cat:2,tip:"Mát, tốt cho tiêu hóa và thận. Purin thấp."},
-{name:"Rau dền",unit:"100g",kcal:23.0,protein:2.1,carb:4.0,fat:0.3,purin:30.0,purinLevel:"low",cat:2,tip:"Giàu sắt và calcium. Purin thấp."},
-{name:"Cà rốt",unit:"100g",kcal:41.0,protein:0.9,carb:10.0,fat:0.2,purin:15.0,purinLevel:"low",cat:2,tip:"Giàu beta-carotene, purin rất thấp."},
-{name:"Cà chua",unit:"100g",kcal:18.0,protein:0.9,carb:3.9,fat:0.2,purin:11.0,purinLevel:"low",cat:2,tip:"Giàu lycopene, purin thấp. Giúp chống viêm."},
-{name:"Dưa chuột",unit:"100g",kcal:16.0,protein:0.7,carb:3.6,fat:0.1,purin:7.0,purinLevel:"low",cat:2,tip:"Hàm lượng nước cao, purin gần bằng 0. Giúp thận đào thải uric acid."},
-{name:"Bí đỏ",unit:"100g",kcal:26.0,protein:1.0,carb:6.5,fat:0.1,purin:44.0,purinLevel:"low",cat:2,tip:"Giàu beta-carotene, ít calo, purin thấp."},
-{name:"Bí đao",unit:"100g",kcal:13.0,protein:0.6,carb:3.0,fat:0.1,purin:16.0,purinLevel:"low",cat:2,tip:"Giải nhiệt, lợi tiểu. Cực kỳ thích hợp cho người bị gút."},
-{name:"Khổ qua",unit:"100g",kcal:17.0,protein:1.0,carb:3.7,fat:0.2,purin:30.0,purinLevel:"low",cat:2,tip:"Hỗ trợ hạ đường huyết. Purin thấp, rất tốt cho sức khỏe."},
-{name:"Mướp",unit:"100g",kcal:20.0,protein:1.2,carb:4.3,fat:0.2,purin:15.0,purinLevel:"low",cat:2,tip:"Ngọt, mát, purin thấp."},
-{name:"Su su",unit:"100g",kcal:19.0,protein:0.8,carb:4.5,fat:0.1,purin:20.0,purinLevel:"low",cat:2,tip:"Ít calo và purin. Tốt cho thận."},
-{name:"Giá đỗ",unit:"100g",kcal:30.0,protein:3.0,carb:5.9,fat:0.2,purin:50.0,purinLevel:"low",cat:2,tip:"Purin thấp hơn đậu nguyên hạt vì đã nảy mầm."},
-{name:"Bắp (ngô)",unit:"90g hạt",kcal:132.0,protein:4.8,carb:29.0,fat:1.8,purin:35.0,purinLevel:"low",cat:2,tip:"Purin thấp nhưng nhiều carb. Ăn 1 bắp/bữa."},
-{name:"Khoai lang",unit:"100g luộc",kcal:86.0,protein:1.6,carb:20.0,fat:0.1,purin:10.0,purinLevel:"low",cat:2,tip:"Nguồn carb lành mạnh thay thế cơm. Purin rất thấp."},
-{name:"Khoai tây",unit:"100g luộc",kcal:87.0,protein:1.9,carb:20.0,fat:0.1,purin:16.0,purinLevel:"low",cat:2,tip:"Purin thấp. Luộc/hấp tốt hơn chiên."},
-{name:"Khoai sọ",unit:"100g luộc",kcal:83.0,protein:1.4,carb:20.0,fat:0.1,purin:12.0,purinLevel:"low",cat:2,tip:"Purin thấp, đa dạng hóa nguồn carb."},
-{name:"Nấm rơm",unit:"100g",kcal:35.0,protein:3.5,carb:6.0,fat:0.4,purin:90.0,purinLevel:"low",cat:2,tip:"Đặc sản Việt, purin vừa phải. Ăn 100–150g/bữa."},
-{name:"Nấm bào ngư",unit:"100g",kcal:33.0,protein:3.3,carb:6.1,fat:0.4,purin:92.0,purinLevel:"low",cat:2,tip:"Purin thấp, thay thế thịt tốt."},
-{name:"Nấm đông cô",unit:"100g",kcal:34.0,protein:2.2,carb:6.8,fat:0.5,purin:58.0,purinLevel:"low",cat:2,tip:"Giàu beta-glucan tăng miễn dịch. Purin thấp khi dùng tươi."},
-{name:"Nấm mèo",unit:"100g",kcal:43.0,protein:1.0,carb:10.0,fat:0.2,purin:38.0,purinLevel:"low",cat:2,tip:"Hỗ trợ tuần hoàn máu. Purin thấp, ít calo."},
-{name:"Cải ngọt",unit:"100g",kcal:18.0,protein:1.5,carb:3.5,fat:0.2,purin:22.0,purinLevel:"low",cat:2,tip:"Rau phổ biến Việt, purin thấp, ít calo."},
-{name:"Rau ngót",unit:"100g",kcal:46.0,protein:5.4,carb:6.5,fat:0.7,purin:55.0,purinLevel:"low",cat:2,tip:"Giàu protein thực vật và vitamin C. Purin thấp."},
-{name:"Rau đay",unit:"100g",kcal:36.0,protein:3.2,carb:6.3,fat:0.4,purin:40.0,purinLevel:"low",cat:2,tip:"Nhớt, mát, tốt cho tiêu hóa. Purin thấp."},
-{name:"Cà tím",unit:"100g",kcal:25.0,protein:1.0,carb:6.0,fat:0.2,purin:30.0,purinLevel:"low",cat:2,tip:"Anthocyanin chống viêm, purin thấp."},
-{name:"Ớt chuông",unit:"100g",kcal:31.0,protein:1.0,carb:7.3,fat:0.3,purin:14.0,purinLevel:"low",cat:2,tip:"Giàu vitamin C gấp 2–3 lần cam. Purin thấp."},
-{name:"Măng tươi",unit:"100g",kcal:27.0,protein:2.6,carb:5.2,fat:0.3,purin:80.0,purinLevel:"low",cat:2,tip:"Purin thấp. Giàu chất xơ."},
-{name:"Hoa chuối",unit:"100g",kcal:60.0,protein:1.6,carb:13.4,fat:0.2,purin:42.0,purinLevel:"low",cat:2,tip:"Phổ biến trong ẩm thực Việt. Purin thấp."},
-{name:"Rau sam",unit:"100g",kcal:20.0,protein:1.3,carb:3.5,fat:0.4,purin:25.0,purinLevel:"low",cat:2,tip:"Omega-3 thực vật cao. Purin thấp. Lợi tiểu."},
-{name:"Cần tây",unit:"100g",kcal:16.0,protein:0.7,carb:3.0,fat:0.2,purin:30.0,purinLevel:"low",cat:2,tip:"Lợi tiểu tự nhiên, hỗ trợ đào thải uric acid."},
-{name:"Rau má",unit:"100g",kcal:35.0,protein:2.4,carb:6.5,fat:0.4,purin:25.0,purinLevel:"low",cat:2,tip:"Mát gan, lợi thận. Purin thấp."},
-{name:"Bắp cải tím",unit:"100g",kcal:31.0,protein:1.4,carb:7.0,fat:0.2,purin:22.0,purinLevel:"low",cat:2,tip:"Giàu anthocyanin chống oxy hóa. Purin thấp."},
-{name:"Củ cải trắng",unit:"100g",kcal:18.0,protein:0.6,carb:4.0,fat:0.1,purin:15.0,purinLevel:"low",cat:2,tip:"Lợi tiểu nhẹ, giúp đào thải uric acid. Purin thấp."},
-{name:"Hành tây",unit:"100g",kcal:40.0,protein:1.1,carb:9.3,fat:0.1,purin:9.0,purinLevel:"low",cat:2,tip:"Quercetin chống viêm, hỗ trợ tốt cho gút. Purin thấp."},
-{name:"Atiso",unit:"100g",kcal:47.0,protein:3.3,carb:10.5,fat:0.2,purin:78.0,purinLevel:"low",cat:2,tip:"Hỗ trợ gan và thận, giúp đào thải uric acid. Purin thấp."},
-{name:"Đậu xanh",unit:"100g nấu",kcal:105.0,protein:7.0,carb:19.0,fat:0.4,purin:80.0,purinLevel:"low",cat:2,tip:"Purin thấp, giàu chất xơ. Tốt cho tiêu hóa."},
-{name:"Đậu đen",unit:"100g nấu",kcal:132.0,protein:9.0,carb:24.0,fat:0.5,purin:75.0,purinLevel:"low",cat:2,tip:"Giàu anthocyanin chống oxy hóa. Purin thấp."},
-{name:"Đậu Hà Lan",unit:"100g",kcal:81.0,protein:5.4,carb:14.0,fat:0.4,purin:84.0,purinLevel:"low",cat:2,tip:"Purin thấp, giàu chất xơ và vitamin C."},
-{name:"Đậu bắp",unit:"100g",kcal:33.0,protein:1.9,carb:7.5,fat:0.2,purin:35.0,purinLevel:"low",cat:2,tip:"Rất ít purin, giàu chất nhầy tốt cho tiêu hóa."},
-{name:"Đậu phụ",unit:"100g cứng",kcal:76.0,protein:8.0,carb:2.0,fat:4.5,purin:68.0,purinLevel:"low",cat:2,tip:"Protein thực vật tuyệt vời, purin thấp. Thay thế thịt lý tưởng."},
-{name:"Đậu phụ non",unit:"100g",kcal:55.0,protein:5.0,carb:2.0,fat:3.0,purin:60.0,purinLevel:"low",cat:2,tip:"Ít calo hơn đậu phụ cứng. Phù hợp cho người giảm cân."},
-{name:"Đậu nành",unit:"100g hạt luộc",kcal:173.0,protein:17.0,carb:10.0,fat:9.0,purin:190.0,purinLevel:"mid",cat:2,tip:"Đậu nành nguyên hạt purin cao. Ưu tiên đậu phụ thay đậu nành."},
-{name:"Cơm trắng",unit:"1 chén 200g",kcal:260.0,protein:5.4,carb:57.0,fat:0.4,purin:25.0,purinLevel:"low",cat:2,tip:"Purin thấp nhưng GI cao. Kiểm soát ≤1.5 chén/bữa."},
-{name:"Gạo lứt",unit:"1 chén 200g",kcal:216.0,protein:4.5,carb:45.0,fat:1.8,purin:28.0,purinLevel:"low",cat:2,tip:"Nhiều chất xơ hơn gạo trắng. Purin thấp."},
-{name:"Yến mạch",unit:"40g 1 khẩu phần",kcal:152.0,protein:5.5,carb:27.0,fat:2.6,purin:30.0,purinLevel:"low",cat:2,tip:"Ngũ cốc lành mạnh, giàu chất xơ hòa tan. Purin thấp."},
-{name:"Dưa hấu",unit:"200g",kcal:60.0,protein:1.2,carb:15.0,fat:0.2,purin:18.0,purinLevel:"low",cat:3,tip:"Giải nhiệt, giàu kali. Purin thấp, hỗ trợ thận đào thải uric acid."},
-{name:"Chuối",unit:"1 quả 100g",kcal:89.0,protein:1.1,carb:23.0,fat:0.3,purin:57.0,purinLevel:"low",cat:3,tip:"Giàu kali giúp thải uric acid. Purin thấp. Ăn 1–2 quả/ngày."},
-{name:"Xoài",unit:"100g",kcal:60.0,protein:0.8,carb:15.0,fat:0.4,purin:12.0,purinLevel:"low",cat:3,tip:"Giàu vitamin C. Purin thấp. Người thừa cân hạn chế vì đường cao."},
-{name:"Ổi",unit:"100g",kcal:68.0,protein:2.6,carb:14.0,fat:1.0,purin:14.0,purinLevel:"low",cat:3,tip:"Giàu vitamin C nhất. Vitamin C giúp giảm uric acid máu."},
-{name:"Đu đủ chín",unit:"100g",kcal:43.0,protein:0.5,carb:11.0,fat:0.3,purin:16.0,purinLevel:"low",cat:3,tip:"Ít calo, tốt cho tiêu hóa. Purin thấp."},
-{name:"Thanh long",unit:"100g",kcal:60.0,protein:1.2,carb:13.0,fat:0.4,purin:18.0,purinLevel:"low",cat:3,tip:"Đặc sản Việt Nam, giàu chất xơ và vitamin C. Purin thấp."},
-{name:"Bưởi",unit:"100g",kcal:42.0,protein:0.8,carb:11.0,fat:0.1,purin:14.0,purinLevel:"low",cat:3,tip:"Giàu vitamin C. Chú ý: bưởi có thể tương tác với một số thuốc gút."},
-{name:"Cam",unit:"1 quả 130g",kcal:62.0,protein:1.2,carb:15.0,fat:0.2,purin:19.0,purinLevel:"low",cat:3,tip:"Vitamin C cao giúp thận đào thải uric acid."},
-{name:"Dứa (thơm)",unit:"100g",kcal:50.0,protein:0.5,carb:13.0,fat:0.1,purin:22.0,purinLevel:"low",cat:3,tip:"Enzyme bromelain chống viêm. Purin thấp."},
-{name:"Nho",unit:"100g",kcal:69.0,protein:0.7,carb:18.0,fat:0.2,purin:27.0,purinLevel:"low",cat:3,tip:"Purin thấp. Hạn chế vì đường cao."},
-{name:"Táo",unit:"1 quả 150g",kcal:78.0,protein:0.4,carb:21.0,fat:0.2,purin:14.0,purinLevel:"low",cat:3,tip:"Giàu chất xơ pectin, purin thấp."},
-{name:"Lê",unit:"1 quả 180g",kcal:101.0,protein:0.6,carb:27.0,fat:0.2,purin:10.0,purinLevel:"low",cat:3,tip:"Purin thấp, ít calo."},
-{name:"Sầu riêng",unit:"100g",kcal:147.0,protein:1.5,carb:27.0,fat:5.0,purin:25.0,purinLevel:"low",cat:3,tip:"Purin thấp nhưng cực kỳ nhiều calo. Người thừa cân nên TRÁNH."},
-{name:"Dừa tươi",unit:"240ml nước",kcal:45.0,protein:0.5,carb:9.0,fat:0.5,purin:8.0,purinLevel:"low",cat:3,tip:"Bổ điện giải, purin thấp. Uống 1 trái/ngày."},
-{name:"Nhãn",unit:"100g",kcal:60.0,protein:1.3,carb:15.0,fat:0.1,purin:15.0,purinLevel:"low",cat:3,tip:"Purin thấp nhưng đường cao. Ăn 10–15 hạt/lần."},
-{name:"Vải",unit:"100g",kcal:66.0,protein:0.8,carb:17.0,fat:0.4,purin:18.0,purinLevel:"low",cat:3,tip:"Purin thấp. Đường cao, hạn chế khi thừa cân."},
-{name:"Mãng cầu",unit:"100g",kcal:94.0,protein:2.1,carb:24.0,fat:0.3,purin:20.0,purinLevel:"low",cat:3,tip:"Purin thấp nhưng đường khá cao."},
-{name:"Chôm chôm",unit:"100g",kcal:82.0,protein:0.9,carb:21.0,fat:0.2,purin:15.0,purinLevel:"low",cat:3,tip:"Ngọt, purin thấp. Giàu vitamin C."},
-{name:"Bơ quả",unit:"100g",kcal:160.0,protein:2.0,carb:9.0,fat:15.0,purin:22.0,purinLevel:"low",cat:3,tip:"Chất béo lành mạnh (MUFA), purin thấp. Ăn nửa quả/ngày."},
-{name:"Chanh",unit:"30ml nước cốt",kcal:8.0,protein:0.1,carb:2.6,fat:0.1,purin:4.0,purinLevel:"low",cat:3,tip:"Vitamin C cao, purin gần 0. Nước chanh ấm buổi sáng giúp thận tốt hơn."},
-{name:"Trứng gà",unit:"1 quả 60g",kcal:78.0,protein:6.0,carb:0.6,fat:5.0,purin:2.0,purinLevel:"low",cat:4,tip:"Gần như không có purin. An toàn nhất cho người bị gút. 1–2 quả/ngày."},
-{name:"Trứng vịt",unit:"1 quả 70g",kcal:130.0,protein:9.0,carb:1.0,fat:10.0,purin:3.0,purinLevel:"low",cat:4,tip:"Purin rất thấp. Ăn 1 quả/ngày là hợp lý."},
-{name:"Trứng vịt lộn",unit:"1 quả 70g",kcal:182.0,protein:13.0,carb:9.0,fat:10.0,purin:50.0,purinLevel:"low",cat:4,tip:"Purin thấp. Ăn 3–4 quả/tuần với người bị gút."},
-{name:"Trứng cút",unit:"5 quả 50g",kcal:79.0,protein:5.5,carb:0.4,fat:5.6,purin:2.0,purinLevel:"low",cat:4,tip:"Purin rất thấp tương đương trứng gà."},
-{name:"Sữa tươi",unit:"240ml",kcal:149.0,protein:8.0,carb:11.7,fat:8.0,purin:0.0,purinLevel:"low",cat:4,tip:"Không có purin và giúp GIẢM nguy cơ gút. Uống 1–2 ly/ngày."},
-{name:"Sữa tươi ít béo",unit:"240ml",kcal:102.0,protein:8.0,carb:12.0,fat:2.4,purin:0.0,purinLevel:"low",cat:4,tip:"Tốt hơn cho người thừa cân. Không có purin."},
-{name:"Sữa chua",unit:"100g",kcal:61.0,protein:3.5,carb:4.7,fat:3.3,purin:8.0,purinLevel:"low",cat:4,tip:"Purin rất thấp, giúp giảm nguy cơ gút. Chọn loại không đường."},
-{name:"Sữa chua Hy Lạp",unit:"100g",kcal:59.0,protein:10.0,carb:3.6,fat:0.4,purin:5.0,purinLevel:"low",cat:4,tip:"Giàu protein hơn sữa chua thường, purin thấp."},
-{name:"Phô mai",unit:"30g 1 lát",kcal:113.0,protein:7.0,carb:0.4,fat:9.0,purin:5.0,purinLevel:"low",cat:4,tip:"Purin thấp. Nhiều béo bão hòa và muối. Ăn ≤30g/ngày."},
-{name:"Sữa đậu nành",unit:"240ml",kcal:80.0,protein:7.0,carb:4.0,fat:4.0,purin:18.0,purinLevel:"low",cat:4,tip:"Purin thấp hơn nhiều so với đậu nành nguyên hạt."},
-{name:"Hạt điều",unit:"30g 20 hạt",kcal:163.0,protein:5.0,carb:9.0,fat:13.0,purin:50.0,purinLevel:"low",cat:4,tip:"Chất béo không bão hòa tốt. Purin thấp. Ăn 30g/ngày."},
-{name:"Hạt hạnh nhân",unit:"30g",kcal:164.0,protein:6.0,carb:6.0,fat:14.0,purin:37.0,purinLevel:"low",cat:4,tip:"Giàu vitamin E. Purin thấp. Ăn vặt lành mạnh."},
-{name:"Hạt óc chó",unit:"30g",kcal:185.0,protein:4.3,carb:4.0,fat:18.0,purin:25.0,purinLevel:"low",cat:4,tip:"Giàu Omega-3. Purin thấp. Ăn ≤30g/ngày vì nhiều calo."},
-{name:"Đậu phộng",unit:"30g",kcal:166.0,protein:7.0,carb:4.5,fat:14.0,purin:79.0,purinLevel:"low",cat:4,tip:"Purin thấp nhưng nhiều calo. Ăn ≤30g/ngày."},
-{name:"Bia",unit:"330ml 1 lon",kcal:153.0,protein:1.3,carb:12.6,fat:0.0,purin:55.0,purinLevel:"mid",cat:4,tip:"⚠️ Cồn làm tăng uric acid VÀ giảm thải qua thận. TRÁNH HOÀN TOÀN khi bị gút."},
-{name:"Rượu vang đỏ",unit:"150ml",kcal:125.0,protein:0.1,carb:3.8,fat:0.0,purin:0.0,purinLevel:"mid",cat:4,tip:"⚠️ Cồn vẫn làm tăng uric acid dù ít purin hơn bia. Hạn chế tối đa."},
-{name:"Trà xanh",unit:"240ml",kcal:2.0,protein:0.0,carb:0.5,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"EGCG có thể giảm nồng độ uric acid. Uống 2–3 tách/ngày không đường."},
-{name:"Cà phê đen",unit:"240ml",kcal:2.0,protein:0.3,carb:0.0,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"Cà phê giúp GIẢM nguy cơ gút theo nghiên cứu. Uống đen không đường, ≤3 tách/ngày."},
-{name:"Nước ngọt có ga",unit:"330ml",kcal:140.0,protein:0.0,carb:38.0,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"⚠️ Fructose làm tăng uric acid máu. TRÁNH HOÀN TOÀN khi bị gút."},
-{name:"Nước atiso",unit:"240ml",kcal:10.0,protein:0.0,carb:2.0,fat:0.0,purin:2.0,purinLevel:"low",cat:4,tip:"Thức uống rất tốt cho người bị gút. Giúp gan và thận khỏe, hỗ trợ đào thải uric acid."},
-{name:"Nước ép bí đao",unit:"240ml",kcal:13.0,protein:0.5,carb:3.0,fat:0.1,purin:5.0,purinLevel:"low",cat:4,tip:"Lợi tiểu tự nhiên, cực tốt cho thận. Uống buổi sáng rất có lợi cho người bị gút."},
-{name:"Nước lọc",unit:"200ml",kcal:0.0,protein:0.0,carb:0.0,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"✅ Uống 2–3 lít/ngày giúp thận đào thải uric acid. THỨC UỐNG TỐT NHẤT cho gút."},
-{name:"Tỏi",unit:"3 tép 10g",kcal:13.0,protein:0.6,carb:3.0,fat:0.04,purin:8.0,purinLevel:"low",cat:4,tip:"Allicin kháng viêm. Purin thấp. Tốt cho tim mạch."},
-{name:"Gừng",unit:"5g tươi",kcal:4.0,protein:0.1,carb:0.9,fat:0.04,purin:5.0,purinLevel:"low",cat:4,tip:"Gingerol chống viêm rất mạnh, có thể giúp giảm đau trong cơn gút."},
-{name:"Nghệ",unit:"1 muỗng cà phê bột",kcal:9.0,protein:0.3,carb:2.0,fat:0.3,purin:3.0,purinLevel:"low",cat:4,tip:"Curcumin chống viêm mạnh mẽ, hỗ trợ tốt cho người bị gút."},
-{name:"Kim chi",unit:"100g",kcal:33.0,protein:2.0,carb:6.0,fat:0.6,purin:25.0,purinLevel:"low",cat:4,tip:"Probiotic tốt, purin thấp. Nhưng nhiều muối, ăn vừa phải."},
-{name:"Gỏi cuốn",unit:"2 cuốn 120g",kcal:145.0,protein:8.0,carb:22.0,fat:3.0,purin:65.0,purinLevel:"low",cat:4,tip:"Món gỏi tươi lành mạnh, purin thấp."},
-{name:"Giấm táo",unit:"1 muỗng canh",kcal:3.0,protein:0.0,carb:0.1,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"Không có purin. Có thể hỗ trợ kiểm soát uric acid."},
-{name:"Nước mắm",unit:"15ml",kcal:6.0,protein:1.0,carb:0.5,fat:0.0,purin:5.0,purinLevel:"low",cat:4,tip:"Purin thấp nhưng rất nhiều muối. Hạn chế muối để giảm áp lực thận."}
+// /api/ledger.js — Vercel Serverless Function
+// Ledger model: inventory_log + shopping_trips + shopping_items
+// GET  /api/ledger?type=inventory          → inventory master + computed balances
+// GET  /api/ledger?type=inventory_log&item_id=xxx → transaction history for one item
+// GET  /api/ledger?type=shopping           → all trips + items
+// POST /api/ledger  { type, ...payload }   → write operations
+
+const ALLOWED_ORIGINS = [
+  'https://nutrigout.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
 ];
 
-// ─── NAVIGATION ───────────────────────────────────────────────────
-
-function switchScreen(name, btn) {
-  currentScreen = name;
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  btn.classList.add('active');
-  document.getElementById('contentArea').scrollTop = 0;
-  if (name === 'rank') renderRank();
-  if (name === 'fridge') renderFridge();
-}
-
-// ─── FOOD DATABASE ──────────────────────────────────────────────────
-// Foods are now stored in Supabase (foods table).
-// Loaded on demand via /api/foods endpoint.
-
-
-// ─── SEARCH LOGIC ─────────────────────────────────────────────────
-const API_URL      = '/api/search'; // AI proxy
-const FOODS_API    = '/api/foods';  // foods DB
-
-function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
-
-// Search foods from Supabase via /api/foods?q=...
-async function searchFoodsDB(q) {
+// ─── JWT decode ──────────────────────────────────────────────────
+function decodeJWT(token) {
   try {
-    const r = await fetch(`${FOODS_API}?q=${encodeURIComponent(q)}`);
-    if (r.ok) {
-      const data = await r.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data.map(row => ({
-          name:       row.name,
-          unit:       row.unit,
-          kcal:       Number(row.kcal),
-          protein:    Number(row.protein),
-          carb:       Number(row.carb),
-          fat:        Number(row.fat),
-          purin:      Number(row.purin),
-          purinLevel: row.purin_level,
-          cat:        Number(row.cat),
-          tip:        row.tip || '',
-          source:     row.source || 'builtin',
-        }));
-      }
-    } else {
-      console.warn('searchFoodsDB returned:', r.status, '— searching builtin');
-    }
-  } catch(e) {
-    console.warn('searchFoodsDB API failed:', e.message, '— searching builtin');
-  }
-  // Fallback: search in builtin 155 foods
-  const nq = norm(q.trim());
-  return BUILTIN_FOODS.filter(f =>
-    norm(f.name).includes(nq) || nq.includes(norm(f.name))
-  );
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const padded = payload + '='.repeat((4 - payload.length % 4) % 4);
+    const data = JSON.parse(Buffer.from(padded, 'base64').toString('utf8'));
+    if (data.exp && data.exp < Math.floor(Date.now() / 1000)) return null;
+    return data;
+  } catch { return null; }
 }
 
-// Find best match from DB results
-function findBestMatch(q, results) {
-  if (!results.length) return null;
-  const nq = norm(q.trim());
-  // 1. Exact match
-  let r = results.find(f => norm(f.name) === nq);
-  if (r) return r;
-  // 2. DB name contains full query
-  r = results.find(f => norm(f.name).includes(nq));
-  if (r) return r;
-  // 3. Query contains full DB name (≥4 chars)
-  r = results.find(f => nq.includes(norm(f.name)) && norm(f.name).length >= 4);
-  if (r) return r;
-  // 4. All words match
-  const words = nq.split(/\s+/).filter(w => w.length > 2);
-  if (words.length >= 2) {
-    r = results.find(f => words.every(w => norm(f.name).includes(w)));
-    if (r) return r;
-  }
-  return null;
+function getUserId(req) {
+  const token = (req.headers['authorization'] || '').replace('Bearer ', '').trim();
+  if (!token) return null;
+  const payload = decodeJWT(token);
+  return payload?.sub || null;
 }
 
-// Save AI result to DB (fire-and-forget)
-async function saveFoodToDB(food) {
-  try {
-    await fetch(FOODS_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(food),
-    });
-  } catch(e) { /* silent fail */ }
-}
+// ─── Supabase helpers ────────────────────────────────────────────
+const SB_URL  = () => process.env.SUPABASE_URL;
+const SB_KEY  = () => process.env.SUPABASE_KEY;
 
-// Load all foods for ranking tab
-async function loadAllFoods() {
-  if (foodsCache.length) return foodsCache;
-  try {
-    const r = await fetch(FOODS_API);
-    if (r.ok) {
-      const data = await r.json();
-      if (Array.isArray(data) && data.length > 0) {
-        foodsCache = data.map(row => ({
-          name:       row.name,
-          unit:       row.unit,
-          kcal:       Number(row.kcal),
-          protein:    Number(row.protein),
-          carb:       Number(row.carb),
-          fat:        Number(row.fat),
-          purin:      Number(row.purin),
-          purinLevel: row.purin_level,
-          cat:        Number(row.cat),
-          tip:        row.tip || '',
-          source:     row.source || 'builtin',
-        }));
-        console.log('loadAllFoods: loaded', foodsCache.length, 'foods from DB');
-        return foodsCache;
-      }
-    } else {
-      console.warn('loadAllFoods API returned:', r.status, '— using builtin fallback');
-    }
-  } catch(e) {
-    console.warn('loadAllFoods API failed:', e.message, '— using builtin fallback');
-  }
-  // Fallback: builtin foods always work
-  foodsCache = [...BUILTIN_FOODS];
-  return foodsCache;
-}
-
-function renderFood(f, isAI = false) {
-  lastSearchedFood = f;
-  document.getElementById('aiBadgeWrap').style.display = isAI ? 'block' : 'none';
-  const pKcal = f.protein*4, cKcal = f.carb*4, fKcal = f.fat*9, tot = f.kcal||1;
-  const pPct = Math.round(pKcal/tot*100), cPct = Math.round(cKcal/tot*100), fPct = Math.round(fKcal/tot*100);
-  document.getElementById('foodName').textContent = f.name;
-  document.getElementById('foodUnit').textContent = 'Khẩu phần: ' + f.unit;
-  document.getElementById('kcalBadge').textContent = f.kcal + ' kcal';
-  document.getElementById('protein').textContent = f.protein + 'g';
-  document.getElementById('carb').textContent = f.carb + 'g';
-  document.getElementById('fat').textContent = f.fat + 'g';
-  document.getElementById('proteinPct').textContent = pPct + '%';
-  document.getElementById('carbPct').textContent = cPct + '%';
-  document.getElementById('fatPct').textContent = fPct + '%';
-  document.getElementById('barP').style.width = '0%';
-  document.getElementById('barC').style.width = '0%';
-  document.getElementById('barF').style.width = '0%';
-  setTimeout(() => {
-    document.getElementById('barP').style.width = Math.min(pPct,100) + '%';
-    document.getElementById('barC').style.width = Math.min(cPct,100) + '%';
-    document.getElementById('barF').style.width = Math.min(fPct,100) + '%';
-  }, 80);
-  const pb = document.getElementById('purinBox');
-  pb.className = 'purin-box';
-  let icon, pval, pdesc, pbadge, pbcls;
-  if (f.purinLevel === 'low')      { pb.classList.add('low');  icon = '✅'; pval = f.purin + 'mg/100g – Thấp (<100mg)';        pdesc = 'Purin thấp, an toàn cho người bị gút.';               pbadge = '✔ An toàn';    pbcls = 'badge-ok';  }
-  else if (f.purinLevel === 'mid') { pb.classList.add('mid');  icon = '⚠️'; pval = f.purin + 'mg/100g – Trung bình (100–200mg)'; pdesc = 'Purin trung bình. Người bị gút nên ăn hạn chế.';       pbadge = '⚠ Hạn chế';   pbcls = 'badge-mod'; }
-  else                              { pb.classList.add('high'); icon = '🚫'; pval = f.purin + 'mg/100g – Cao (>200mg)';          pdesc = 'Purin rất cao! Người bị gút nên tránh hoàn toàn.';    pbadge = '🚫 Tránh';    pbcls = 'badge-bad'; }
-  document.getElementById('pbIcon').textContent = icon;
-  document.getElementById('pbVal').textContent = pval;
-  document.getElementById('pbDesc').textContent = pdesc;
-  const badge = document.getElementById('pbBadge');
-  badge.textContent = pbadge; badge.className = 'pb-badge ' + pbcls;
-  document.getElementById('tipBox').innerHTML = '<strong>💡 Lời khuyên:</strong> ' + f.tip;
-  document.getElementById('resultCard').style.display = 'block';
-  document.getElementById('emptyState').className = 'empty-wrap';
-  document.getElementById('rlBanner').className = 'rl-banner';
-  document.getElementById('crosslinkBtn').style.display = f.cat ? 'flex' : 'none';
-}
-
-async function queryAI(foodName) {
-  const resp = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ foodName }),
-  });
-
-  if (resp.status === 429) {
-    const data = await resp.json();
-    throw { type: 'rate_limited', message: data.message || 'Đã đạt giới hạn tra cứu AI.' };
-  }
-  if (!resp.ok) {
-    throw { type: 'error', message: 'Lỗi kết nối. Thử lại sau.' };
-  }
-
-  const data = await resp.json();
-
-  // Show remaining quota
-  const hourLeft = resp.headers.get('X-RateLimit-IP-Hour-Remaining');
-  const dayLeft  = resp.headers.get('X-RateLimit-IP-Day-Remaining');
-  if (hourLeft !== null) {
-    document.getElementById('rlRemaining').style.display = 'block';
-    document.getElementById('rlHour').textContent = hourLeft;
-    document.getElementById('rlDay').textContent = dayLeft;
-  }
-
-  return data.result;
-}
-
-async function doSearch() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  document.getElementById('resultCard').style.display = 'none';
-  document.getElementById('emptyState').className = 'empty-wrap';
-  document.getElementById('rlBanner').className = 'rl-banner';
-  document.getElementById('rlRemaining').style.display = 'none';
-  document.getElementById('loading').className = 'loading-wrap show';
-  document.getElementById('loadingMsg').textContent = 'Đang tra cứu...';
-  document.getElementById('aiTag').style.display = 'none';
-
-  // Step 1: Search Supabase foods table
-  const dbResults = await searchFoodsDB(q);
-  const found = findBestMatch(q, dbResults);
-
-  if (found) {
-    document.getElementById('loading').className = 'loading-wrap';
-    renderFood(found, false);
-    return;
-  }
-
-  // Step 2: Not in DB — call AI
-  document.getElementById('loadingMsg').textContent = 'Không có trong database, đang hỏi AI...';
-  document.getElementById('aiTag').style.display = 'inline-block';
-  try {
-    const ai = await queryAI(q);
-    document.getElementById('loading').className = 'loading-wrap';
-    renderFood(ai, true);
-    // Step 3: Auto-save AI result to Supabase foods table
-    saveFoodToDB(ai);
-  } catch (err) {
-    document.getElementById('loading').className = 'loading-wrap';
-    if (err.type === 'rate_limited') {
-      const banner = document.getElementById('rlBanner');
-      banner.textContent = '⏳ ' + err.message;
-      banner.className = 'rl-banner show';
-      document.getElementById('emptyMsg').innerHTML = 'Thực phẩm "<strong>' + q + '</strong>" không có trong database.';
-      document.getElementById('emptyState').className = 'empty-wrap show';
-    } else {
-      document.getElementById('emptyMsg').innerHTML = 'Không tìm thấy "<strong>' + q + '</strong>". Thử tên gọi khác.';
-      document.getElementById('emptyState').className = 'empty-wrap show';
-    }
-  }
-}
-
-function quickSearch(n) { document.getElementById('searchInput').value = n; doSearch(); }
-document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-
-// ─── CROSS-LINK: SEARCH → RANK ────────────────────────────────────
-function goToRankFromSearch() {
-  if (!lastSearchedFood) return;
-  const btn = document.getElementById('nav-rank');
-  switchScreen('rank', btn);
-  // Filter to the food's category
-  if (lastSearchedFood.cat) {
-    rankCat = lastSearchedFood.cat;
-    document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
-    const targetTab = document.querySelector(`.cat-tab[onclick*="setCat(${lastSearchedFood.cat},"]`);
-    if (targetTab) targetTab.classList.add('active');
-    renderRank();
-  }
-  // Highlight the food row after render
-  setTimeout(() => {
-    document.querySelectorAll('.food-row').forEach(row => {
-      const nameEl = row.querySelector('.row-name');
-      if (nameEl && norm(nameEl.textContent) === norm(lastSearchedFood.name)) {
-        row.style.transition = 'border-color .3s';
-        row.style.borderColor = 'var(--accent)';
-        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => { row.style.borderColor = ''; }, 2500);
-      }
-    });
-  }, 120);
-}
-
-// ─── RANK: SEARCH FROM ROW ────────────────────────────────────────
-function searchFromRank(name) {
-  const btn = document.getElementById('nav-search');
-  switchScreen('search', btn);
-  document.getElementById('searchInput').value = name;
-  doSearch();
-}
-
-
-// ─── RANKING ──────────────────────────────────────────────────────
-async function renderRank() {
-  const out = document.getElementById('rankContent');
-  if (!out) return;
-  out.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3)">Đang tải...</div>';
-  const allFoods = await loadAllFoods();
-  // Invalidate cache if empty
-  if (!allFoods.length) {
-    out.innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3)">Không có dữ liệu</div>';
-    return;
-  }
-  _renderRankWithData(allFoods);
-}
-
-function _renderRankWithData(allFoods) {
-  const out = document.getElementById('rankContent');
-  if (!out) return;
-  const s = document.getElementById('sortSel').value;
-  const ratio = f => f.kcal > 0 ? f.protein/f.kcal : 0;
-  let data = rankCat === 'all' ? [...allFoods] : allFoods.filter(f => f.cat === rankCat);
-  const sorters = {
-    ratio:(a,b)=>ratio(b)-ratio(a), protein:(a,b)=>b.protein-a.protein,
-    kcal_asc:(a,b)=>a.kcal-b.kcal, kcal_desc:(a,b)=>b.kcal-a.kcal,
-    fat_asc:(a,b)=>a.fat-b.fat, carb_asc:(a,b)=>a.carb-b.carb,
-    purin_asc:(a,b)=>a.purin-b.purin, purin_desc:(a,b)=>b.purin-a.purin,
-    name:(a,b)=>a.name.localeCompare(b.name,'vi'),
+function sbH(extra = {}) {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SB_KEY(),
+    'Authorization': `Bearer ${SB_KEY()}`,
+    'Prefer': 'return=representation',
+    ...extra,
   };
-  data.sort(sorters[s] || sorters.ratio);
-  const catMeta = {
-    1:{icon:'🥩',label:'Thịt, Cá & Hải sản'},
-    2:{icon:'🥦',label:'Rau củ, Đậu & Ngũ cốc'},
-    3:{icon:'🍉',label:'Trái cây'},
-    4:{icon:'🥚',label:'Trứng, Sữa & Đồ uống'},
-  };
-  if (rankCat === 'all') {
-    out.innerHTML = [1,2,3,4].map(catId => {
-      const items = data.filter(f => f.cat === catId);
-      if (!items.length) return '';
-      const m = catMeta[catId];
-      return `<div><div class="sec-header"><span class="sec-icon">${m.icon}</span><span class="sec-title">${m.label}</span><span class="sec-count">${items.length}</span></div><div class="food-list">${items.map((f,i)=>buildRow(f,i,catId+'-'+i)).join('')}</div></div>`;
-    }).join('');
-  } else {
-    const m = catMeta[rankCat] || {icon:'🍽️',label:'Thực phẩm'};
-    out.innerHTML = `<div class="sec-header"><span class="sec-icon">${m.icon}</span><span class="sec-title">${m.label}</span><span class="sec-count">${data.length}</span></div><div class="food-list">${data.map((f,i)=>buildRow(f,i,'c'+rankCat+'-'+i)).join('')}</div>`;
-  }
 }
 
-function setCat(cat, btn) {
-  rankCat = cat;
-  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  rankOpenRow = null;
-  renderRank();
+function url(table, qs = '') {
+  return `${SB_URL()}/rest/v1/${table}${qs}`;
 }
 
-
-
-function buildRow(f, i, rid) {
-  const ratio = f.kcal > 0 ? (f.protein/f.kcal*100).toFixed(1) : 0;
-  const pKcal=f.protein*4, cKcal=f.carb*4, fKcal=f.fat*9, tot=f.kcal||1;
-  const pPct=Math.round(pKcal/tot*100), cPct=Math.round(cKcal/tot*100), fPct=Math.round(fKcal/tot*100);
-  const rankCls = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
-  const pC = {low:'var(--accent)',mid:'var(--amber)',high:'var(--red)'};
-  const pLabel = {low:'✅ An toàn',mid:'⚠️ Hạn chế',high:'🚫 Tránh dùng'};
-  return `<div class="food-row" id="rrow-${rid}" onclick="toggleRow('${rid}')">
-    <div class="food-row-main">
-      <span class="row-rank ${rankCls}">${i<3?['🥇','🥈','🥉'][i]:i+1}</span>
-      <div class="row-info"><div class="row-name">${f.name}</div><div class="row-unit">${f.unit}</div></div>
-      <div class="row-right"><span class="row-kcal">${f.kcal} kcal</span><span class="row-ratio">P/K: ${ratio}%</span></div>
-      <span class="row-purin-dot dot-${f.purinLevel}"></span>
-      <span class="row-chevron">▼</span>
-    </div>
-    <div class="food-row-detail">
-      <div class="detail-macro-row">
-        <div class="dm-cell"><div class="dm-label">Protein</div><div class="dm-val" style="color:var(--accent)">${f.protein}g</div><div class="dm-pct">${pPct}% kcal</div><div class="dm-bar"><div class="dm-fill" style="width:${pPct}%;background:var(--accent)"></div></div></div>
-        <div class="dm-cell"><div class="dm-label">Carb</div><div class="dm-val" style="color:var(--amber)">${f.carb}g</div><div class="dm-pct">${cPct}% kcal</div><div class="dm-bar"><div class="dm-fill" style="width:${cPct}%;background:var(--amber)"></div></div></div>
-        <div class="dm-cell"><div class="dm-label">Chất béo</div><div class="dm-val" style="color:var(--red)">${f.fat}g</div><div class="dm-pct">${fPct}% kcal</div><div class="dm-bar"><div class="dm-fill" style="width:${fPct}%;background:var(--red)"></div></div></div>
-      </div>
-      <div class="detail-stats">
-        <div class="ds-cell"><div class="ds-label">Calories</div><div class="ds-val" style="color:var(--amber)">${f.kcal} kcal</div></div>
-        <div class="ds-cell"><div class="ds-label">Protein/Kcal</div><div class="ds-val" style="color:var(--accent)">${ratio}%</div></div>
-        <div class="ds-cell"><div class="ds-label">Purin</div><div class="ds-val" style="color:${pC[f.purinLevel]}">${f.purin}mg/100g</div></div>
-        <div class="ds-cell"><div class="ds-label">Mức Gút</div><div class="ds-val" style="color:${pC[f.purinLevel]};font-size:.78rem">${pLabel[f.purinLevel]}</div></div>
-      </div>
-      <div class="detail-tip"><strong>💡 Lời khuyên:</strong> ${f.tip}</div>
-      <button class="find-in-search" onclick="event.stopPropagation();searchFromRank('${f.name.replace(/'/g,"\\'")}')">🔍 Tra cứu "${f.name}" →</button>
-    </div>
-  </div>`;
-}
-
-function toggleRow(rid) {
-  const row = document.getElementById('rrow-' + rid);
-  if (!row) return;
-  const isOpen = row.classList.contains('open');
-  if (rankOpenRow && rankOpenRow !== rid) {
-    const prev = document.getElementById('rrow-' + rankOpenRow);
-    if (prev) prev.classList.remove('open');
-  }
-  row.classList.toggle('open', !isOpen);
-  rankOpenRow = isOpen ? null : rid;
-}
-
-
-// ─── UTILITIES ──────────────────────────────────────────────────────
-function fmtQty(n) {
-  const num = Number(n);
-  if (isNaN(num)) return '0';
-  return Number.isInteger(num)
-    ? num.toLocaleString('en-US')
-    : num.toLocaleString('en-US', {maximumFractionDigits: 1});
-}
-
-// ─── FRIDGE & SHOPPING ──────────────────────────────────────────────
-
-const LEDGER_API = '/api/ledger';
-
-function setFridgeTab(tab, btn) {
-  fridgeTab = tab;
-  document.querySelectorAll('.fridge-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const inv  = document.getElementById('fridge-inv-pane');
-  const shop = document.getElementById('fridge-shop-pane');
-  if (tab === 'inv') { inv.classList.add('active'); shop.classList.remove('active'); }
-  else { shop.classList.add('active'); inv.classList.remove('active'); renderShop(); }
-}
-
-async function renderFridge() {
-  if (!fridgeLoaded) { await loadFridgeData(); fridgeLoaded = true; }
-  renderInv(); renderShop(); updateSummary(); updateFridgeBadge();
-}
-
-async function apiCall(method, body, qs = '') {
-  // Get token directly from sbClient (no dependency on getAuthHeaders)
-  let token = '';
-  try {
-    if (initSupabase()) {
-      const { data: { session } } = await sbClient.auth.getSession();
-      token = session?.access_token || '';
-    }
-  } catch(e) { console.warn('apiCall: could not get token', e.message); }
-  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-  const opts = { method, headers };
-  if (body) opts.body = JSON.stringify(body);
-  const r = await fetch(LEDGER_API + qs, opts);
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || r.status); }
+async function sbGet(table, qs) {
+  const r = await fetch(url(table, qs), { headers: sbH() });
+  if (!r.ok) throw new Error(`GET ${table}: ${r.status} ${await r.text()}`);
   return r.json();
 }
 
-async function loadFridgeData() {
-  try {
-    const [inv, shop] = await Promise.all([
-      apiCall('GET', null, '?type=inventory'),
-      apiCall('GET', null, '?type=shopping'),
-    ]);
-    // Only update if we got valid arrays back
-    if (Array.isArray(inv))  inventory = inv;
-    if (Array.isArray(shop)) trips = shop;
-    console.log('loadFridgeData:', inventory.length, 'items,', trips.length, 'trips');
-  } catch(e) {
-    console.error('loadFridgeData error:', e.message);
-    showToast('⚠️ Không tải được dữ liệu', false);
-    // Do NOT clear inventory — keep existing state
-  }
-}
-
-function updateSummary() {
-  const ok  = inventory.filter(i => i.qty > (i.minQty||0)).length;
-  const low = inventory.filter(i => i.qty > 0 && i.qty <= (i.minQty||0)).length;
-  const out = inventory.filter(i => i.qty <= 0).length;
-  const el = (id) => document.getElementById(id);
-  if(el('sumOk'))  el('sumOk').textContent  = ok;
-  if(el('sumLow')) el('sumLow').textContent = low;
-  if(el('sumOut')) el('sumOut').textContent = out;
-}
-
-function updateFridgeBadge() {
-  const n = inventory.filter(i => i.qty <= (i.minQty||0)).length;
-  const b = document.getElementById('fridgeBadge');
-  if (!b) return;
-  if (n > 0) { b.textContent = n > 9 ? '9+' : n; b.classList.add('show'); }
-  else b.classList.remove('show');
-}
-
-function setInvFilter(f) {
-  invFilter = invFilter === f ? 'all' : f;
-  ['ok','low','out'].forEach(s => {
-    const c = document.getElementById('sum-card-' + s);
-    if (c) c.classList.toggle('active-filter', invFilter === s);
+async function sbPost(table, body, prefer = 'resolution=merge-duplicates,return=representation') {
+  const r = await fetch(url(table), {
+    method: 'POST',
+    headers: sbH({ Prefer: prefer }),
+    body: JSON.stringify(body),
   });
-  renderInv();
+  if (!r.ok) throw new Error(`POST ${table}: ${r.status} ${await r.text()}`);
+  return r.json();
 }
 
-// ── COLLAPSE STATE ──────────────────────────────────────────
-const collapsedCats = new Set(JSON.parse(localStorage.getItem('ng_cc')||'[]'));
-function saveCollapsedCats() { localStorage.setItem('ng_cc', JSON.stringify([...collapsedCats])); }
-function toggleCat(cat) {
-  if (collapsedCats.has(cat)) collapsedCats.delete(cat);
-  else collapsedCats.add(cat);
-  saveCollapsedCats();
-  const el = document.getElementById('cat-items-'+cat);
-  const pill = document.getElementById('cat-chev-'+cat);
-  const collapsed = collapsedCats.has(cat);
-  if (el) {
-    if (collapsed) {
-      el.style.maxHeight = el.scrollHeight + 'px';
-      requestAnimationFrame(() => { el.style.maxHeight = '0'; });
-    } else {
-      el.style.maxHeight = el.scrollHeight + 'px';
-      setTimeout(() => { if (!collapsedCats.has(cat)) el.style.maxHeight = ''; }, 260);
+async function sbPatch(table, qs, body) {
+  const r = await fetch(url(table, qs), {
+    method: 'PATCH',
+    headers: sbH({ Prefer: 'return=representation' }),
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`PATCH ${table}: ${r.status} ${await r.text()}`);
+  return r.json();
+}
+
+async function sbDelete(table, qs) {
+  const r = await fetch(url(table, qs), { method: 'DELETE', headers: sbH() });
+  if (!r.ok) throw new Error(`DELETE ${table}: ${r.status} ${await r.text()}`);
+}
+
+// ─── MAIN HANDLER ────────────────────────────────────────────────
+module.exports = async function handler(req, res) {
+  const origin = req.headers.origin || '';
+  if (ALLOWED_ORIGINS.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (!SB_URL() || !SB_KEY()) return res.status(500).json({ error: 'Supabase not configured' });
+
+  const userId = getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  const type = req.query?.type || req.body?.type;
+
+  try {
+    // ══ GET ══════════════════════════════════════════════════════
+    if (req.method === 'GET') {
+
+      // GET inventory — master list + computed balance from log
+      if (type === 'inventory') {
+        const [items, logs] = await Promise.all([
+          sbGet('inventory', `?user_id=eq.${userId}&order=sort_order.asc,name.asc`),
+          sbGet('inventory_log', `?user_id=eq.${userId}&order=created_at.asc`),
+        ]);
+        // Compute balance per item_id
+        const balances = {};
+        for (const log of logs) {
+          balances[log.item_id] = (balances[log.item_id] || 0) + Number(log.delta);
+        }
+        const result = items.map(item => ({
+          ...item,
+          qty: balances[item.id] || 0,
+        }));
+        return res.status(200).json(result);
+      }
+
+      // GET inventory_log for one item
+      if (type === 'inventory_log') {
+        const itemId = req.query.item_id;
+        if (!itemId) return res.status(400).json({ error: 'item_id required' });
+        const logs = await sbGet('inventory_log',
+          `?user_id=eq.${userId}&item_id=eq.${itemId}&order=created_at.desc&limit=50`);
+        return res.status(200).json(logs);
+      }
+
+      // GET shopping — trips + items
+      if (type === 'shopping') {
+        const [trips, items] = await Promise.all([
+          sbGet('shopping_trips', `?user_id=eq.${userId}&order=trip_date.desc,created_at.desc`),
+          sbGet('shopping_items', `?user_id=eq.${userId}&order=created_at.asc`),
+        ]);
+        // Attach items to trips
+        const result = trips.map(trip => ({
+          ...trip,
+          items: items.filter(i => i.trip_id === trip.id),
+        }));
+        return res.status(200).json(result);
+      }
+
+      return res.status(400).json({ error: 'invalid type' });
     }
-  }
-  if (pill) {
-    pill.classList.toggle('collapsed', collapsed);
-    pill.innerHTML = `<span class="arrow">▼</span>${collapsed ? 'Mở' : 'Thu'}`;
-  }
-}
 
-// ── DRAG & DROP (desktop + mobile touch) ─────────────────────
-let _dragId = null, _dragCat = null;
-let _touchDragEl = null, _touchClone = null, _touchOffX = 0, _touchOffY = 0;
+    // ══ POST ══════════════════════════════════════════════════════
+    if (req.method === 'POST') {
+      const body = req.body || {};
 
-// ── Desktop (HTML5 drag) ──────────────────────────────────────
-function onDragStart(e, id, cat) {
-  _dragId = id; _dragCat = cat;
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', id);
-  setTimeout(() => document.getElementById('inv-'+id)?.classList.add('dragging'), 0);
-}
-function onDragEnd(e) {
-  document.querySelectorAll('.inv-item.dragging').forEach(el => el.classList.remove('dragging'));
-  document.querySelectorAll('.inv-item.drag-over').forEach(el => el.classList.remove('drag-over'));
-}
-function onDragOver(e, id, cat) {
-  if (_dragCat !== cat || _dragId === id) return;
-  e.preventDefault();
-  document.querySelectorAll('.inv-item.drag-over').forEach(el => el.classList.remove('drag-over'));
-  document.getElementById('inv-'+id)?.classList.add('drag-over');
-}
-function onDrop(e, targetId, cat) {
-  e.preventDefault();
-  document.querySelectorAll('.inv-item.drag-over').forEach(el => el.classList.remove('drag-over'));
-  if (!_dragId || _dragCat !== cat || _dragId === targetId) return;
-  reorderInventory(_dragId, targetId);
-  _dragId = null; _dragCat = null;
-}
+      // Add inventory item (master) + initial log entry
+      if (type === 'add_inventory_item') {
+        const { item, initialQty, note } = body;
+        if (!item?.id || !item?.name) return res.status(400).json({ error: 'item required' });
+        // Upsert master record — only send known DB columns
+        // Build row with only columns that exist in DB
+        // sort_order = timestamp ms → always unique, always newest last
+        const invRow = {
+          id:         item.id,
+          user_id:    userId,
+          name:       item.name,
+          unit:       item.unit     || 'g',
+          min_qty:    item.min_qty  || item.minQty || 0,
+          category:   item.category || 'other',
+          sort_order: Date.now(),
+          qty:        0,
+        };
+        if (item.emoji)  invRow.emoji  = item.emoji;
+        if (item.expiry) invRow.expiry = item.expiry;
+        await sbPost('inventory', invRow);
+        // Log initial quantity
+        if (initialQty && initialQty !== 0) {
+          await sbPost('inventory_log', {
+            user_id:   userId,
+            item_id:   item.id,
+            item_name: item.name,
+            unit:      item.unit || 'g',
+            delta:     Number(initialQty),
+            note:      note || 'Khởi tạo',
+          }, 'return=representation');
+        }
+        return res.status(200).json({ ok: true });
+      }
 
-// ── Mobile touch drag ─────────────────────────────────────────
-function onTouchStart(e, id, cat) {
-  // Only trigger on handle element
-  const handle = e.target.closest('.inv-drag-handle');
-  if (!handle) return;
-  e.preventDefault(); // prevent scroll
-  _dragId = id; _dragCat = cat;
-  _touchDragEl = document.getElementById('inv-'+id);
-  if (!_touchDragEl) return;
+      // Log a transaction (+ or -)
+      if (type === 'log_transaction') {
+        const { item_id, item_name, unit, delta, note } = body;
+        if (!item_id || delta === undefined) return res.status(400).json({ error: 'item_id and delta required' });
+        const entry = await sbPost('inventory_log', {
+          user_id: userId, item_id, item_name, unit: unit || 'g',
+          delta: Number(delta), note: note || '',
+        }, 'return=representation');
+        return res.status(200).json({ ok: true, entry: Array.isArray(entry) ? entry[0] : entry });
+      }
 
-  const touch = e.touches[0];
-  const rect = _touchDragEl.getBoundingClientRect();
-  _touchOffX = touch.clientX - rect.left;
-  _touchOffY = touch.clientY - rect.top;
+      // Update inventory master (name, unit, emoji, etc.) — NOT qty
+      if (type === 'update_inventory_item') {
+        const { id, ...fields } = body.item || {};
+        if (!id) return res.status(400).json({ error: 'item.id required' });
+        delete fields.qty; // never store qty in master
+        await sbPatch('inventory', `?id=eq.${id}&user_id=eq.${userId}`, fields);
+        return res.status(200).json({ ok: true });
+      }
 
-  // Create floating clone
-  _touchClone = _touchDragEl.cloneNode(true);
-  _touchClone.style.cssText = `position:fixed;z-index:9999;width:${rect.width}px;opacity:.85;pointer-events:none;transform:scale(1.02);box-shadow:0 8px 24px rgba(0,0,0,.3);border-color:var(--accent);transition:none;`;
-  _touchClone.style.left = (touch.clientX - _touchOffX) + 'px';
-  _touchClone.style.top  = (touch.clientY - _touchOffY) + 'px';
-  document.body.appendChild(_touchClone);
-  _touchDragEl.classList.add('dragging');
-}
+      // Delete inventory item + all its logs
+      if (type === 'delete_inventory_item') {
+        const { item_id } = body;
+        if (!item_id) return res.status(400).json({ error: 'item_id required' });
+        await sbDelete('inventory_log', `?item_id=eq.${item_id}&user_id=eq.${userId}`);
+        await sbDelete('inventory', `?id=eq.${item_id}&user_id=eq.${userId}`);
+        return res.status(200).json({ ok: true });
+      }
 
-function onTouchMove(e, cat) {
-  if (!_touchClone || _dragCat !== cat) return;
-  e.preventDefault();
-  const touch = e.touches[0];
-  _touchClone.style.left = (touch.clientX - _touchOffX) + 'px';
-  _touchClone.style.top  = (touch.clientY - _touchOffY) + 'px';
+      // Create shopping trip
+      if (type === 'create_trip') {
+        const { trip } = body;
+        if (!trip?.id) return res.status(400).json({ error: 'trip required' });
+        const saved = await sbPost('shopping_trips', { ...trip, user_id: userId });
+        return res.status(200).json({ ok: true, trip: Array.isArray(saved) ? saved[0] : saved });
+      }
 
-  // Find item under finger
-  _touchClone.style.display = 'none';
-  const el = document.elementFromPoint(touch.clientX, touch.clientY);
-  _touchClone.style.display = '';
-  const targetItem = el?.closest('.inv-item');
-  document.querySelectorAll('.inv-item.drag-over').forEach(x => x.classList.remove('drag-over'));
-  if (targetItem && targetItem !== _touchDragEl) targetItem.classList.add('drag-over');
-}
+      // Add item to trip
+      if (type === 'add_trip_item') {
+        const { item } = body;
+        if (!item?.id || !item?.trip_id) return res.status(400).json({ error: 'item required' });
+        const saved = await sbPost('shopping_items', { ...item, user_id: userId });
+        return res.status(200).json({ ok: true, item: Array.isArray(saved) ? saved[0] : saved });
+      }
 
-function onTouchEnd(e, cat) {
-  if (!_touchClone) return;
-  _touchClone.remove(); _touchClone = null;
-  if (_touchDragEl) _touchDragEl.classList.remove('dragging');
-  document.querySelectorAll('.inv-item.drag-over').forEach(el => {
-    el.classList.remove('drag-over');
-    const targetId = el.id.replace('inv-', '');
-    if (_dragId && targetId && _dragCat === cat && _dragId !== targetId) {
-      reorderInventory(_dragId, targetId);
+      // Mark item as bought → auto-log to inventory
+      if (type === 'mark_bought') {
+        const { item_id, trip_item } = body;
+        if (!item_id) return res.status(400).json({ error: 'item_id required' });
+        // Mark bought in shopping_items
+        await sbPatch('shopping_items',
+          `?id=eq.${item_id}&user_id=eq.${userId}`,
+          { bought: true, bought_at: new Date().toISOString() }
+        );
+        // Auto-log to inventory_log if linked to inventory item
+        if (trip_item?.inventory_item_id) {
+          await sbPost('inventory_log', {
+            user_id:   userId,
+            item_id:   trip_item.inventory_item_id,
+            item_name: trip_item.name,
+            unit:      trip_item.unit || 'g',
+            delta:     Number(trip_item.qty),
+            note:      `Mua ${trip_item.qty}${trip_item.unit} — ${trip_item.trip_note || ''}`.trim(),
+          }, 'return=representation');
+        }
+        return res.status(200).json({ ok: true });
+      }
+
+      // Update trip status
+      if (type === 'update_trip') {
+        const { trip_id, ...fields } = body;
+        if (!trip_id) return res.status(400).json({ error: 'trip_id required' });
+        await sbPatch('shopping_trips', `?id=eq.${trip_id}&user_id=eq.${userId}`, fields);
+        return res.status(200).json({ ok: true });
+      }
+
+      // Delete trip (cascades to items)
+      if (type === 'delete_trip') {
+        const { trip_id } = body;
+        if (!trip_id) return res.status(400).json({ error: 'trip_id required' });
+        await sbDelete('shopping_trips', `?id=eq.${trip_id}&user_id=eq.${userId}`);
+        return res.status(200).json({ ok: true });
+      }
+
+      // Delete shopping item
+      if (type === 'delete_trip_item') {
+        const { item_id } = body;
+        if (!item_id) return res.status(400).json({ error: 'item_id required' });
+        await sbDelete('shopping_items', `?id=eq.${item_id}&user_id=eq.${userId}`);
+        return res.status(200).json({ ok: true });
+      }
+
+      // Bulk update sort_order — single upsert call instead of N patches
+      if (type === 'update_sort_order') {
+        const { items } = body;
+        if (!Array.isArray(items) || items.length === 0) {
+          return res.status(400).json({ error: 'items[] required' });
+        }
+        const rows = items.map(({ id, sort_order }) => ({ id, user_id: userId, sort_order }));
+        await sbPost('inventory', rows, 'resolution=merge-duplicates');
+        return res.status(200).json({ ok: true, updated: items.length });
+      }
+
+      return res.status(400).json({ error: 'unknown type: ' + type });
     }
-  });
-  _dragId = null; _dragCat = null; _touchDragEl = null;
-}
 
-function reorderInventory(dragId, targetId) {
-  const di = inventory.findIndex(i => i.id === dragId);
-  const ti = inventory.findIndex(i => i.id === targetId);
-  if (di < 0 || ti < 0) return;
-  const [moved] = inventory.splice(di, 1);
-  inventory.splice(ti, 0, moved);
-  inventory.forEach((item, idx) => { item.sort_order = idx; });
-  renderInv();
-  saveSortOrder();
-}
-let _sortTimer;
-function saveSortOrder() {
-  clearTimeout(_sortTimer);
-  _sortTimer = setTimeout(async () => {
-    try {
-      await apiCall('POST', { type:'update_sort_order', items: inventory.map((it,i) => ({id:it.id, sort_order:i})) });
-    } catch(e) { console.warn('saveSortOrder:', e.message); }
-  }, 800);
-}
+    return res.status(405).json({ error: 'Method not allowed' });
 
-// ── BUILD ITEM HTML ──────────────────────────────────────────
-function buildInvItem(item, cat) {
-  const isOut = item.qty <= 0;
-  const isLow = !isOut && item.qty <= (item.minQty||item.min_qty||0);
-  const qc = isOut?'empty':isLow?'low':'ok';
-  const ic = isOut?'out-of-stock':isLow?'low-stock':'';
-  let exp = '';
-  if (item.expiry) {
-    const d = Math.ceil((new Date(item.expiry)-new Date())/86400000);
-    exp = `<span class="inv-expiry ${d<=2?'expiring':''}">${d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày'}</span>`;
+  } catch (err) {
+    console.error('[ledger]', type, err.message);
+    return res.status(500).json({ error: err.message });
   }
-  const sid = item.id.replace(/'/g,"\\'");
-  const sname = item.name.replace(/'/g,"\\'");
-  return `<div class="inv-item ${ic}" id="inv-${item.id}"
-    draggable="true"
-    ondragstart="onDragStart(event,'${sid}','${cat}')"
-    ondragend="onDragEnd(event)"
-    ondragover="onDragOver(event,'${sid}','${cat}')"
-    ondrop="onDrop(event,'${sid}','${cat}')"
-    ontouchmove="onTouchMove(event,'${cat}')"
-    ontouchend="onTouchEnd(event,'${cat}')">
-    <span class="inv-drag-handle"
-      ontouchstart="onTouchStart(event,'${sid}','${cat}')"
-      title="Kéo để sắp xếp">⠿</span>
-    <span class="inv-icon" onclick="showItemLog('${sid}','${sname}')" style="cursor:pointer" title="Xem lịch sử">${item.emoji||'🍱'}</span>
-    <div class="inv-info">
-      <div class="inv-name">${item.name}</div>
-      <div class="inv-meta">
-        <span class="inv-qty ${qc}">${fmtQty(item.qty)}${item.unit}</span>
-        ${isLow?'<span style="font-size:.65rem;color:var(--amber)">⚠ Sắp hết</span>':''}
-        ${isOut?'<span style="font-size:.65rem;color:var(--red)">✕ Hết rồi</span>':''}
-        ${exp}
-      </div>
-    </div>
-    <div class="inv-controls">
-      <button class="inv-btn minus" onclick="openAdjustModal('${sid}','minus')">−</button>
-      <button class="inv-btn plus"  onclick="openAdjustModal('${sid}','plus')">+</button>
-      <button class="inv-btn delete" onclick="deleteInvItem('${sid}')">🗑</button>
-    </div>
-  </div>`;
-}
-
-// ── RENDER INVENTORY ─────────────────────────────────────────
-function renderInv() {
-  const el = document.getElementById('invList');
-  updateSummary();
-  let items = [...inventory].sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
-  if (invFilter==='ok')  items = items.filter(i=>i.qty>(i.minQty||0));
-  if (invFilter==='low') items = items.filter(i=>i.qty>0&&i.qty<=(i.minQty||0));
-  if (invFilter==='out') items = items.filter(i=>i.qty<=0);
-  if (!items.length) {
-    el.innerHTML = `<div class="fridge-empty"><div class="ei">${invFilter!=='all'?'🔍':'🧊'}</div><p>${invFilter!=='all'?'Không có món nào':'Chưa có gì trong tủ lạnh<br>Bấm "+ Thêm" để bắt đầu'}</p></div>`;
-    return;
-  }
-  const CM = {meat:{i:'🥩',l:'Thịt & Cá'},veg:{i:'🥦',l:'Rau củ'},fruit:{i:'🍎',l:'Trái cây'},dairy:{i:'🥛',l:'Trứng & Sữa'},other:{i:'📦',l:'Khác'}};
-  const catOrder = ['meat','veg','fruit','dairy','other'];
-  const grouped = {};
-  items.forEach(item => { const c=item.category||'other'; if(!grouped[c])grouped[c]=[]; grouped[c].push(item); });
-  let out = '';
-  catOrder.forEach(cat => {
-    if (!grouped[cat]?.length) return;
-    const m = CM[cat];
-    const collapsed = collapsedCats.has(cat);
-    out += `<div class="cat-group">
-      <div class="cat-header" onclick="toggleCat('${cat}')">
-        <span class="cat-header-icon">${m.i}</span>
-        <span class="cat-header-label">${m.l}</span>
-        <span class="cat-header-count">${grouped[cat].length}</span>
-        <span class="cat-toggle${collapsed?' collapsed':''}" id="cat-chev-${cat}">
-          <span class="arrow">▼</span>
-          ${collapsed?'Mở':'Thu'}
-        </span>
-      </div>
-      <div class="cat-items" id="cat-items-${cat}" style="max-height:${collapsed?'0':'none'};overflow:hidden;transition:max-height .25s ease;">
-        ${grouped[cat].map(item=>buildInvItem(item,cat)).join('')}
-      </div>
-    </div>`;
-  });
-  el.innerHTML = out;
-}
-async function showItemLog(itemId, itemName) {
-  openModalFn();
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title">📋 ${itemName}</div>
-    <div id="logList" style="max-height:280px;overflow-y:auto"><div style="text-align:center;padding:20px;color:var(--text3)">Đang tải...</div></div>`;
-  try {
-    const logs = await apiCall('GET', null, `?type=inventory_log&item_id=${encodeURIComponent(itemId)}`);
-    if (!logs.length) { document.getElementById('logList').innerHTML='<div style="text-align:center;padding:20px;color:var(--text3)">Chưa có giao dịch nào</div>'; return; }
-    let running = 0;
-    const sorted = [...logs].reverse();
-    const rows = sorted.map(log => {
-      running += Number(log.delta);
-      const isPos = log.delta > 0;
-      const dt = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:.9rem">${isPos?'➕':'➖'}</span>
-        <div style="flex:1">
-          <div style="font-size:.82rem;font-weight:600;color:${isPos?'var(--accent)':'var(--red)'}">${isPos?'+':''}${fmtQty(log.delta)}${log.unit}</div>
-          <div style="font-size:.7rem;color:var(--text3)">${log.note||'—'} · ${dt}</div>
-        </div>
-        <div style="font-size:.8rem;font-weight:700;color:var(--text2);min-width:50px;text-align:right">= ${fmtQty(running)}${log.unit}</div>
-      </div>`;
-    });
-    document.getElementById('logList').innerHTML = rows.reverse().join('');
-  } catch(e) { document.getElementById('logList').innerHTML=`<div style="color:var(--red);padding:12px">Lỗi: ${e.message}</div>`; }
-}
-
-function openAdjustModal(id, mode) {
-  window._selectedQuickAdj = null;
-  const item = inventory.find(i => i.id === id);
-  if (!item) return;
-  adjustTarget = item; adjustMode = mode;
-  const isGram = ['g','kg','gram'].includes((item.unit||'g').toLowerCase());
-  const quickAmts = isGram ? [10,50,100,200] : [1,2,3,5];
-  const sign = mode==='minus' ? '-' : '+';
-  const color = mode==='minus' ? 'var(--red)' : 'var(--accent)';
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title" style="color:${color}">${mode==='minus'?'− Lấy ra':'+ Thêm vào'}</div>
-    <div class="adjust-food-name">${item.emoji||'🍱'} ${item.name}</div>
-    <div class="adjust-current">Hiện có: <strong style="color:var(--accent)">${fmtQty(item.qty)}${item.unit}</strong></div>
-    <div class="adjust-quick">${quickAmts.map(a=>`<button class="adj-quick-btn" onclick="selectQuickAdj(${a},this)">${sign}${fmtQty(a)}</button>`).join('')}</div>
-    <div class="adjust-custom">
-      <input type="number" class="adj-custom-input" id="adjCustom" placeholder="Nhập số khác" min="0" oninput="updateAdjPreview()">
-      <span class="adj-unit-label">${item.unit}</span>
-    </div>
-    <div class="modal-field" style="margin-top:8px">
-      <div class="modal-label">Ghi chú (tuỳ chọn)</div>
-      <input class="modal-input" id="adjNote" placeholder="${mode==='minus'?'vd: Nấu canh':'vd: Mua thêm'}">
-    </div>
-    <div class="adj-result-preview" id="adjPreview">Chọn số lượng</div>
-    <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
-      <button class="modal-btn confirm" style="background:${color};color:#fff" onclick="confirmAdjust()">Xác nhận</button>
-    </div>`;
-  openModalFn();
-}
-
-function selectQuickAdj(amt, el) {
-  window._selectedQuickAdj = amt;
-  document.getElementById('adjCustom').value = '';
-  document.querySelectorAll('.adj-quick-btn').forEach(b => b.classList.remove('selected'));
-  if (el) el.classList.add('selected');
-  updateAdjPreview();
-}
-
-function updateAdjPreview() {
-  const cv = parseFloat(document.getElementById('adjCustom')?.value);
-  if (!isNaN(cv) && cv > 0) window._selectedQuickAdj = cv;
-  const amt = window._selectedQuickAdj;
-  const p = document.getElementById('adjPreview');
-  if (!p || !adjustTarget || !amt) { if(p) p.textContent='Chọn số lượng'; return; }
-  const nq = adjustMode==='minus' ? Math.max(0,adjustTarget.qty-amt) : adjustTarget.qty+amt;
-  p.innerHTML = `${fmtQty(adjustTarget.qty)}${adjustTarget.unit} → <span>${fmtQty(nq)}${adjustTarget.unit}</span>`;
-}
-
-async function confirmAdjust() {
-  const cv = parseFloat(document.getElementById('adjCustom')?.value);
-  if (!isNaN(cv) && cv > 0) window._selectedQuickAdj = cv;
-  const amt = window._selectedQuickAdj;
-  if (!amt || !adjustTarget) { showToast('Chọn số lượng trước!', false); return; }
-  const note = document.getElementById('adjNote')?.value.trim() || '';
-  const delta = adjustMode==='minus' ? -amt : amt;
-  try {
-    await apiCall('POST', { type:'log_transaction', item_id:adjustTarget.id, item_name:adjustTarget.name, unit:adjustTarget.unit, delta, note });
-    const item = inventory.find(i => i.id===adjustTarget.id);
-    if (item) item.qty = Math.max(0, item.qty + delta);
-    window._selectedQuickAdj = null;
-    closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
-    showToast(`✓ ${adjustMode==='minus'?'Đã lấy':'Đã thêm'} ${fmtQty(amt)}${adjustTarget.unit} ${adjustTarget.name}`, true);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-const CATEGORY_OPTIONS = [{v:'meat',l:'🥩 Thịt & Cá'},{v:'veg',l:'🥦 Rau củ'},{v:'fruit',l:'🍎 Trái cây'},{v:'dairy',l:'🥛 Trứng & Sữa'},{v:'other',l:'📦 Khác'}];
-const UNIT_OPTIONS = ['g','kg','cái','hộp','túi','chai','lon','bó','quả','ml','L'];
-const catEmoji = {meat:'🥩',veg:'🥦',fruit:'🍎',dairy:'🥛',other:'📦'};
-
-function openAddInventoryModal(prefill) {
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title">+ Thêm vào tủ lạnh</div>
-    <div class="modal-field"><div class="modal-label">Tên đồ ăn</div>
-      <input class="modal-input" id="invName" placeholder="vd: Cá hồi, Trứng gà..." value="${prefill||''}"></div>
-    <div class="modal-row">
-      <div class="modal-field"><div class="modal-label">Số lượng hiện có</div>
-        <input type="number" class="modal-input" id="invQty" placeholder="500" min="0"></div>
-      <div class="modal-field"><div class="modal-label">Đơn vị</div>
-        <select class="modal-input" id="invUnit">${UNIT_OPTIONS.map(u=>`<option>${u}</option>`).join('')}</select></div>
-    </div>
-    <div class="modal-row">
-      <div class="modal-field"><div class="modal-label">Báo sắp hết khi còn</div>
-        <input type="number" class="modal-input" id="invMin" placeholder="100" min="0"></div>
-      <div class="modal-field"><div class="modal-label">Danh mục</div>
-        <select class="modal-input" id="invCat">${CATEGORY_OPTIONS.map(c=>`<option value="${c.v}">${c.l}</option>`).join('')}</select></div>
-    </div>
-    <div class="modal-row">
-      <div class="modal-field"><div class="modal-label">Emoji</div>
-        <input class="modal-input" id="invEmoji" placeholder="🥩" maxlength="4"></div>
-      <div class="modal-field"><div class="modal-label">Hạn dùng</div>
-        <input type="date" class="modal-input" id="invExpiry"></div>
-    </div>
-    <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
-      <button class="modal-btn confirm" onclick="confirmAddInv()">Thêm vào tủ</button>
-    </div>`;
-  openModalFn();
-}
-
-async function confirmAddInv() {
-  const name   = document.getElementById('invName').value.trim();
-  const qty    = parseFloat(document.getElementById('invQty').value) || 0;
-  const unit   = document.getElementById('invUnit').value;
-  const minQty = parseFloat(document.getElementById('invMin').value) || 0;
-  const cat    = document.getElementById('invCat').value;
-  const emoji  = document.getElementById('invEmoji').value.trim() || catEmoji[cat] || '🍱';
-  const expiry = document.getElementById('invExpiry').value || null;
-  if (!name) { showToast('Nhập tên đồ ăn!', false); return; }
-  const item = { id: Date.now().toString(), name, unit, min_qty: minQty, minQty, category: cat, emoji, expiry, qty: 0 };
-  try {
-    await apiCall('POST', { type:'add_inventory_item', item, initialQty: qty, note:'Khởi tạo' });
-    item.qty = qty;
-    inventory.push(item);
-    fridgeLoaded = true; // mark loaded so renderFridge won't reload and wipe state
-    closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
-    showToast(`✓ Đã thêm ${name}`, true);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-async function deleteInvItem(id) {
-  const item = inventory.find(i => i.id === id);
-  if (!item || !confirm(`Xóa "${item.name}" và toàn bộ lịch sử?`)) return;
-  try {
-    await apiCall('POST', { type:'delete_inventory_item', item_id: id });
-    inventory = inventory.filter(i => i.id !== id);
-    renderInv(); updateSummary(); updateFridgeBadge();
-    showToast(`🗑 Đã xóa ${item.name}`, true);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-function renderShop() {
-  const el = document.getElementById('shopList');
-  if (!trips.length) {
-    el.innerHTML = '<div class="fridge-empty"><div class="ei">🛍️</div><p>Chưa có chuyến đi chợ<br>Bấm "+ Chuyến mới" để bắt đầu</p></div>';
-    return;
-  }
-  const today = new Date().toISOString().slice(0,10);
-  el.innerHTML = trips.map(trip => {
-    const items = trip.items || [];
-    const bought = items.filter(i => i.bought).length;
-    const done = trip.status==='done' || (items.length > 0 && bought===items.length);
-    const dt = trip.trip_date ? new Date(trip.trip_date+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}) : 'Chưa định ngày';
-    const isToday = trip.trip_date === today;
-    const badgeCls = done?'badge-today':isToday?'badge-soon':'badge-later';
-    const tId = trip.id.replace(/'/g,"\\'");
-    return `<div class="shop-date-group">
-      <div class="shop-date-label" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        📅 ${trip.note||'Chuyến chợ '+dt}
-        <span class="shop-date-badge ${badgeCls}">${done?'✓ Xong':isToday?'Hôm nay':dt}</span>
-        <span class="shop-date-badge badge-later">${bought}/${items.length} món</span>
-        <button onclick="deleteTripModal('${tId}')" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 6px">🗑</button>
-      </div>
-      ${items.map(item => {
-        const iId = item.id.replace(/'/g,"\\'");
-        return `<div class="shop-item" style="${item.bought?'opacity:.55':''}">
-          <div class="shop-check" onclick="markBought('${iId}','${tId}')" style="${item.bought?'background:var(--accent);color:#000':''}">${item.bought?'✓':''}</div>
-          <div class="shop-item-info">
-            <div class="shop-item-name">${item.emoji||'🛍'} ${item.name}</div>
-            ${item.note?`<div class="shop-item-meta">${item.note}</div>`:''}
-            ${item.bought&&item.bought_at?`<div class="shop-item-meta">✓ ${new Date(item.bought_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
-          </div>
-          <span class="shop-item-qty">${fmtQty(item.qty)}${item.unit}</span>
-          <button class="shop-del" onclick="deleteTripItem('${iId}','${tId}')">✕</button>
-        </div>`;
-      }).join('')}
-      <button onclick="openAddTripItemModal('${tId}')" style="width:100%;margin-top:6px;padding:7px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.25);border-radius:9px;color:var(--accent);font-size:.75rem;cursor:pointer">+ Thêm món</button>
-    </div>`;
-  }).join('');
-}
-
-function openAddTripModal() {
-  const today = new Date().toISOString().slice(0,10);
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title">🛍️ Chuyến đi chợ mới</div>
-    <div class="modal-field"><div class="modal-label">Tên / Ghi chú</div>
-      <input class="modal-input" id="tripNote" placeholder="vd: Chợ cuối tuần, Siêu thị..."></div>
-    <div class="modal-field"><div class="modal-label">Ngày đi</div>
-      <input type="date" class="modal-input" id="tripDate" value="${today}"></div>
-    <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
-      <button class="modal-btn confirm" onclick="confirmAddTrip()">Tạo chuyến</button>
-    </div>`;
-  openModalFn();
-}
-
-async function confirmAddTrip() {
-  const note = document.getElementById('tripNote').value.trim();
-  const date = document.getElementById('tripDate').value;
-  const trip = { id: Date.now().toString(), trip_date: date||null, note, status:'pending', items:[] };
-  try {
-    await apiCall('POST', { type:'create_trip', trip });
-    trips.unshift(trip);
-    closeModal();
-    setFridgeTab('shop', document.getElementById('ftab-shop'));
-    renderShop();
-    showToast('✓ Đã tạo chuyến', true);
-    setTimeout(() => openAddTripItemModal(trip.id), 300);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-function openAddTripItemModal(tripId) {
-  const tId = tripId.replace(/'/g,"\\'");
-  document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title">+ Thêm món cần mua</div>
-    <div class="modal-field"><div class="modal-label">Tên đồ ăn</div>
-      <input class="modal-input" id="siName" placeholder="vd: Gà ta, Rau muống..."></div>
-    <div class="modal-row">
-      <div class="modal-field"><div class="modal-label">Số lượng</div>
-        <input type="number" class="modal-input" id="siQty" value="1" min="0"></div>
-      <div class="modal-field"><div class="modal-label">Đơn vị</div>
-        <select class="modal-input" id="siUnit">${UNIT_OPTIONS.map(u=>`<option>${u}</option>`).join('')}</select></div>
-    </div>
-    <div class="modal-field"><div class="modal-label">Ghi chú</div>
-      <input class="modal-input" id="siNote" placeholder="vd: Mua loại tươi"></div>
-    <div class="modal-field"><div class="modal-label">Emoji</div>
-      <input class="modal-input" id="siEmoji" placeholder="🛍" maxlength="4"></div>
-    <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
-      <button class="modal-btn confirm" onclick="confirmAddTripItem('${tId}')">Thêm vào list</button>
-    </div>`;
-  openModalFn();
-}
-
-async function confirmAddTripItem(tripId) {
-  const name  = document.getElementById('siName').value.trim();
-  const qty   = parseFloat(document.getElementById('siQty').value) || 1;
-  const unit  = document.getElementById('siUnit').value;
-  const note  = document.getElementById('siNote').value.trim();
-  const emoji = document.getElementById('siEmoji').value.trim() || '🛍';
-  if (!name) { showToast('Nhập tên đồ ăn!', false); return; }
-  const item = { id: Date.now().toString(), trip_id: tripId, name, qty, unit, note, emoji, bought: false };
-  try {
-    await apiCall('POST', { type:'add_trip_item', item });
-    const trip = trips.find(t => t.id === tripId);
-    if (trip) { if (!trip.items) trip.items=[]; trip.items.push(item); }
-    closeModal(); renderShop();
-    showToast(`✓ Đã thêm ${name}`, true);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-async function markBought(itemId, tripId) {
-  const trip = trips.find(t => t.id===tripId);
-  const item = trip?.items?.find(i => i.id===itemId);
-  if (!item || item.bought) return;
-  try {
-    await apiCall('POST', { type:'mark_bought', item_id: itemId, trip_item: item });
-    item.bought = true; item.bought_at = new Date().toISOString();
-    renderShop();
-    showToast(`✓ Đã mua ${item.name}`, true);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-async function deleteTripItem(itemId, tripId) {
-  try {
-    await apiCall('POST', { type:'delete_trip_item', item_id: itemId });
-    const trip = trips.find(t => t.id===tripId);
-    if (trip) trip.items = (trip.items||[]).filter(i => i.id!==itemId);
-    renderShop();
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-async function deleteTripModal(tripId) {
-  if (!confirm('Xóa chuyến đi chợ này?')) return;
-  try {
-    await apiCall('POST', { type:'delete_trip', trip_id: tripId });
-    trips = trips.filter(t => t.id!==tripId);
-    renderShop(); showToast('🗑 Đã xóa', true);
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-// ─── MODAL HELPERS ────────────────────────────
-function openModalFn() {
-  document.getElementById('modalOverlay').classList.add('show');
-}
-function closeModalFn() {
-  document.getElementById('modalOverlay').classList.remove('show');
-  window._selectedQuickAdj = null;
-}
-function closeModal(e) {
-  if (!e || e.target === document.getElementById('modalOverlay')) closeModalFn();
-}
-
-// ─── TOAST ────────────────────────────────────
-let _toastTimer;
-function showToast(msg, ok) {
-  const t = document.getElementById('toast');
-  clearTimeout(_toastTimer);
-  t.textContent = msg;
-  t.className = 'toast show' + (ok ? ' success' : '');
-  _toastTimer = setTimeout(() => { t.className = 'toast'; }, 2500);
-}
-
-</script>
-</body>
-</html>
+};
