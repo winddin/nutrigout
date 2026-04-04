@@ -1202,6 +1202,7 @@ function openModal(html) {
 function closeModal(e) {
   if (!e || e.target === document.getElementById('modalOverlay')) {
     document.getElementById('modalOverlay').classList.remove('show');
+    if (typeof _selectedQuickAdj !== 'undefined') _selectedQuickAdj = null;
   }
 }
 
@@ -1787,7 +1788,7 @@ function openAdjustModal(id, mode) {
     </div>
     <div class="adj-result-preview" id="adjPreview">Chọn số lượng</div>
     <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModalFn()">Hủy</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
       <button class="modal-btn confirm" style="background:${color};color:#fff" onclick="confirmAdjust()">Xác nhận</button>
     </div>`;
   openModalFn();
@@ -1828,7 +1829,7 @@ async function confirmAdjust() {
     showToast(`✓ Đã thêm ${amt}${item.unit} ${item.name}`, true);
   }
   _selectedQuickAdj = null;
-  closeModalFn();
+  closeModal();
   await saveInventory();
   renderInv();
   updateFridgeBadge();
@@ -1885,7 +1886,7 @@ function openAddInventoryModal(prefillName) {
       <input class="modal-input" id="invEmoji" placeholder="🥩 🐟 🥦 ..." maxlength="4">
     </div>
     <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModalFn()">Hủy</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
       <button class="modal-btn confirm" onclick="confirmAddInv()">Thêm vào tủ</button>
     </div>`;
   openModalFn();
@@ -1902,7 +1903,7 @@ async function confirmAddInv() {
   if (!name) { showToast('Nhập tên đồ ăn đi!', false); return; }
   const item = { id: Date.now().toString(), name, qty, unit, minQty: minQ, expiry, category: cat, emoji };
   inventory.push(item);
-  closeModalFn();
+  closeModal();
   await saveInventory();
   renderInv();
   updateFridgeBadge();
@@ -1958,7 +1959,7 @@ function openAddShopModal() {
       <input class="modal-input" id="shopEmoji" placeholder="🛍" maxlength="4">
     </div>
     <div class="modal-btn-row">
-      <button class="modal-btn cancel" onclick="closeModalFn()">Hủy</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
       <button class="modal-btn confirm" onclick="confirmAddShop()">Thêm vào list</button>
     </div>`;
   openModalFn();
@@ -1974,7 +1975,7 @@ async function confirmAddShop() {
   if (!name) { showToast('Nhập tên đồ ăn đi!', false); return; }
   const item = { id: Date.now().toString(), name, qty, unit, shopDate: date, note, emoji };
   shopping.push(item);
-  closeModalFn();
+  closeModal();
   await saveShopping();
   renderShop();
   showToast(`✓ Đã thêm ${name} vào danh sách mua`, true);
@@ -2028,7 +2029,7 @@ async function markBought(id) {
         </div>
       </div>
       <div class="modal-btn-row">
-        <button class="modal-btn cancel" onclick="closeModalFn()">Hủy</button>
+        <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
         <button class="modal-btn confirm" onclick="confirmMarkBought('${id}','${item.name}','${item.emoji}')">✓ Thêm vào tủ lạnh</button>
       </div>`;
     openModalFn();
@@ -2042,7 +2043,7 @@ async function confirmMarkBought(shopId, name, emoji) {
   const cat   = document.getElementById('boughtCat').value;
   inventory.push({ id: Date.now().toString(), name, qty, unit, minQty: minQ, expiry: null, category: cat, emoji });
   shopping = shopping.filter(i => i.id !== shopId);
-  closeModalFn();
+  closeModal();
   await saveInventory();
   await saveShopping();
   renderInv();
@@ -2065,10 +2066,7 @@ function openModalFn() {
 }
 function closeModalFn() {
   document.getElementById('modalOverlay').classList.remove('show');
-  _selectedQuickAdj = null;
-}
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalFn();
+  if (typeof _selectedQuickAdj !== 'undefined') _selectedQuickAdj = null;
 }
 
 // ─── TOAST ────────────────────────────────────
