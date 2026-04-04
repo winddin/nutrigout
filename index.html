@@ -604,7 +604,6 @@ let rankOpenRow = null;
 let fridgeTab = 'inv';
 let fridgeLoaded = false;
 let inventory = [];
-let shopping  = [];
 let adjustTarget = null;
 let adjustMode = 'minus';
 let invFilter = 'all';
@@ -671,15 +670,13 @@ function handleSignedIn(user) {
   // Reset fridge so it reloads with correct user data
   fridgeLoaded = false;
   inventory = [];
-  shopping = [];
-}
+  }
 
 function handleSignedOut() {
   currentUser = null;
   fridgeLoaded = false;
   inventory = [];
-  shopping = [];
-  showAuthGate();
+    showAuthGate();
 }
 
 async function signInWithGoogle() {
@@ -698,8 +695,6 @@ async function signInWithGoogle() {
       provider: 'google',
       options: { redirectTo }
     });
-
-    console.log('OAuth result:', data, error);
 
     if (error) {
       alert('Lỗi đăng nhập: ' + error.message);
@@ -1295,9 +1290,16 @@ function toggleRow(rid) {
 }
 
 
-// ═══════════════════════════════════════════════════════════════════
-// FRIDGE & SHOPPING — API-backed with KV storage
-// ══════════════════════════════════════════════
+// ─── UTILITIES ──────────────────────────────────────────────────────
+function fmtQty(n) {
+  const num = Number(n);
+  if (isNaN(num)) return '0';
+  return Number.isInteger(num)
+    ? num.toLocaleString('en-US')
+    : num.toLocaleString('en-US', {maximumFractionDigits: 1});
+}
+
+// ─── FRIDGE & SHOPPING ──────────────────────────────────────────────
 
 const LEDGER_API = '/api/ledger';
 let trips = [];
@@ -1468,7 +1470,7 @@ function openAdjustModal(id, mode) {
     <div class="modal-title" style="color:${color}">${mode==='minus'?'− Lấy ra':'+ Thêm vào'}</div>
     <div class="adjust-food-name">${item.emoji||'🍱'} ${item.name}</div>
     <div class="adjust-current">Hiện có: <strong style="color:var(--accent)">${fmtQty(item.qty)}${item.unit}</strong></div>
-    <div class="adjust-quick">${quickAmts.map(a=>`<button class="adj-quick-btn" onclick="selectQuickAdj(${a})">${sign}${fmtQty(a)}</button>`).join('')}</div>
+    <div class="adjust-quick">${quickAmts.map(a=>`<button class="adj-quick-btn" onclick="selectQuickAdj(${a},this)">${sign}${fmtQty(a)}</button>`).join('')}</div>
     <div class="adjust-custom">
       <input type="number" class="adj-custom-input" id="adjCustom" placeholder="Nhập số khác" min="0" oninput="updateAdjPreview()">
       <span class="adj-unit-label">${item.unit}</span>
@@ -1485,11 +1487,11 @@ function openAdjustModal(id, mode) {
   openModalFn();
 }
 
-function selectQuickAdj(amt) {
+function selectQuickAdj(amt, el) {
   window._selectedQuickAdj = amt;
   document.getElementById('adjCustom').value = '';
   document.querySelectorAll('.adj-quick-btn').forEach(b => b.classList.remove('selected'));
-  event.target.classList.add('selected');
+  if (el) el.classList.add('selected');
   updateAdjPreview();
 }
 
@@ -1525,7 +1527,6 @@ const UNIT_OPTIONS = ['g','kg','cái','hộp','túi','chai','lon','bó','quả',
 const catEmoji = {meat:'🥩',veg:'🥦',fruit:'🍎',dairy:'🥛',other:'📦'};
 
 function openAddInventoryModal(prefill) {
-  window._selectedQuickAdj = null;
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-title">+ Thêm vào tủ lạnh</div>
     <div class="modal-field"><div class="modal-label">Tên đồ ăn</div>
