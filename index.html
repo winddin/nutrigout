@@ -1318,7 +1318,15 @@ async function renderFridge() {
 }
 
 async function apiCall(method, body, qs = '') {
-  const headers = await getAuthHeaders();
+  // Get token directly from sbClient (no dependency on getAuthHeaders)
+  let token = '';
+  try {
+    if (initSupabase()) {
+      const { data: { session } } = await sbClient.auth.getSession();
+      token = session?.access_token || '';
+    }
+  } catch(e) { console.warn('apiCall: could not get token', e.message); }
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
   const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
   const r = await fetch(LEDGER_API + qs, opts);
