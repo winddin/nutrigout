@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
@@ -14,6 +13,19 @@
   --r:14px;--rr:20px;
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
+/* ── LIGHT THEME ── */
+.light{
+  --bg:#f4f6f9;--card:#ffffff;--card2:#f0f2f5;--border:#e1e5eb;
+  --accent:#16a34a;--amber:#d97706;--red:#dc2626;--blue:#2563eb;
+  --text:#111827;--text2:#4b5563;--text3:#9ca3af;
+}
+.light body{background:var(--bg);}
+.light .bottom-nav{background:rgba(244,246,249,.97);}
+.light #authGate{background:var(--bg);}
+.light .app-header{background:var(--bg);}
+/* Theme toggle button */
+.theme-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:var(--card2);color:var(--text2);font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;overflow:hidden;background:var(--bg);}
 body{font-family:'Inter',sans-serif;color:var(--text);display:flex;flex-direction:column;}
@@ -21,19 +33,19 @@ button{font-family:'Inter',sans-serif;}
 
 /* APP */
 #app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;width:100%;}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(70px + var(–safe-bottom));}
-@media(min-width:480px){#app{border-left:1px solid var(–border);border-right:1px solid var(–border);}
-.bottom-nav{width:480px;}}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(70px + var(--safe-bottom));}
+@media(min-width:480px){#app{border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  .bottom-nav{width:480px;}}
 
 /* HEADER */
-.app-header{flex-shrink:0;padding:14px 18px 10px;background:var(–bg);border-bottom:1px solid var(–border);}
-.app-header h1{font-size:1.15rem;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(–accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline;}
-.header-sub{font-size:.68rem;color:var(–text3);margin-top:2px;}
+.app-header{flex-shrink:0;padding:14px 18px 10px;background:var(--bg);border-bottom:1px solid var(--border);}
+.app-header h1{font-size:1.15rem;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline;}
+.header-sub{font-size:.68rem;color:var(--text3);margin-top:2px;}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(13,17,23,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(–border);display:flex;padding:6px 0 calc(6px + var(–safe-bottom));z-index:100;}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;cursor:pointer;border:none;background:none;color:var(–text3);transition:color .15s;}
-.nav-item.active{color:var(–accent);}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(13,17,23,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));z-index:100;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;cursor:pointer;border:none;background:none;color:var(--text3);transition:color .15s;}
+.nav-item.active{color:var(--accent);}
 .nav-icon{font-size:1.3rem;line-height:1;}
 .nav-label{font-size:.6rem;font-weight:600;letter-spacing:.02em;}
 
@@ -44,32 +56,32 @@ button{font-family:'Inter',sans-serif;}
 
 /* ─── SEARCH SCREEN ─── */
 .search-bar{position:relative;margin-bottom:14px;}
-.search-bar input{width:100%;background:var(–card);border:1.5px solid var(–border);border-radius:50px;padding:12px 52px 12px 18px;color:var(–text);font-size:.92rem;font-family:‘Inter’,sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
-.search-bar input:focus{border-color:var(–accent);box-shadow:0 0 0 3px rgba(74,222,128,.1);}
-.search-bar input::placeholder{color:var(–text3);}
-.sbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(–accent);border:none;border-radius:50px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:opacity .15s;}
+.search-bar input{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:50px;padding:12px 52px 12px 18px;color:var(--text);font-size:.92rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;}
+.search-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(74,222,128,.1);}
+.search-bar input::placeholder{color:var(--text3);}
+.sbtn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--accent);border:none;border-radius:50px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;transition:opacity .15s;}
 .sbtn:active{opacity:.8;}
 
-.chips-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(–text3);margin-bottom:7px;font-weight:600;}
+.chips-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:7px;font-weight:600;}
 .chips-scroll{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 .chips-scroll::-webkit-scrollbar{display:none;}
-.chip{flex-shrink:0;padding:6px 13px;background:var(–card);border:1px solid var(–border);border-radius:50px;font-size:.78rem;color:var(–text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.chip:active{border-color:var(–accent);color:var(–accent);background:rgba(74,222,128,.08);}
+.chip{flex-shrink:0;padding:6px 13px;background:var(--card);border:1px solid var(--border);border-radius:50px;font-size:.78rem;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.chip:active{border-color:var(--accent);color:var(--accent);background:rgba(74,222,128,.08);}
 
 /* RESULT CARD */
-.result-card{background:var(–card);border:1px solid var(–border);border-radius:var(–rr);padding:18px;margin-top:14px;animation:slideUp .22s ease;}
+.result-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rr);padding:18px;margin-top:14px;animation:slideUp .22s ease;}
 @keyframes slideUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
-.ai-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:50px;padding:3px 10px;font-size:.67rem;color:var(–blue);margin-bottom:11px;}
+.ai-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);border-radius:50px;padding:3px 10px;font-size:.67rem;color:var(--blue);margin-bottom:11px;}
 .rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:14px;}
 .rc-name{font-size:1.2rem;font-weight:700;line-height:1.25;flex:1;}
-.rc-unit{font-size:.7rem;color:var(–text2);margin-top:3px;}
-.kcal-pill{background:linear-gradient(135deg,var(–amber),#d97706);color:#000;font-weight:800;font-size:.9rem;padding:6px 13px;border-radius:50px;white-space:nowrap;flex-shrink:0;}
+.rc-unit{font-size:.7rem;color:var(--text2);margin-top:3px;}
+.kcal-pill{background:linear-gradient(135deg,var(--amber),#d97706);color:#000;font-weight:800;font-size:.9rem;padding:6px 13px;border-radius:50px;white-space:nowrap;flex-shrink:0;}
 .macro-row{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px;}
-.macro-card{background:var(–card2);border-radius:11px;padding:11px;text-align:center;border:1px solid var(–border);}
-.mc-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(–text3);margin-bottom:3px;font-weight:600;}
+.macro-card{background:var(--card2);border-radius:11px;padding:11px;text-align:center;border:1px solid var(--border);}
+.mc-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;font-weight:600;}
 .mc-val{font-size:1.15rem;font-weight:700;}
 .mc-pct{font-size:.65rem;margin-top:2px;font-weight:500;}
-.mc-bar{margin-top:5px;height:3px;background:var(–border);border-radius:3px;overflow:hidden;}
+.mc-bar{margin-top:5px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
 .mc-fill{height:100%;border-radius:3px;transition:width .7s ease;}
 .purin-box{border-radius:11px;padding:13px 15px;margin-bottom:11px;display:flex;align-items:center;gap:11px;}
 .purin-box.low{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);}
@@ -77,308 +89,307 @@ button{font-family:'Inter',sans-serif;}
 .purin-box.high{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);}
 .pb-icon{font-size:1.7rem;flex-shrink:0;}
 .pb-info{flex:1;min-width:0;}
-.pb-label{font-size:.6rem;text-transform:uppercase;color:var(–text3);letter-spacing:.06em;font-weight:600;}
+.pb-label{font-size:.6rem;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;font-weight:600;}
 .pb-val{font-size:.9rem;font-weight:700;margin:2px 0;}
-.purin-box.low .pb-val{color:var(–accent);}
-.purin-box.mid .pb-val{color:var(–amber);}
-.purin-box.high .pb-val{color:var(–red);}
-.pb-desc{font-size:.7rem;color:var(–text2);line-height:1.45;}
+.purin-box.low .pb-val{color:var(--accent);}
+.purin-box.mid .pb-val{color:var(--amber);}
+.purin-box.high .pb-val{color:var(--red);}
+.pb-desc{font-size:.7rem;color:var(--text2);line-height:1.45;}
 .pb-badge{padding:4px 10px;border-radius:50px;font-size:.68rem;font-weight:600;flex-shrink:0;}
-.badge-ok{background:rgba(74,222,128,.12);color:var(–accent);}
-.badge-mod{background:rgba(245,158,11,.12);color:var(–amber);}
-.badge-bad{background:rgba(248,113,113,.12);color:var(–red);}
-.tip-box{background:var(–card2);border-left:3px solid var(–accent);border-radius:0 10px 10px 0;padding:11px 13px;font-size:.78rem;color:var(–text2);line-height:1.55;}
-.tip-box strong{color:var(–text);}
+.badge-ok{background:rgba(74,222,128,.12);color:var(--accent);}
+.badge-mod{background:rgba(245,158,11,.12);color:var(--amber);}
+.badge-bad{background:rgba(248,113,113,.12);color:var(--red);}
+.tip-box{background:var(--card2);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:11px 13px;font-size:.78rem;color:var(--text2);line-height:1.55;}
+.tip-box strong{color:var(--text);}
 
 /* RATE LIMIT BANNER */
-.rl-banner{margin-top:10px;padding:10px 13px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:.74rem;color:var(–amber);display:none;line-height:1.5;}
+.rl-banner{margin-top:10px;padding:10px 13px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:.74rem;color:var(--amber);display:none;line-height:1.5;}
 .rl-banner.show{display:block;}
-.rl-remaining{margin-top:8px;padding:8px 12px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:9px;font-size:.7rem;color:var(–text3);}
-.rl-remaining span{color:var(–accent);font-weight:700;}
+.rl-remaining{margin-top:8px;padding:8px 12px;background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.15);border-radius:9px;font-size:.7rem;color:var(--text3);}
+.rl-remaining span{color:var(--accent);font-weight:700;}
 
 /* CROSSLINK */
-.crosslink-btn{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.2);border-radius:10px;font-size:.75rem;color:var(–accent);cursor:pointer;width:100%;transition:background .15s;}
+.crosslink-btn{margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.2);border-radius:10px;font-size:.75rem;color:var(--accent);cursor:pointer;width:100%;transition:background .15s;}
 .crosslink-btn:active{background:rgba(74,222,128,.12);}
 
 /* LOADING & EMPTY */
-.loading-wrap{text-align:center;padding:44px 20px;color:var(–text2);display:none;}
+.loading-wrap{text-align:center;padding:44px 20px;color:var(--text2);display:none;}
 .loading-wrap.show{display:block;}
-.spinner{width:30px;height:30px;border:3px solid var(–border);border-top-color:var(–accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 11px;}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;margin:0 auto 11px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .loading-msg{font-size:.83rem;}
-.ai-tag{display:inline-block;margin-top:5px;padding:2px 9px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:50px;font-size:.66rem;color:var(–blue);}
-.empty-wrap{text-align:center;padding:44px 20px;color:var(–text2);display:none;}
+.ai-tag{display:inline-block;margin-top:5px;padding:2px 9px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:50px;font-size:.66rem;color:var(--blue);}
+.empty-wrap{text-align:center;padding:44px 20px;color:var(--text2);display:none;}
 .empty-wrap.show{display:block;}
 .empty-icon{font-size:2.6rem;margin-bottom:9px;}
 
 /* ─── RANKING SCREEN ─── */
 .cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px;scrollbar-width:none;}
 .cat-tabs::-webkit-scrollbar{display:none;}
-.cat-tab{flex-shrink:0;padding:7px 14px;background:var(–card);border:1.5px solid var(–border);border-radius:50px;font-size:.78rem;font-weight:600;color:var(–text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
-.cat-tab.active{background:rgba(74,222,128,.1);border-color:var(–accent);color:var(–accent);}
-.sort-bar{display:flex;align-items:center;gap:6px;margin-bottom:12px;background:var(–card);border-radius:11px;padding:9px 13px;border:1px solid var(–border);}
-.sort-bar select{flex:1;background:transparent;border:none;color:var(–text);font-family:‘Inter’,sans-serif;font-size:.8rem;outline:none;cursor:pointer;}
-.sort-bar select option{background:var(–card2);}
-.sort-icon{font-size:.95rem;color:var(–text2);}
-.sec-header{display:flex;align-items:center;gap:8px;margin:14px 0 9px;padding-bottom:8px;border-bottom:1px solid var(–border);}
+.cat-tab{flex-shrink:0;padding:7px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:50px;font-size:.78rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.cat-tab.active{background:rgba(74,222,128,.1);border-color:var(--accent);color:var(--accent);}
+.sort-bar{display:flex;align-items:center;gap:6px;margin-bottom:12px;background:var(--card);border-radius:11px;padding:9px 13px;border:1px solid var(--border);}
+.sort-bar select{flex:1;background:transparent;border:none;color:var(--text);font-family:'Inter',sans-serif;font-size:.8rem;outline:none;cursor:pointer;}
+.sort-bar select option{background:var(--card2);}
+.sort-icon{font-size:.95rem;color:var(--text2);}
+.sec-header{display:flex;align-items:center;gap:8px;margin:14px 0 9px;padding-bottom:8px;border-bottom:1px solid var(--border);}
 .sec-icon{font-size:1.25rem;}.sec-title{font-size:.92rem;font-weight:700;}
-.sec-count{font-size:.68rem;color:var(–text3);background:var(–card2);padding:2px 7px;border-radius:50px;border:1px solid var(–border);}
+.sec-count{font-size:.68rem;color:var(--text3);background:var(--card2);padding:2px 7px;border-radius:50px;border:1px solid var(--border);}
 .food-list{display:flex;flex-direction:column;gap:0;}
-.food-row{background:var(–card);border-radius:var(–r);margin-bottom:5px;border:1px solid var(–border);overflow:hidden;cursor:pointer;transition:border-color .15s;}
-.food-row:active{border-color:var(–accent);}
+.food-row{background:var(--card);border-radius:var(--r);margin-bottom:5px;border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.food-row:active{border-color:var(--accent);}
 .food-row-main{display:flex;align-items:center;gap:9px;padding:11px 13px;}
-.row-rank{font-size:.7rem;font-weight:700;color:var(–text3);width:20px;text-align:center;flex-shrink:0;}
+.row-rank{font-size:.7rem;font-weight:700;color:var(--text3);width:20px;text-align:center;flex-shrink:0;}
 .rank-1{color:#fbbf24;}.rank-2{color:#9ca3af;}.rank-3{color:#b45309;}
 .row-info{flex:1;min-width:0;}
 .row-name{font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.row-unit{font-size:.66rem;color:var(–text3);margin-top:1px;}
+.row-unit{font-size:.66rem;color:var(--text3);margin-top:1px;}
 .row-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
-.row-kcal{font-size:.8rem;font-weight:700;color:var(–amber);}
-.row-ratio{font-size:.7rem;font-weight:700;color:var(–accent);}
+.row-kcal{font-size:.8rem;font-weight:700;color:var(--amber);}
+.row-ratio{font-size:.7rem;font-weight:700;color:var(--accent);}
 .row-purin-dot{width:7px;height:7px;border-radius:50%;margin-left:3px;display:inline-block;vertical-align:middle;}
-.dot-low{background:var(–accent);}.dot-mid{background:var(–amber);}.dot-high{background:var(–red);}
-.row-chevron{font-size:.65rem;color:var(–text3);margin-left:3px;transition:transform .2s;}
+.dot-low{background:var(--accent);}.dot-mid{background:var(--amber);}.dot-high{background:var(--red);}
+.row-chevron{font-size:.65rem;color:var(--text3);margin-left:3px;transition:transform .2s;}
 .food-row.open .row-chevron{transform:rotate(180deg);}
-.food-row-detail{display:none;padding:0 13px 13px;border-top:1px solid var(–border);background:rgba(22,27,34,.6);}
+.food-row-detail{display:none;padding:0 13px 13px;border-top:1px solid var(--border);background:rgba(22,27,34,.6);}
 .food-row.open .food-row-detail{display:block;}
 .detail-macro-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:9px;margin-top:11px;}
-.dm-cell{background:var(–card2);border-radius:9px;padding:9px;text-align:center;border:1px solid var(–border);}
-.dm-label{font-size:.58rem;text-transform:uppercase;color:var(–text3);letter-spacing:.06em;font-weight:600;margin-bottom:2px;}
+.dm-cell{background:var(--card2);border-radius:9px;padding:9px;text-align:center;border:1px solid var(--border);}
+.dm-label{font-size:.58rem;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;font-weight:600;margin-bottom:2px;}
 .dm-val{font-size:.95rem;font-weight:700;}
-.dm-pct{font-size:.62rem;color:var(–text3);margin-top:1px;}
-.dm-bar{margin-top:4px;height:3px;background:var(–border);border-radius:3px;overflow:hidden;}
+.dm-pct{font-size:.62rem;color:var(--text3);margin-top:1px;}
+.dm-bar{margin-top:4px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
 .dm-fill{height:100%;border-radius:3px;transition:width .6s ease;}
 .detail-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px;}
-.ds-cell{background:var(–card2);border-radius:9px;padding:9px;border:1px solid var(–border);}
-.ds-label{font-size:.58rem;text-transform:uppercase;color:var(–text3);letter-spacing:.06em;font-weight:600;margin-bottom:2px;}
+.ds-cell{background:var(--card2);border-radius:9px;padding:9px;border:1px solid var(--border);}
+.ds-label{font-size:.58rem;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;font-weight:600;margin-bottom:2px;}
 .ds-val{font-size:.9rem;font-weight:700;}
-.detail-tip{background:var(–bg);border-left:3px solid var(–accent);border-radius:0 8px 8px 0;padding:9px 11px;font-size:.73rem;color:var(–text2);line-height:1.5;}
-.detail-tip strong{color:var(–text);}
-.find-in-search{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.25);border-radius:9px;font-size:.72rem;color:var(–accent);cursor:pointer;width:100%;transition:background .15s;}
+.detail-tip{background:var(--bg);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:9px 11px;font-size:.73rem;color:var(--text2);line-height:1.5;}
+.detail-tip strong{color:var(--text);}
+.find-in-search{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:5px;padding:8px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.25);border-radius:9px;font-size:.72rem;color:var(--accent);cursor:pointer;width:100%;transition:background .15s;}
 .find-in-search:active{background:rgba(74,222,128,.12);}
 
 /* ═══════════════════════════════════════════════
-FRIDGE & SHOPPING TAB
-═══════════════════════════════════════════════ */
+   FRIDGE & SHOPPING TAB
+   ═══════════════════════════════════════════════ */
 
 /* Sub-tabs inside fridge screen */
-.subtab-bar{display:flex;background:var(–card2);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(–border);}
-.subtab-btn{flex:1;padding:8px 4px;border:none;background:none;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(–text3);transition:all .15s;font-family:‘Inter’,sans-serif;}
-.subtab-btn.active{background:var(–card);color:var(–text);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.subtab-bar{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--border);}
+.subtab-btn{flex:1;padding:8px 4px;border:none;background:none;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .15s;font-family:'Inter',sans-serif;}
+.subtab-btn.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3);}
 .subtab-pane{display:none;}.subtab-pane.active{display:block;}.fridge-tab-pane{display:none;}.fridge-tab-pane.active{display:block;}
 
 /* Section header */
 .fridge-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fridge-section-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(–text3);}
-.add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:50px;font-size:.76rem;font-weight:600;color:var(–accent);cursor:pointer;transition:all .15s;font-family:‘Inter’,sans-serif;}
+.fridge-section-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);}
+.add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);border-radius:50px;font-size:.76rem;font-weight:600;color:var(--accent);cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .add-btn:active{background:rgba(74,222,128,.2);}
 
 /* Summary bar */
 .fridge-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px;}
-.summary-card{background:var(–card);border:1px solid var(–border);border-radius:11px;padding:10px;text-align:center;transition:all .15s;}.summary-card.active-filter{border-color:var(–accent);background:rgba(74,222,128,.08);}.summary-card:active{opacity:.8;}
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px;text-align:center;transition:all .15s;}.summary-card.active-filter{border-color:var(--accent);background:rgba(74,222,128,.08);}.summary-card:active{opacity:.8;}
 .summary-val{font-size:1.2rem;font-weight:800;display:block;}
-.summary-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(–text3);margin-top:1px;}
-.sv-ok{color:var(–accent);}
-.sv-low{color:var(–amber);}
-.sv-out{color:var(–red);}
+.summary-lbl{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-top:1px;}
+.sv-ok{color:var(--accent);}
+.sv-low{color:var(--amber);}
+.sv-out{color:var(--red);}
 
 /* Inventory item card */
-.inv-item{background:var(–card);border:1px solid var(–border);border-radius:var(–r);padding:12px 13px;margin-bottom:7px;transition:border-color .15s;}
+.inv-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 13px;margin-bottom:7px;transition:border-color .15s;}
 .inv-item.status-low{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.04);}
 .inv-item.status-out{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.04);}
 .inv-top{display:flex;align-items:center;gap:8px;}
 .inv-emoji{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center;}
 .inv-info{flex:1;min-width:0;}
-.inv-name{font-size:.9rem;font-weight:600;color:var(–text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.inv-meta{font-size:.68rem;color:var(–text3);margin-top:1px;}
+.inv-name{font-size:.9rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.inv-meta{font-size:.68rem;color:var(--text3);margin-top:1px;}
 .inv-badge{font-size:.62rem;font-weight:700;padding:2px 8px;border-radius:50px;flex-shrink:0;}
-.badge-ok{background:rgba(74,222,128,.12);color:var(–accent);}
-.badge-low{background:rgba(245,158,11,.15);color:var(–amber);}
-.badge-out{background:rgba(248,113,113,.15);color:var(–red);}
+.badge-ok{background:rgba(74,222,128,.12);color:var(--accent);}
+.badge-low{background:rgba(245,158,11,.15);color:var(--amber);}
+.badge-out{background:rgba(248,113,113,.15);color:var(--red);}
 .inv-controls{display:flex;align-items:center;gap:6px;margin-top:10px;}
 .qty-display{flex:1;display:flex;align-items:center;gap:7px;}
-.qty-val{font-size:1rem;font-weight:700;color:var(–text);min-width:28px;text-align:center;}
-.qty-unit{font-size:.72rem;color:var(–text2);}
-.qty-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(–border);background:var(–card2);color:var(–text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:‘Inter’,sans-serif;font-weight:700;flex-shrink:0;}
-.qty-btn:active{background:var(–border);}
-.qty-btn.minus:active{background:rgba(248,113,113,.2);color:var(–red);}
-.qty-btn.plus:active{background:rgba(74,222,128,.15);color:var(–accent);}
+.qty-val{font-size:1rem;font-weight:700;color:var(--text);min-width:28px;text-align:center;}
+.qty-unit{font-size:.72rem;color:var(--text2);}
+.qty-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Inter',sans-serif;font-weight:700;flex-shrink:0;}
+.qty-btn:active{background:var(--border);}
+.qty-btn.minus:active{background:rgba(248,113,113,.2);color:var(--red);}
+.qty-btn.plus:active{background:rgba(74,222,128,.15);color:var(--accent);}
 .inv-actions{display:flex;gap:5px;margin-left:auto;}
-.inv-action-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(–border);background:var(–card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:background .15s;}
-.inv-action-btn:active{background:var(–border);}
+.inv-action-btn{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:background .15s;}
+.inv-action-btn:active{background:var(--border);}
 /* Threshold bar */
-.threshold-bar{margin-top:8px;height:3px;background:var(–border);border-radius:3px;overflow:hidden;}
+.threshold-bar{margin-top:8px;height:3px;background:var(--border);border-radius:3px;overflow:hidden;}
 .threshold-fill{height:100%;border-radius:3px;transition:width .4s ease;}
 
 /* Empty state */
-.empty-fridge{text-align:center;padding:40px 20px;color:var(–text3);}
+.empty-fridge{text-align:center;padding:40px 20px;color:var(--text3);}
 .empty-fridge .ei{font-size:2.5rem;margin-bottom:8px;}
 .empty-fridge p{font-size:.82rem;}
 
 /* ── MODAL / DRAWER ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center;}
 .modal-overlay.show{display:flex;}
-.modal-sheet{background:var(–card);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px calc(20px + var(–safe-bottom));animation:slideUp .22s ease;}
-.modal-handle{width:36px;height:4px;background:var(–border);border-radius:4px;margin:0 auto 16px;}
-.modal-title{font-size:1rem;font-weight:700;color:var(–text);margin-bottom:16px;}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px calc(20px + var(--safe-bottom));animation:slideUp .22s ease;}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px;}
+.modal-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;}
 .form-group{margin-bottom:13px;}
-.form-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(–text3);margin-bottom:5px;display:block;}
-.form-input{width:100%;background:var(–card2);border:1.5px solid var(–border);border-radius:10px;padding:10px 13px;color:var(–text);font-size:.9rem;font-family:‘Inter’,sans-serif;outline:none;transition:border-color .2s;}
-.form-input:focus{border-color:var(–accent);}
-.form-input::placeholder{color:var(–text3);}
+.form-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;display:block;}
+.form-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--accent);}
+.form-input::placeholder{color:var(--text3);}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.form-select{width:100%;background:var(–card2);border:1.5px solid var(–border);border-radius:10px;padding:10px 13px;color:var(–text);font-size:.9rem;font-family:‘Inter’,sans-serif;outline:none;}
-.form-select:focus{border-color:var(–accent);}
+.form-select{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;}
+.form-select:focus{border-color:var(--accent);}
 .emoji-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:5px;}
-.emoji-opt{width:38px;height:38px;border-radius:9px;border:1.5px solid var(–border);background:var(–card2);cursor:pointer;font-size:1.15rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.emoji-opt.selected{border-color:var(–accent);background:rgba(74,222,128,.1);}
+.emoji-opt{width:38px;height:38px;border-radius:9px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;font-size:1.15rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.emoji-opt.selected{border-color:var(--accent);background:rgba(74,222,128,.1);}
 .modal-actions{display:flex;gap:8px;margin-top:16px;}
-.modal-btn{flex:1;padding:12px;border:none;border-radius:11px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:‘Inter’,sans-serif;transition:opacity .15s;}
+.modal-btn{flex:1;padding:12px;border:none;border-radius:11px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;}
 .modal-btn:active{opacity:.8;}
-.btn-cancel{background:var(–card2);color:var(–text2);border:1px solid var(–border);}
-.btn-save{background:var(–accent);color:#000;}
-.btn-danger{background:rgba(248,113,113,.15);color:var(–red);border:1px solid rgba(248,113,113,.2);}
+.btn-cancel{background:var(--card2);color:var(--text2);border:1px solid var(--border);}
+.btn-save{background:var(--accent);color:#000;}
+.btn-danger{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.2);}
 
 /* ── SHOPPING LIST ── */
-.trip-card{background:var(–card);border:1px solid var(–border);border-radius:var(–r);margin-bottom:10px;overflow:hidden;}
+.trip-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;}
 .trip-header{padding:12px 13px;display:flex;align-items:center;gap:9px;cursor:pointer;}
-.trip-date-badge{background:rgba(96,165,250,.12);color:var(–blue);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;white-space:nowrap;}
-.trip-date-badge.today{background:rgba(74,222,128,.12);color:var(–accent);border-color:rgba(74,222,128,.2);}
-.trip-date-badge.overdue{background:rgba(248,113,113,.12);color:var(–red);border-color:rgba(248,113,113,.2);}
+.trip-date-badge{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.2);border-radius:8px;padding:4px 10px;font-size:.72rem;font-weight:700;white-space:nowrap;}
+.trip-date-badge.today{background:rgba(74,222,128,.12);color:var(--accent);border-color:rgba(74,222,128,.2);}
+.trip-date-badge.overdue{background:rgba(248,113,113,.12);color:var(--red);border-color:rgba(248,113,113,.2);}
 .trip-info{flex:1;}
-.trip-name{font-size:.88rem;font-weight:600;color:var(–text);}
-.trip-count{font-size:.68rem;color:var(–text3);margin-top:1px;}
-.trip-chevron{font-size:.65rem;color:var(–text3);transition:transform .2s;}
+.trip-name{font-size:.88rem;font-weight:600;color:var(--text);}
+.trip-count{font-size:.68rem;color:var(--text3);margin-top:1px;}
+.trip-chevron{font-size:.65rem;color:var(--text3);transition:transform .2s;}
 .trip-card.open .trip-chevron{transform:rotate(180deg);}
-.trip-items-wrap{display:none;padding:0 13px 13px;border-top:1px solid var(–border);}
+.trip-items-wrap{display:none;padding:0 13px 13px;border-top:1px solid var(--border);}
 .trip-card.open .trip-items-wrap{display:block;}
 
 .shop-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);}
 .shop-item:last-child{border-bottom:none;}
-.shop-check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(–border);background:var(–card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;color:var(–bg);transition:all .15s;}
-.shop-item.bought .shop-check{background:var(–accent);border-color:var(–accent);}
-.shop-item.bought .shop-name{text-decoration:line-through;color:var(–text3);}
+.shop-check{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);background:var(--card2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.72rem;color:var(--bg);transition:all .15s;}
+.shop-item.bought .shop-check{background:var(--accent);border-color:var(--accent);}
+.shop-item.bought .shop-name{text-decoration:line-through;color:var(--text3);}
 .shop-emoji{font-size:1.1rem;flex-shrink:0;}
-.shop-name{flex:1;font-size:.84rem;font-weight:500;color:var(–text);}
-.shop-qty{font-size:.75rem;color:var(–text3);white-space:nowrap;}
-.shop-del{font-size:.8rem;cursor:pointer;color:var(–text3);padding:4px;transition:color .15s;}
-.shop-del:active{color:var(–red);}
+.shop-name{flex:1;font-size:.84rem;font-weight:500;color:var(--text);}
+.shop-qty{font-size:.75rem;color:var(--text3);white-space:nowrap;}
+.shop-del{font-size:.8rem;cursor:pointer;color:var(--text3);padding:4px;transition:color .15s;}
+.shop-del:active{color:var(--red);}
 
 .trip-footer{display:flex;gap:7px;margin-top:11px;}
-.trip-done-btn{flex:1;padding:9px;border:none;border-radius:9px;background:rgba(74,222,128,.12);color:var(–accent);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(74,222,128,.2);font-family:‘Inter’,sans-serif;transition:background .15s;}
+.trip-done-btn{flex:1;padding:9px;border:none;border-radius:9px;background:rgba(74,222,128,.12);color:var(--accent);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(74,222,128,.2);font-family:'Inter',sans-serif;transition:background .15s;}
 .trip-done-btn:active{background:rgba(74,222,128,.2);}
-.trip-del-btn{padding:9px 13px;border-radius:9px;background:rgba(248,113,113,.08);color:var(–red);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(248,113,113,.15);font-family:‘Inter’,sans-serif;}
+.trip-del-btn{padding:9px 13px;border-radius:9px;background:rgba(248,113,113,.08);color:var(--red);font-size:.8rem;font-weight:700;cursor:pointer;border:1px solid rgba(248,113,113,.15);font-family:'Inter',sans-serif;}
 
 /* Toast notification */
-.toast{position:fixed;bottom:calc(76px + var(–safe-bottom));left:50%;transform:translateX(-50%) translateY(10px);background:var(–card2);border:1px solid var(–border);border-radius:50px;padding:9px 18px;font-size:.8rem;font-weight:600;color:var(–text);white-space:nowrap;z-index:300;opacity:0;transition:all .25s;pointer-events:none;max-width:320px;}
+.toast{position:fixed;bottom:calc(76px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(10px);background:var(--card2);border:1px solid var(--border);border-radius:50px;padding:9px 18px;font-size:.8rem;font-weight:600;color:var(--text);white-space:nowrap;z-index:300;opacity:0;transition:all .25s;pointer-events:none;max-width:320px;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-.toast.success{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.3);color:var(–accent);}
+.toast.success{background:rgba(74,222,128,.15);border-color:rgba(74,222,128,.3);color:var(--accent);}
 
 /* ─── NAV BADGE ─── */
-.nav-badge{position:absolute;top:4px;right:12px;min-width:16px;height:16px;background:var(–red);border-radius:50px;font-size:.58rem;font-weight:800;color:#fff;display:none;align-items:center;justify-content:center;padding:0 4px;}
+.nav-badge{position:absolute;top:4px;right:12px;min-width:16px;height:16px;background:var(--red);border-radius:50px;font-size:.58rem;font-weight:800;color:#fff;display:none;align-items:center;justify-content:center;padding:0 4px;}
 .nav-badge.show{display:flex;}
 
 /* ─── FRIDGE SCREEN ─── */
-.fridge-tabs{display:flex;background:var(–card);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(–border);}
-.fridge-tab{flex:1;padding:8px;border:none;background:none;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;color:var(–text3);transition:all .15s;font-family:‘Inter’,sans-serif;}
-.fridge-tab.active{background:var(–card2);color:var(–text);box-shadow:0 1px 3px rgba(0,0,0,.3);}
+.fridge-tabs{display:flex;background:var(--card);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--border);}
+.fridge-tab{flex:1;padding:8px;border:none;background:none;border-radius:9px;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .15s;font-family:'Inter',sans-serif;}
+.fridge-tab.active{background:var(--card2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3);}
 
 /* SECTION HEADERS */
 .fridge-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
-.fridge-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(–text3);}
-.fridge-add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:50px;font-size:.78rem;font-weight:600;color:var(–accent);cursor:pointer;transition:all .15s;}
+.fridge-section-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);}
+.fridge-add-btn{display:flex;align-items:center;gap:5px;padding:6px 13px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:50px;font-size:.78rem;font-weight:600;color:var(--accent);cursor:pointer;transition:all .15s;}
 .fridge-add-btn:active{background:rgba(74,222,128,.18);}
 
 /* INVENTORY ITEMS */
-.inv-item{background:var(–card);border:1px solid var(–border);border-radius:var(–r);padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
+.inv-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
 .inv-item.low-stock{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.04);}
 .inv-item.out-of-stock{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04);opacity:.7;}
 .inv-icon{font-size:1.4rem;flex-shrink:0;}
 .inv-info{flex:1;min-width:0;}
-.inv-name{font-size:.88rem;font-weight:600;color:var(–text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.inv-name{font-size:.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .inv-meta{display:flex;align-items:center;gap:7px;margin-top:3px;}
 .inv-qty{font-size:.78rem;font-weight:700;}
-.inv-qty.ok{color:var(–accent);}
-.inv-qty.low{color:var(–amber);}
-.inv-qty.empty{color:var(–red);}
-.inv-unit{font-size:.7rem;color:var(–text3);}
-.inv-expiry{font-size:.67rem;color:var(–text3);background:var(–card2);padding:1px 7px;border-radius:50px;}
-.inv-expiry.expiring{color:var(–amber);background:rgba(245,158,11,.1);}
+.inv-qty.ok{color:var(--accent);}
+.inv-qty.low{color:var(--amber);}
+.inv-qty.empty{color:var(--red);}
+.inv-unit{font-size:.7rem;color:var(--text3);}
+.inv-expiry{font-size:.67rem;color:var(--text3);background:var(--card2);padding:1px 7px;border-radius:50px;}
+.inv-expiry.expiring{color:var(--amber);background:rgba(245,158,11,.1);}
 .inv-controls{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.inv-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(–border);background:var(–card2);color:var(–text);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.inv-btn.minus:active{background:rgba(248,113,113,.15);border-color:var(–red);color:var(–red);}
-.inv-btn.plus:active{background:rgba(74,222,128,.15);border-color:var(–accent);color:var(–accent);}
+.inv-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.inv-btn.minus:active{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red);}
+.inv-btn.plus:active{background:rgba(74,222,128,.15);border-color:var(--accent);color:var(--accent);}
 .inv-btn.delete:active{background:rgba(248,113,113,.15);}
-.inv-qty-display{min-width:44px;text-align:center;font-size:.82rem;font-weight:700;color:var(–text);}
+.inv-qty-display{min-width:44px;text-align:center;font-size:.82rem;font-weight:700;color:var(--text);}
 
 /* SHOPPING LIST */
 .shop-date-group{margin-bottom:18px;}
-.shop-date-label{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(–text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(–border);}
+.shop-date-label{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);}
 .shop-date-badge{padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:700;}
-.badge-today{background:rgba(74,222,128,.15);color:var(–accent);}
-.badge-soon{background:rgba(245,158,11,.15);color:var(–amber);}
-.badge-later{background:var(–card2);color:var(–text3);}
-.shop-item{background:var(–card);border:1px solid var(–border);border-radius:var(–r);padding:11px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
-.shop-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(–border);background:var(–card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:all .15s;}
+.badge-today{background:rgba(74,222,128,.15);color:var(--accent);}
+.badge-soon{background:rgba(245,158,11,.15);color:var(--amber);}
+.badge-later{background:var(--card2);color:var(--text3);}
+.shop-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;}
+.shop-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border);background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;transition:all .15s;}
 .shop-check:active{background:rgba(74,222,128,.2);}
 .shop-item-info{flex:1;min-width:0;}
-.shop-item-name{font-size:.87rem;font-weight:600;color:var(–text);}
-.shop-item-meta{font-size:.7rem;color:var(–text3);margin-top:2px;}
-.shop-item-qty{font-size:.8rem;font-weight:700;color:var(–amber);flex-shrink:0;}
-.shop-del{width:26px;height:26px;border-radius:7px;border:none;background:none;color:var(–text3);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
-.shop-del:active{color:var(–red);}
+.shop-item-name{font-size:.87rem;font-weight:600;color:var(--text);}
+.shop-item-meta{font-size:.7rem;color:var(--text3);margin-top:2px;}
+.shop-item-qty{font-size:.8rem;font-weight:700;color:var(--amber);flex-shrink:0;}
+.shop-del{width:26px;height:26px;border-radius:7px;border:none;background:none;color:var(--text3);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
+.shop-del:active{color:var(--red);}
 
 /* EMPTY STATE */
-.fridge-empty{text-align:center;padding:36px 20px;color:var(–text3);}
+.fridge-empty{text-align:center;padding:36px 20px;color:var(--text3);}
 .fridge-empty .ei{font-size:2.4rem;margin-bottom:8px;}
 .fridge-empty p{font-size:.82rem;}
 
 /* MODAL FORM */
-.modal-title{font-size:1.05rem;font-weight:700;margin-bottom:16px;color:var(–text);}
+.modal-title{font-size:1.05rem;font-weight:700;margin-bottom:16px;color:var(--text);}
 .modal-field{margin-bottom:12px;}
-.modal-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(–text3);margin-bottom:5px;}
-.modal-input{width:100%;background:var(–card2);border:1.5px solid var(–border);border-radius:10px;padding:10px 14px;color:var(–text);font-size:.9rem;font-family:‘Inter’,sans-serif;outline:none;transition:border-color .2s;}
-.modal-input:focus{border-color:var(–accent);}
-.modal-input::placeholder{color:var(–text3);}
+.modal-label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:5px;}
+.modal-input{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.modal-input:focus{border-color:var(--accent);}
+.modal-input::placeholder{color:var(--text3);}
 .modal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .modal-btn-row{display:flex;gap:8px;margin-top:16px;}
-.modal-btn{flex:1;padding:11px;border-radius:11px;border:none;font-size:.88rem;font-weight:700;cursor:pointer;font-family:‘Inter’,sans-serif;transition:all .15s;}
-.modal-btn.cancel{background:var(–card2);color:var(–text2);border:1px solid var(–border);}
-.modal-btn.confirm{background:var(–accent);color:#0d1117;}
+.modal-btn{flex:1;padding:11px;border-radius:11px;border:none;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.modal-btn.cancel{background:var(--card2);color:var(--text2);border:1px solid var(--border);}
+.modal-btn.confirm{background:var(--accent);color:#0d1117;}
 .modal-btn.confirm:active{opacity:.85;}
-.modal-btn.danger{background:rgba(248,113,113,.15);color:var(–red);border:1px solid rgba(248,113,113,.25);}
+.modal-btn.danger{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.25);}
 
 /* ADJUST MODAL */
 .adjust-food-name{font-size:1rem;font-weight:700;margin-bottom:4px;}
-.adjust-current{font-size:.8rem;color:var(–text3);margin-bottom:16px;}
+.adjust-current{font-size:.8rem;color:var(--text3);margin-bottom:16px;}
 .adjust-quick{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px;}
-.adj-quick-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(–border);background:var(–card2);color:var(–text2);font-size:.8rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;font-family:‘Inter’,sans-serif;}
-.adj-quick-btn:active,.adj-quick-btn.selected{background:rgba(248,113,113,.15);border-color:var(–red);color:var(–red);}
+.adj-quick-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--card2);color:var(--text2);font-size:.8rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;font-family:'Inter',sans-serif;}
+.adj-quick-btn:active,.adj-quick-btn.selected{background:rgba(248,113,113,.15);border-color:var(--red);color:var(--red);}
 .adjust-custom{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
-.adj-custom-input{flex:1;background:var(–card2);border:1.5px solid var(–border);border-radius:10px;padding:9px 13px;color:var(–text);font-size:.9rem;font-family:‘Inter’,sans-serif;outline:none;transition:border-color .2s;}
-.adj-custom-input:focus{border-color:var(–accent);}
-.adj-unit-label{font-size:.8rem;color:var(–text3);flex-shrink:0;}
-.adj-result-preview{font-size:.75rem;color:var(–text3);text-align:center;margin-bottom:14px;}
-.adj-result-preview span{color:var(–accent);font-weight:700;}
+.adj-custom-input{flex:1;background:var(--card2);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.adj-custom-input:focus{border-color:var(--accent);}
+.adj-unit-label{font-size:.8rem;color:var(--text3);flex-shrink:0;}
+.adj-result-preview{font-size:.75rem;color:var(--text3);text-align:center;margin-bottom:14px;}
+.adj-result-preview span{color:var(--accent);font-weight:700;}
 
 /* ─── AUTH ─── */
-#authGate{position:fixed;inset:0;background:var(–bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;}
+#authGate{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;}
 .auth-logo{font-size:3rem;margin-bottom:12px;}
-.auth-title{font-family:‘Inter’,sans-serif;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,var(–accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
-.auth-sub{font-size:.82rem;color:var(–text3);margin-bottom:36px;text-align:center;line-height:1.6;}
-.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1f1f1f;border:none;border-radius:12px;padding:14px 24px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:‘Inter’,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.25);transition:all .15s;width:100%;max-width:300px;justify-content:center;}
+.auth-title{font-family:'Inter',sans-serif;font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;}
+.auth-sub{font-size:.82rem;color:var(--text3);margin-bottom:36px;text-align:center;line-height:1.6;}
+.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1f1f1f;border:none;border-radius:12px;padding:14px 24px;font-size:.95rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.25);transition:all .15s;width:100%;max-width:300px;justify-content:center;}
 .google-btn:hover{box-shadow:0 4px 20px rgba(0,0,0,.35);transform:translateY(-1px);}
 .google-btn:active{transform:translateY(0);}
 .google-icon{width:20px;height:20px;flex-shrink:0;}
-.auth-note{font-size:.7rem;color:var(–text3);margin-top:20px;text-align:center;}
+.auth-note{font-size:.7rem;color:var(--text3);margin-top:20px;text-align:center;}
 /* User avatar in header */
 .user-bar{display:flex;align-items:center;gap:8px;margin-left:auto;}
-.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(–border);object-fit:cover;}
-.user-name{font-size:.72rem;color:var(–text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.signout-btn{padding:4px 10px;border-radius:50px;border:1px solid var(–border);background:none;color:var(–text3);font-size:.68rem;cursor:pointer;font-family:‘Inter’,sans-serif;transition:all .15s;}
-.signout-btn:hover{color:var(–red);border-color:var(–red);}
+.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);object-fit:cover;}
+.user-name{font-size:.72rem;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.signout-btn{padding:4px 10px;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text3);font-size:.68rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.signout-btn:hover{color:var(--red);border-color:var(--red);}
 </style>
-
 </head>
 <body>
 <div id="authGate">
@@ -390,6 +401,7 @@ FRIDGE & SHOPPING TAB
     Đăng nhập bằng Google
   </button>
   <div class="auth-note">Dữ liệu của bạn được lưu riêng tư,<br>chỉ bạn mới xem được.</div>
+  <button class="theme-btn" onclick="toggleTheme()" style="margin-top:20px" title="Đổi giao diện">🌙</button>
 </div>
 <div id="app" style="display:none">
   <!-- HEADER -->
@@ -403,156 +415,154 @@ FRIDGE & SHOPPING TAB
       <span class="user-name" id="userName"></span>
       <button class="signout-btn" onclick="signOut()">Đăng xuất</button>
     </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
   </div>
 
   <div class="content" id="contentArea">
 
-```
-<!-- ══ SEARCH SCREEN ══ -->
-<div class="screen active" id="screen-search">
-  <div style="height:4px"></div>
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Tìm thực phẩm (rau muống, tôm, bún bò...)" autocomplete="off">
-    <button class="sbtn" onclick="doSearch()">🔍</button>
-  </div>
-  <div class="chips-label">Gợi ý nhanh</div>
-  <div class="chips-scroll">
-    <span class="chip" onclick="quickSearch('Gà luộc')">🐔 Gà luộc</span>
-    <span class="chip" onclick="quickSearch('Cá basa')">🐟 Cá basa</span>
-    <span class="chip" onclick="quickSearch('Rau muống')">🥬 Rau muống</span>
-    <span class="chip" onclick="quickSearch('Trứng gà')">🥚 Trứng gà</span>
-    <span class="chip" onclick="quickSearch('Đậu phụ')">🫘 Đậu phụ</span>
-    <span class="chip" onclick="quickSearch('Tôm sú')">🦐 Tôm sú</span>
-    <span class="chip" onclick="quickSearch('Cá hồi')">🐟 Cá hồi</span>
-    <span class="chip" onclick="quickSearch('Cơm trắng')">🍚 Cơm trắng</span>
-    <span class="chip" onclick="quickSearch('Nước atiso')">🌿 Atiso</span>
-    <span class="chip" onclick="quickSearch('Cà phê đen')">☕ Cà phê</span>
-    <span class="chip" onclick="quickSearch('Sữa chua')">🥛 Sữa chua</span>
-    <span class="chip" onclick="quickSearch('Bia')">🍺 Bia</span>
-    <span class="chip" onclick="quickSearch('Dưa hấu')">🍉 Dưa hấu</span>
-    <span class="chip" onclick="quickSearch('Gan heo')">⚠️ Gan heo</span>
-    <span class="chip" onclick="quickSearch('Khoai lang')">🍠 Khoai lang</span>
-    <span class="chip" onclick="quickSearch('Bơ quả')">🥑 Bơ</span>
-  </div>
+    <!-- ══ SEARCH SCREEN ══ -->
+    <div class="screen active" id="screen-search">
+      <div style="height:4px"></div>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Tìm thực phẩm (rau muống, tôm, bún bò...)" autocomplete="off">
+        <button class="sbtn" onclick="doSearch()">🔍</button>
+      </div>
+      <div class="chips-label">Gợi ý nhanh</div>
+      <div class="chips-scroll">
+        <span class="chip" onclick="quickSearch('Gà luộc')">🐔 Gà luộc</span>
+        <span class="chip" onclick="quickSearch('Cá basa')">🐟 Cá basa</span>
+        <span class="chip" onclick="quickSearch('Rau muống')">🥬 Rau muống</span>
+        <span class="chip" onclick="quickSearch('Trứng gà')">🥚 Trứng gà</span>
+        <span class="chip" onclick="quickSearch('Đậu phụ')">🫘 Đậu phụ</span>
+        <span class="chip" onclick="quickSearch('Tôm sú')">🦐 Tôm sú</span>
+        <span class="chip" onclick="quickSearch('Cá hồi')">🐟 Cá hồi</span>
+        <span class="chip" onclick="quickSearch('Cơm trắng')">🍚 Cơm trắng</span>
+        <span class="chip" onclick="quickSearch('Nước atiso')">🌿 Atiso</span>
+        <span class="chip" onclick="quickSearch('Cà phê đen')">☕ Cà phê</span>
+        <span class="chip" onclick="quickSearch('Sữa chua')">🥛 Sữa chua</span>
+        <span class="chip" onclick="quickSearch('Bia')">🍺 Bia</span>
+        <span class="chip" onclick="quickSearch('Dưa hấu')">🍉 Dưa hấu</span>
+        <span class="chip" onclick="quickSearch('Gan heo')">⚠️ Gan heo</span>
+        <span class="chip" onclick="quickSearch('Khoai lang')">🍠 Khoai lang</span>
+        <span class="chip" onclick="quickSearch('Bơ quả')">🥑 Bơ</span>
+      </div>
 
-  <div class="loading-wrap" id="loading">
-    <div class="spinner"></div>
-    <div class="loading-msg" id="loadingMsg">Đang tra cứu...</div>
-    <div class="ai-tag" id="aiTag" style="display:none">🤖 Đang hỏi AI Claude...</div>
-  </div>
+      <div class="loading-wrap" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-msg" id="loadingMsg">Đang tra cứu...</div>
+        <div class="ai-tag" id="aiTag" style="display:none">🤖 Đang hỏi AI Claude...</div>
+      </div>
 
-  <div class="result-card" id="resultCard" style="display:none">
-    <div id="aiBadgeWrap" style="display:none"><div class="ai-pill">🤖 AI Claude – ước tính tham khảo</div></div>
-    <div class="rc-top">
-      <div><div class="rc-name" id="foodName">—</div><div class="rc-unit" id="foodUnit">—</div></div>
-      <div class="kcal-pill" id="kcalBadge">—</div>
+      <div class="result-card" id="resultCard" style="display:none">
+        <div id="aiBadgeWrap" style="display:none"><div class="ai-pill">🤖 AI Claude – ước tính tham khảo</div></div>
+        <div class="rc-top">
+          <div><div class="rc-name" id="foodName">—</div><div class="rc-unit" id="foodUnit">—</div></div>
+          <div class="kcal-pill" id="kcalBadge">—</div>
+        </div>
+        <div class="macro-row">
+          <div class="macro-card"><div class="mc-label">Protein</div><div class="mc-val" id="protein" style="color:var(--accent)">—</div><div class="mc-pct" id="proteinPct" style="color:var(--accent)">—</div><div class="mc-bar"><div class="mc-fill" id="barP" style="width:0%;background:var(--accent)"></div></div></div>
+          <div class="macro-card"><div class="mc-label">Carb</div><div class="mc-val" id="carb" style="color:var(--amber)">—</div><div class="mc-pct" id="carbPct" style="color:var(--amber)">—</div><div class="mc-bar"><div class="mc-fill" id="barC" style="width:0%;background:var(--amber)"></div></div></div>
+          <div class="macro-card"><div class="mc-label">Chất béo</div><div class="mc-val" id="fat" style="color:var(--red)">—</div><div class="mc-pct" id="fatPct" style="color:var(--red)">—</div><div class="mc-bar"><div class="mc-fill" id="barF" style="width:0%;background:var(--red)"></div></div></div>
+        </div>
+        <div class="purin-box" id="purinBox">
+          <div class="pb-icon" id="pbIcon">—</div>
+          <div class="pb-info"><div class="pb-label">Hàm lượng Purin</div><div class="pb-val" id="pbVal">—</div><div class="pb-desc" id="pbDesc">—</div></div>
+          <div class="pb-badge" id="pbBadge">—</div>
+        </div>
+        <div class="tip-box" id="tipBox">—</div>
+        <div class="rl-remaining" id="rlRemaining" style="display:none">
+          AI còn: <span id="rlHour">—</span> lần/giờ · <span id="rlDay">—</span> lần/ngày
+        </div>
+        <button class="crosslink-btn" id="crosslinkBtn" onclick="goToRankFromSearch()" style="display:none">📊 Xem trong bảng xếp hạng →</button>
+      </div>
+
+      <div class="rl-banner" id="rlBanner"></div>
+
+      <div class="empty-wrap" id="emptyState">
+        <div class="empty-icon">🤷</div>
+        <p id="emptyMsg" style="font-size:.83rem">Không tìm thấy thực phẩm này.</p>
+      </div>
+      <div style="height:16px"></div>
     </div>
-    <div class="macro-row">
-      <div class="macro-card"><div class="mc-label">Protein</div><div class="mc-val" id="protein" style="color:var(--accent)">—</div><div class="mc-pct" id="proteinPct" style="color:var(--accent)">—</div><div class="mc-bar"><div class="mc-fill" id="barP" style="width:0%;background:var(--accent)"></div></div></div>
-      <div class="macro-card"><div class="mc-label">Carb</div><div class="mc-val" id="carb" style="color:var(--amber)">—</div><div class="mc-pct" id="carbPct" style="color:var(--amber)">—</div><div class="mc-bar"><div class="mc-fill" id="barC" style="width:0%;background:var(--amber)"></div></div></div>
-      <div class="macro-card"><div class="mc-label">Chất béo</div><div class="mc-val" id="fat" style="color:var(--red)">—</div><div class="mc-pct" id="fatPct" style="color:var(--red)">—</div><div class="mc-bar"><div class="mc-fill" id="barF" style="width:0%;background:var(--red)"></div></div></div>
+
+    <!-- ══ RANKING SCREEN ══ -->
+    <div class="screen" id="screen-rank">
+      <div style="height:4px"></div>
+      <div class="cat-tabs" id="catTabs">
+        <button class="cat-tab active" onclick="setCat('all',this)">🍽️ Tất cả</button>
+        <button class="cat-tab" onclick="setCat(1,this)">🥩 Thịt &amp; Cá</button>
+        <button class="cat-tab" onclick="setCat(2,this)">🥦 Rau củ</button>
+        <button class="cat-tab" onclick="setCat(3,this)">🍉 Trái cây</button>
+        <button class="cat-tab" onclick="setCat(4,this)">🥚 Trứng &amp; Sữa</button>
+      </div>
+      <div class="sort-bar">
+        <span class="sort-icon">↕️</span>
+        <select id="sortSel" onchange="renderRank()">
+          <option value="ratio">🏆 Protein/Kcal cao nhất</option>
+          <option value="protein">💪 Protein nhiều nhất</option>
+          <option value="kcal_asc">🔥 Calo thấp nhất</option>
+          <option value="kcal_desc">🔥 Calo cao nhất</option>
+          <option value="fat_asc">🧈 Ít chất béo nhất</option>
+          <option value="carb_asc">🍚 Ít carb nhất</option>
+          <option value="purin_asc">✅ Purin thấp nhất</option>
+          <option value="purin_desc">⚠️ Purin cao nhất</option>
+          <option value="name">🔤 Tên A–Z</option>
+        </select>
+      </div>
+      <div id="rankContent"></div>
+      <div style="height:16px"></div>
     </div>
-    <div class="purin-box" id="purinBox">
-      <div class="pb-icon" id="pbIcon">—</div>
-      <div class="pb-info"><div class="pb-label">Hàm lượng Purin</div><div class="pb-val" id="pbVal">—</div><div class="pb-desc" id="pbDesc">—</div></div>
-      <div class="pb-badge" id="pbBadge">—</div>
+
+
+    <div class="screen" id="screen-fridge">
+      <div style="height:4px"></div>
+
+      <!-- Summary bar -->
+      <div class="fridge-summary">
+        <div class="summary-card" id="sum-card-ok" onclick="setInvFilter('ok')" style="cursor:pointer">
+          <span class="summary-val sv-ok" id="sumOk">0</span>
+          <span class="summary-lbl">Còn đủ</span>
+        </div>
+        <div class="summary-card" id="sum-card-low" onclick="setInvFilter('low')" style="cursor:pointer">
+          <span class="summary-val sv-low" id="sumLow">0</span>
+          <span class="summary-lbl">Sắp hết ⚠️</span>
+        </div>
+        <div class="summary-card" id="sum-card-out" onclick="setInvFilter('out')" style="cursor:pointer">
+          <span class="summary-val sv-out" id="sumOut">0</span>
+          <span class="summary-lbl">Hết rồi</span>
+        </div>
+      </div>
+
+      <!-- Sub-tabs -->
+      <div class="subtab-bar">
+        <button class="fridge-tab active" id="ftab-inv" onclick="setFridgeTab('inv',this)">🧊 Tủ lạnh</button>
+        <button class="fridge-tab" id="ftab-shop" onclick="setFridgeTab('shop',this)">🛍️ Đi chợ</button>
+      </div>
+
+      <!-- SUB-PANE: INVENTORY -->
+      <div class="fridge-tab-pane active" id="fridge-inv-pane">
+        <div class="fridge-section-header">
+          <span class="fridge-section-title">Đồ đang có ở nhà</span>
+          <button class="add-btn" onclick="openAddInventoryModal()">+ Thêm</button>
+        </div>
+        <div id="invList"></div>
+      </div>
+
+      <!-- SUB-PANE: SHOPPING -->
+      <div class="fridge-tab-pane" id="fridge-shop-pane">
+        <div class="fridge-section-header">
+          <span class="fridge-section-title">Lịch đi chợ</span>
+          <button class="add-btn" onclick="openAddShopModal()">+ Chuyến mới</button>
+        </div>
+        <div id="shopList"></div>
+      </div>
+
+      <div style="height:20px"></div>
     </div>
-    <div class="tip-box" id="tipBox">—</div>
-    <div class="rl-remaining" id="rlRemaining" style="display:none">
-      AI còn: <span id="rlHour">—</span> lần/giờ · <span id="rlDay">—</span> lần/ngày
-    </div>
-    <button class="crosslink-btn" id="crosslinkBtn" onclick="goToRankFromSearch()" style="display:none">📊 Xem trong bảng xếp hạng →</button>
-  </div>
-
-  <div class="rl-banner" id="rlBanner"></div>
-
-  <div class="empty-wrap" id="emptyState">
-    <div class="empty-icon">🤷</div>
-    <p id="emptyMsg" style="font-size:.83rem">Không tìm thấy thực phẩm này.</p>
-  </div>
-  <div style="height:16px"></div>
-</div>
-
-<!-- ══ RANKING SCREEN ══ -->
-<div class="screen" id="screen-rank">
-  <div style="height:4px"></div>
-  <div class="cat-tabs" id="catTabs">
-    <button class="cat-tab active" onclick="setCat('all',this)">🍽️ Tất cả</button>
-    <button class="cat-tab" onclick="setCat(1,this)">🥩 Thịt &amp; Cá</button>
-    <button class="cat-tab" onclick="setCat(2,this)">🥦 Rau củ</button>
-    <button class="cat-tab" onclick="setCat(3,this)">🍉 Trái cây</button>
-    <button class="cat-tab" onclick="setCat(4,this)">🥚 Trứng &amp; Sữa</button>
-  </div>
-  <div class="sort-bar">
-    <span class="sort-icon">↕️</span>
-    <select id="sortSel" onchange="renderRank()">
-      <option value="ratio">🏆 Protein/Kcal cao nhất</option>
-      <option value="protein">💪 Protein nhiều nhất</option>
-      <option value="kcal_asc">🔥 Calo thấp nhất</option>
-      <option value="kcal_desc">🔥 Calo cao nhất</option>
-      <option value="fat_asc">🧈 Ít chất béo nhất</option>
-      <option value="carb_asc">🍚 Ít carb nhất</option>
-      <option value="purin_asc">✅ Purin thấp nhất</option>
-      <option value="purin_desc">⚠️ Purin cao nhất</option>
-      <option value="name">🔤 Tên A–Z</option>
-    </select>
-  </div>
-  <div id="rankContent"></div>
-  <div style="height:16px"></div>
-</div>
-
-
-<div class="screen" id="screen-fridge">
-  <div style="height:4px"></div>
-
-  <!-- Summary bar -->
-  <div class="fridge-summary">
-    <div class="summary-card" id="sum-card-ok" onclick="setInvFilter('ok')" style="cursor:pointer">
-      <span class="summary-val sv-ok" id="sumOk">0</span>
-      <span class="summary-lbl">Còn đủ</span>
-    </div>
-    <div class="summary-card" id="sum-card-low" onclick="setInvFilter('low')" style="cursor:pointer">
-      <span class="summary-val sv-low" id="sumLow">0</span>
-      <span class="summary-lbl">Sắp hết ⚠️</span>
-    </div>
-    <div class="summary-card" id="sum-card-out" onclick="setInvFilter('out')" style="cursor:pointer">
-      <span class="summary-val sv-out" id="sumOut">0</span>
-      <span class="summary-lbl">Hết rồi</span>
-    </div>
-  </div>
-
-  <!-- Sub-tabs -->
-  <div class="subtab-bar">
-    <button class="fridge-tab active" id="ftab-inv" onclick="setFridgeTab('inv',this)">🧊 Tủ lạnh</button>
-    <button class="fridge-tab" id="ftab-shop" onclick="setFridgeTab('shop',this)">🛍️ Đi chợ</button>
-  </div>
-
-  <!-- SUB-PANE: INVENTORY -->
-  <div class="fridge-tab-pane active" id="fridge-inv-pane">
-    <div class="fridge-section-header">
-      <span class="fridge-section-title">Đồ đang có ở nhà</span>
-      <button class="add-btn" onclick="openAddInventoryModal()">+ Thêm</button>
-    </div>
-    <div id="invList"></div>
-  </div>
-
-  <!-- SUB-PANE: SHOPPING -->
-  <div class="fridge-tab-pane" id="fridge-shop-pane">
-    <div class="fridge-section-header">
-      <span class="fridge-section-title">Lịch đi chợ</span>
-      <button class="add-btn" onclick="openAddShopModal()">+ Chuyến mới</button>
-    </div>
-    <div id="shopList"></div>
-  </div>
-
-  <div style="height:20px"></div>
-</div>
-```
 
   </div><!-- /content -->
 
   <!-- BOTTOM NAV -->
-
   <div class="bottom-nav">
     <button class="nav-item active" id="nav-search" onclick="switchScreen('search',this)">
       <span class="nav-icon">🔍</span><span class="nav-label">Tra cứu</span>
@@ -577,7 +587,6 @@ FRIDGE & SHOPPING TAB
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 
 // ════════════════════════════════════════════
@@ -713,12 +722,189 @@ async function signOut() {
 window.signInWithGoogle = signInWithGoogle;
 window.signOut = signOut;
 
+// ── THEME TOGGLE ──────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  const btn = document.getElementById('themeBtn');
+  // Also update auth gate theme button
+  document.querySelectorAll('.theme-btn').forEach(b => b.textContent = isLight ? '🌞' : '🌙');
+  localStorage.setItem('ng_theme', isLight ? 'light' : 'dark');
+}
+
+function applyStoredTheme() {
+  const stored = localStorage.getItem('ng_theme');
+  if (stored === 'light') {
+    document.documentElement.classList.add('light');
+    document.querySelectorAll('.theme-btn').forEach(b => b.textContent = '🌞');
+  }
+}
+applyStoredTheme();
+
 // Bind button and start auth — script is at end of body so DOM is ready
 (function() {
   var btn = document.getElementById('googleSignInBtn');
   if (btn) btn.addEventListener('click', signInWithGoogle);
   initAuth();
 })();
+
+// ─── BUILTIN FOOD DATABASE (fallback when Supabase unavailable) ────
+const BUILTIN_FOODS = [
+{name:"Gà luộc",unit:"100g không da",kcal:165.0,protein:31.0,carb:0.0,fat:3.6,purin:150.0,purinLevel:"mid",cat:1,tip:"Thịt gà không da tốt hơn thịt đỏ. Ăn 100–150g/bữa, ưu tiên luộc/hấp."},
+{name:"Thịt gà xào",unit:"100g",kcal:195.0,protein:28.0,carb:3.0,fat:8.0,purin:155.0,purinLevel:"mid",cat:1,tip:"Xào ít dầu, không ướp nhiều muối."},
+{name:"Thịt bò nạc",unit:"100g",kcal:250.0,protein:26.0,carb:0.0,fat:15.0,purin:110.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế ≤2 lần/tuần, tránh nước hầm xương bò."},
+{name:"Bò nướng",unit:"100g",kcal:270.0,protein:26.0,carb:1.0,fat:17.0,purin:115.0,purinLevel:"mid",cat:1,tip:"Ăn ít, tránh nướng cháy. Kết hợp rau xanh và uống nhiều nước."},
+{name:"Thịt heo nạc",unit:"100g thăn nạc",kcal:143.0,protein:22.0,carb:0.0,fat:5.5,purin:90.0,purinLevel:"low",cat:1,tip:"Purin thấp hơn thịt đỏ khác. Chọn phần nạc, tránh da và mỡ."},
+{name:"Thịt heo ba chỉ",unit:"100g",kcal:310.0,protein:17.0,carb:0.0,fat:26.0,purin:105.0,purinLevel:"mid",cat:1,tip:"Nhiều mỡ, không tốt cho người thừa cân. Ăn rất hạn chế."},
+{name:"Sườn heo",unit:"100g",kcal:292.0,protein:19.0,carb:0.0,fat:23.0,purin:100.0,purinLevel:"low",cat:1,tip:"Nhiều mỡ. Luộc/hấp tốt hơn chiên."},
+{name:"Heo quay",unit:"100g",kcal:335.0,protein:18.0,carb:0.0,fat:29.0,purin:110.0,purinLevel:"mid",cat:1,tip:"Rất nhiều chất béo bão hòa. Người thừa cân nên tránh."},
+{name:"Chả lụa",unit:"100g",kcal:190.0,protein:14.0,carb:4.0,fat:13.0,purin:95.0,purinLevel:"low",cat:1,tip:"Nhiều muối và chất béo ẩn. Chọn loại ít béo, ăn vừa phải."},
+{name:"Thịt vịt",unit:"100g bỏ da",kcal:201.0,protein:23.0,carb:0.0,fat:11.0,purin:138.0,purinLevel:"mid",cat:1,tip:"Bỏ da để giảm chất béo đáng kể."},
+{name:"Thịt trâu",unit:"100g",kcal:118.0,protein:21.0,carb:0.0,fat:3.0,purin:100.0,purinLevel:"mid",cat:1,tip:"Ít béo hơn thịt bò. Purin trung bình, ăn vừa phải."},
+{name:"Thịt dê",unit:"100g",kcal:143.0,protein:27.0,carb:0.0,fat:3.0,purin:120.0,purinLevel:"mid",cat:1,tip:"Ít béo hơn thịt bò. Hạn chế ≤1 lần/tuần."},
+{name:"Gan heo",unit:"100g",kcal:134.0,protein:20.0,carb:3.8,fat:3.6,purin:290.0,purinLevel:"high",cat:1,tip:"⚠️ Purin CỰC CAO. Người bị gút TRÁNH HOÀN TOÀN."},
+{name:"Thận heo",unit:"100g",kcal:97.0,protein:17.0,carb:0.0,fat:3.0,purin:340.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cao nhất nhóm nội tạng. TRÁNH HOÀN TOÀN."},
+{name:"Tim heo",unit:"100g",kcal:136.0,protein:17.0,carb:0.0,fat:7.0,purin:260.0,purinLevel:"high",cat:1,tip:"⚠️ Purin rất cao. Người bị gút không nên ăn."},
+{name:"Gan gà",unit:"100g",kcal:119.0,protein:17.0,carb:1.0,fat:5.0,purin:312.0,purinLevel:"high",cat:1,tip:"⚠️ Gan gà purin cao. Người bị gút không nên ăn."},
+{name:"Lòng heo",unit:"100g",kcal:94.0,protein:15.0,carb:2.0,fat:3.0,purin:145.0,purinLevel:"mid",cat:1,tip:"Purin trung bình–cao. Người bị gút nên rất hạn chế."},
+{name:"Thịt thỏ",unit:"100g",kcal:173.0,protein:33.0,carb:0.0,fat:3.5,purin:132.0,purinLevel:"mid",cat:1,tip:"Ít béo hơn thịt đỏ. Purin trung bình."},
+{name:"Thịt ngan",unit:"100g",kcal:185.0,protein:20.0,carb:0.0,fat:11.0,purin:130.0,purinLevel:"mid",cat:1,tip:"Bỏ da để giảm chất béo."},
+{name:"Huyết heo",unit:"100g",kcal:62.0,protein:12.0,carb:0.0,fat:0.7,purin:48.0,purinLevel:"low",cat:1,tip:"Purin thấp. Giàu sắt nhưng nhiều cholesterol."},
+{name:"Chân giò heo",unit:"100g",kcal:338.0,protein:19.0,carb:0.0,fat:29.0,purin:95.0,purinLevel:"low",cat:1,tip:"Purin thấp nhưng rất nhiều chất béo. Người thừa cân ăn rất ít."},
+{name:"Thịt bắp bò",unit:"100g",kcal:185.0,protein:26.0,carb:0.0,fat:8.5,purin:110.0,purinLevel:"mid",cat:1,tip:"Phổ biến trong phở. Purin trung bình."},
+{name:"Gân bò",unit:"100g",kcal:150.0,protein:25.0,carb:0.0,fat:5.0,purin:102.0,purinLevel:"mid",cat:1,tip:"Giàu collagen, purin trung bình. Tránh nước hầm đặc."},
+{name:"Xúc xích",unit:"1 cái 50g",kcal:155.0,protein:6.0,carb:2.0,fat:14.0,purin:80.0,purinLevel:"low",cat:1,tip:"Nhiều muối và chất béo bão hòa. Hạn chế tối đa."},
+{name:"Cá hồi",unit:"100g phi lê",kcal:208.0,protein:20.0,carb:0.0,fat:13.0,purin:170.0,purinLevel:"mid",cat:1,tip:"Omega-3 tốt. Purin trung bình, ăn 1–2 lần/tuần ≤150g."},
+{name:"Cá ngừ đóng hộp",unit:"100g",kcal:116.0,protein:26.0,carb:0.0,fat:1.0,purin:142.0,purinLevel:"mid",cat:1,tip:"Chọn loại ngâm nước. Ăn ≤2 lần/tuần."},
+{name:"Cá basa",unit:"100g phi lê",kcal:90.0,protein:15.0,carb:0.0,fat:3.0,purin:80.0,purinLevel:"low",cat:1,tip:"Purin thấp, ít béo. Rất phù hợp cho người bị gút."},
+{name:"Cá tra",unit:"100g",kcal:96.0,protein:16.0,carb:0.0,fat:3.5,purin:85.0,purinLevel:"low",cat:1,tip:"Tương tự cá basa, purin thấp và ít béo."},
+{name:"Cá rô phi",unit:"100g",kcal:128.0,protein:26.0,carb:0.0,fat:2.7,purin:95.0,purinLevel:"low",cat:1,tip:"Ít purin, giàu protein. Một trong những cá phù hợp nhất cho gút."},
+{name:"Cá kèo",unit:"100g",kcal:100.0,protein:18.0,carb:0.0,fat:3.0,purin:110.0,purinLevel:"mid",cat:1,tip:"Đặc trưng miền Nam, purin trung bình."},
+{name:"Cá lóc",unit:"100g",kcal:92.0,protein:19.0,carb:0.0,fat:1.5,purin:105.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Tránh uống nước canh cá lóc đậm đặc."},
+{name:"Cá diêu hồng",unit:"100g",kcal:128.0,protein:21.0,carb:0.0,fat:4.0,purin:88.0,purinLevel:"low",cat:1,tip:"Purin thấp. Hấp gừng hoặc nướng muối ớt rất tốt."},
+{name:"Cá thu",unit:"100g",kcal:205.0,protein:19.0,carb:0.0,fat:14.0,purin:145.0,purinLevel:"mid",cat:1,tip:"Nhiều Omega-3. Purin trung bình."},
+{name:"Cá trích",unit:"100g",kcal:158.0,protein:18.0,carb:0.0,fat:9.0,purin:210.0,purinLevel:"high",cat:1,tip:"⚠️ Cá trích purin cao. Người bị gút nên tránh."},
+{name:"Cá cơm khô",unit:"100g",kcal:284.0,protein:59.0,carb:0.0,fat:4.0,purin:480.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cực cao. TRÁNH HOÀN TOÀN khi bị gút."},
+{name:"Mực ống tươi",unit:"100g",kcal:92.0,protein:16.0,carb:3.0,fat:1.4,purin:193.0,purinLevel:"mid",cat:1,tip:"Tránh mực khô. Tươi thì ăn ít, ≤80g/lần."},
+{name:"Mực khô",unit:"100g",kcal:336.0,protein:60.0,carb:5.0,fat:8.0,purin:350.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cực cao. TRÁNH HOÀN TOÀN."},
+{name:"Tôm sú",unit:"100g tươi",kcal:99.0,protein:24.0,carb:0.0,fat:0.3,purin:147.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Ăn hạn chế 50–80g/lần."},
+{name:"Tôm thẻ",unit:"100g",kcal:85.0,protein:18.0,carb:1.0,fat:0.9,purin:140.0,purinLevel:"mid",cat:1,tip:"Hạn chế ≤80g/lần."},
+{name:"Tôm khô",unit:"100g",kcal:299.0,protein:63.0,carb:0.0,fat:3.0,purin:350.0,purinLevel:"high",cat:1,tip:"⚠️ TRÁNH HOÀN TOÀN khi bị gút. Purin cực cao."},
+{name:"Tôm hùm",unit:"100g thịt",kcal:89.0,protein:19.0,carb:1.2,fat:0.9,purin:160.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hấp/luộc thay vì nướng bơ."},
+{name:"Cua biển",unit:"100g thịt",kcal:83.0,protein:18.0,carb:0.0,fat:0.8,purin:152.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế 50–100g/lần."},
+{name:"Cua đồng",unit:"100g",kcal:79.0,protein:14.0,carb:2.0,fat:1.6,purin:148.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế uống nước canh."},
+{name:"Ghẹ",unit:"100g thịt",kcal:87.0,protein:18.0,carb:0.0,fat:1.5,purin:160.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Hạn chế ≤100g/lần."},
+{name:"Nghêu",unit:"100g thịt",kcal:74.0,protein:12.6,carb:3.9,fat:1.0,purin:210.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cao. Người bị gút nên tránh."},
+{name:"Hàu",unit:"100g",kcal:81.0,protein:9.0,carb:4.9,fat:2.3,purin:107.0,purinLevel:"mid",cat:1,tip:"Purin trung bình, giàu kẽm. Ăn ≤100g/lần."},
+{name:"Sò huyết",unit:"100g",kcal:76.0,protein:10.0,carb:6.0,fat:1.2,purin:220.0,purinLevel:"high",cat:1,tip:"⚠️ Purin cao. Người bị gút nên tránh."},
+{name:"Bạch tuộc",unit:"100g",kcal:82.0,protein:15.0,carb:2.0,fat:1.0,purin:137.0,purinLevel:"mid",cat:1,tip:"Purin trung bình. Ăn hạn chế."},
+{name:"Ốc hương",unit:"100g",kcal:90.0,protein:16.0,carb:3.0,fat:1.2,purin:175.0,purinLevel:"mid",cat:1,tip:"Purin trung bình–cao. Không ăn nước ốc hầm."},
+{name:"Sứa biển",unit:"100g",kcal:30.0,protein:3.8,carb:2.0,fat:0.1,purin:48.0,purinLevel:"low",cat:1,tip:"Purin thấp, ít calo. Thích hợp người bị gút."},
+{name:"Ếch",unit:"100g thịt",kcal:73.0,protein:16.0,carb:0.0,fat:0.5,purin:80.0,purinLevel:"low",cat:1,tip:"Ít calo và purin thấp. Rất phù hợp người bị gút."},
+{name:"Lươn",unit:"100g",kcal:185.0,protein:18.0,carb:0.0,fat:12.0,purin:92.0,purinLevel:"low",cat:1,tip:"Purin thấp nhưng nhiều chất béo. Ăn vừa phải."},
+{name:"Cá bống",unit:"100g",kcal:85.0,protein:17.0,carb:0.0,fat:1.5,purin:95.0,purinLevel:"low",cat:1,tip:"Cá nhỏ miền Nam. Purin thấp."},
+{name:"Trứng cá",unit:"100g",kcal:143.0,protein:25.0,carb:1.0,fat:5.0,purin:300.0,purinLevel:"high",cat:1,tip:"⚠️ Trứng cá purin rất cao. Người bị gút nên TRÁNH."},
+{name:"Nước hầm xương",unit:"240ml",kcal:35.0,protein:6.0,carb:0.0,fat:1.0,purin:290.0,purinLevel:"high",cat:1,tip:"⚠️ TRÁNH HOÀN TOÀN! Hầm xương lâu cô đặc purin trong nước."},
+{name:"Rau muống",unit:"100g",kcal:19.0,protein:2.6,carb:3.1,fat:0.2,purin:22.0,purinLevel:"low",cat:2,tip:"Rau quốc dân Việt Nam, purin rất thấp. Xào tỏi hoặc luộc đều tuyệt vời."},
+{name:"Bắp cải",unit:"100g",kcal:25.0,protein:1.3,carb:5.8,fat:0.1,purin:18.0,purinLevel:"low",cat:2,tip:"Ít purin và ít calo. Lý tưởng cho người bị gút và thừa cân."},
+{name:"Bông cải xanh",unit:"100g",kcal:34.0,protein:2.8,carb:7.0,fat:0.4,purin:70.0,purinLevel:"low",cat:2,tip:"Giàu vitamin C giúp đào thải uric acid. Hấp giữ dinh dưỡng tốt nhất."},
+{name:"Bông cải trắng",unit:"100g",kcal:25.0,protein:1.9,carb:5.0,fat:0.3,purin:51.0,purinLevel:"low",cat:2,tip:"Purin thấp, ít calo. Thay thế cơm trong chế độ low-carb."},
+{name:"Cải bó xôi",unit:"100g",kcal:23.0,protein:2.9,carb:3.6,fat:0.4,purin:57.0,purinLevel:"low",cat:2,tip:"Giàu folate và sắt, purin thấp."},
+{name:"Rau cải xanh",unit:"100g",kcal:20.0,protein:1.8,carb:3.7,fat:0.2,purin:25.0,purinLevel:"low",cat:2,tip:"Phổ biến trong bữa cơm Việt. Luộc chấm mắm hoặc xào tỏi."},
+{name:"Cải thìa",unit:"100g",kcal:13.0,protein:1.5,carb:2.2,fat:0.2,purin:20.0,purinLevel:"low",cat:2,tip:"Rất ít calo và purin."},
+{name:"Rau lang",unit:"100g",kcal:25.0,protein:2.8,carb:4.3,fat:0.2,purin:18.0,purinLevel:"low",cat:2,tip:"Ngọn khoai lang xào tỏi ít purin và ít calo."},
+{name:"Mồng tơi",unit:"100g",kcal:19.0,protein:1.8,carb:3.4,fat:0.3,purin:22.0,purinLevel:"low",cat:2,tip:"Mát, tốt cho tiêu hóa và thận. Purin thấp."},
+{name:"Rau dền",unit:"100g",kcal:23.0,protein:2.1,carb:4.0,fat:0.3,purin:30.0,purinLevel:"low",cat:2,tip:"Giàu sắt và calcium. Purin thấp."},
+{name:"Cà rốt",unit:"100g",kcal:41.0,protein:0.9,carb:10.0,fat:0.2,purin:15.0,purinLevel:"low",cat:2,tip:"Giàu beta-carotene, purin rất thấp."},
+{name:"Cà chua",unit:"100g",kcal:18.0,protein:0.9,carb:3.9,fat:0.2,purin:11.0,purinLevel:"low",cat:2,tip:"Giàu lycopene, purin thấp. Giúp chống viêm."},
+{name:"Dưa chuột",unit:"100g",kcal:16.0,protein:0.7,carb:3.6,fat:0.1,purin:7.0,purinLevel:"low",cat:2,tip:"Hàm lượng nước cao, purin gần bằng 0. Giúp thận đào thải uric acid."},
+{name:"Bí đỏ",unit:"100g",kcal:26.0,protein:1.0,carb:6.5,fat:0.1,purin:44.0,purinLevel:"low",cat:2,tip:"Giàu beta-carotene, ít calo, purin thấp."},
+{name:"Bí đao",unit:"100g",kcal:13.0,protein:0.6,carb:3.0,fat:0.1,purin:16.0,purinLevel:"low",cat:2,tip:"Giải nhiệt, lợi tiểu. Cực kỳ thích hợp cho người bị gút."},
+{name:"Khổ qua",unit:"100g",kcal:17.0,protein:1.0,carb:3.7,fat:0.2,purin:30.0,purinLevel:"low",cat:2,tip:"Hỗ trợ hạ đường huyết. Purin thấp, rất tốt cho sức khỏe."},
+{name:"Mướp",unit:"100g",kcal:20.0,protein:1.2,carb:4.3,fat:0.2,purin:15.0,purinLevel:"low",cat:2,tip:"Ngọt, mát, purin thấp."},
+{name:"Su su",unit:"100g",kcal:19.0,protein:0.8,carb:4.5,fat:0.1,purin:20.0,purinLevel:"low",cat:2,tip:"Ít calo và purin. Tốt cho thận."},
+{name:"Giá đỗ",unit:"100g",kcal:30.0,protein:3.0,carb:5.9,fat:0.2,purin:50.0,purinLevel:"low",cat:2,tip:"Purin thấp hơn đậu nguyên hạt vì đã nảy mầm."},
+{name:"Bắp (ngô)",unit:"90g hạt",kcal:132.0,protein:4.8,carb:29.0,fat:1.8,purin:35.0,purinLevel:"low",cat:2,tip:"Purin thấp nhưng nhiều carb. Ăn 1 bắp/bữa."},
+{name:"Khoai lang",unit:"100g luộc",kcal:86.0,protein:1.6,carb:20.0,fat:0.1,purin:10.0,purinLevel:"low",cat:2,tip:"Nguồn carb lành mạnh thay thế cơm. Purin rất thấp."},
+{name:"Khoai tây",unit:"100g luộc",kcal:87.0,protein:1.9,carb:20.0,fat:0.1,purin:16.0,purinLevel:"low",cat:2,tip:"Purin thấp. Luộc/hấp tốt hơn chiên."},
+{name:"Khoai sọ",unit:"100g luộc",kcal:83.0,protein:1.4,carb:20.0,fat:0.1,purin:12.0,purinLevel:"low",cat:2,tip:"Purin thấp, đa dạng hóa nguồn carb."},
+{name:"Nấm rơm",unit:"100g",kcal:35.0,protein:3.5,carb:6.0,fat:0.4,purin:90.0,purinLevel:"low",cat:2,tip:"Đặc sản Việt, purin vừa phải. Ăn 100–150g/bữa."},
+{name:"Nấm bào ngư",unit:"100g",kcal:33.0,protein:3.3,carb:6.1,fat:0.4,purin:92.0,purinLevel:"low",cat:2,tip:"Purin thấp, thay thế thịt tốt."},
+{name:"Nấm đông cô",unit:"100g",kcal:34.0,protein:2.2,carb:6.8,fat:0.5,purin:58.0,purinLevel:"low",cat:2,tip:"Giàu beta-glucan tăng miễn dịch. Purin thấp khi dùng tươi."},
+{name:"Nấm mèo",unit:"100g",kcal:43.0,protein:1.0,carb:10.0,fat:0.2,purin:38.0,purinLevel:"low",cat:2,tip:"Hỗ trợ tuần hoàn máu. Purin thấp, ít calo."},
+{name:"Cải ngọt",unit:"100g",kcal:18.0,protein:1.5,carb:3.5,fat:0.2,purin:22.0,purinLevel:"low",cat:2,tip:"Rau phổ biến Việt, purin thấp, ít calo."},
+{name:"Rau ngót",unit:"100g",kcal:46.0,protein:5.4,carb:6.5,fat:0.7,purin:55.0,purinLevel:"low",cat:2,tip:"Giàu protein thực vật và vitamin C. Purin thấp."},
+{name:"Rau đay",unit:"100g",kcal:36.0,protein:3.2,carb:6.3,fat:0.4,purin:40.0,purinLevel:"low",cat:2,tip:"Nhớt, mát, tốt cho tiêu hóa. Purin thấp."},
+{name:"Cà tím",unit:"100g",kcal:25.0,protein:1.0,carb:6.0,fat:0.2,purin:30.0,purinLevel:"low",cat:2,tip:"Anthocyanin chống viêm, purin thấp."},
+{name:"Ớt chuông",unit:"100g",kcal:31.0,protein:1.0,carb:7.3,fat:0.3,purin:14.0,purinLevel:"low",cat:2,tip:"Giàu vitamin C gấp 2–3 lần cam. Purin thấp."},
+{name:"Măng tươi",unit:"100g",kcal:27.0,protein:2.6,carb:5.2,fat:0.3,purin:80.0,purinLevel:"low",cat:2,tip:"Purin thấp. Giàu chất xơ."},
+{name:"Hoa chuối",unit:"100g",kcal:60.0,protein:1.6,carb:13.4,fat:0.2,purin:42.0,purinLevel:"low",cat:2,tip:"Phổ biến trong ẩm thực Việt. Purin thấp."},
+{name:"Rau sam",unit:"100g",kcal:20.0,protein:1.3,carb:3.5,fat:0.4,purin:25.0,purinLevel:"low",cat:2,tip:"Omega-3 thực vật cao. Purin thấp. Lợi tiểu."},
+{name:"Cần tây",unit:"100g",kcal:16.0,protein:0.7,carb:3.0,fat:0.2,purin:30.0,purinLevel:"low",cat:2,tip:"Lợi tiểu tự nhiên, hỗ trợ đào thải uric acid."},
+{name:"Rau má",unit:"100g",kcal:35.0,protein:2.4,carb:6.5,fat:0.4,purin:25.0,purinLevel:"low",cat:2,tip:"Mát gan, lợi thận. Purin thấp."},
+{name:"Bắp cải tím",unit:"100g",kcal:31.0,protein:1.4,carb:7.0,fat:0.2,purin:22.0,purinLevel:"low",cat:2,tip:"Giàu anthocyanin chống oxy hóa. Purin thấp."},
+{name:"Củ cải trắng",unit:"100g",kcal:18.0,protein:0.6,carb:4.0,fat:0.1,purin:15.0,purinLevel:"low",cat:2,tip:"Lợi tiểu nhẹ, giúp đào thải uric acid. Purin thấp."},
+{name:"Hành tây",unit:"100g",kcal:40.0,protein:1.1,carb:9.3,fat:0.1,purin:9.0,purinLevel:"low",cat:2,tip:"Quercetin chống viêm, hỗ trợ tốt cho gút. Purin thấp."},
+{name:"Atiso",unit:"100g",kcal:47.0,protein:3.3,carb:10.5,fat:0.2,purin:78.0,purinLevel:"low",cat:2,tip:"Hỗ trợ gan và thận, giúp đào thải uric acid. Purin thấp."},
+{name:"Đậu xanh",unit:"100g nấu",kcal:105.0,protein:7.0,carb:19.0,fat:0.4,purin:80.0,purinLevel:"low",cat:2,tip:"Purin thấp, giàu chất xơ. Tốt cho tiêu hóa."},
+{name:"Đậu đen",unit:"100g nấu",kcal:132.0,protein:9.0,carb:24.0,fat:0.5,purin:75.0,purinLevel:"low",cat:2,tip:"Giàu anthocyanin chống oxy hóa. Purin thấp."},
+{name:"Đậu Hà Lan",unit:"100g",kcal:81.0,protein:5.4,carb:14.0,fat:0.4,purin:84.0,purinLevel:"low",cat:2,tip:"Purin thấp, giàu chất xơ và vitamin C."},
+{name:"Đậu bắp",unit:"100g",kcal:33.0,protein:1.9,carb:7.5,fat:0.2,purin:35.0,purinLevel:"low",cat:2,tip:"Rất ít purin, giàu chất nhầy tốt cho tiêu hóa."},
+{name:"Đậu phụ",unit:"100g cứng",kcal:76.0,protein:8.0,carb:2.0,fat:4.5,purin:68.0,purinLevel:"low",cat:2,tip:"Protein thực vật tuyệt vời, purin thấp. Thay thế thịt lý tưởng."},
+{name:"Đậu phụ non",unit:"100g",kcal:55.0,protein:5.0,carb:2.0,fat:3.0,purin:60.0,purinLevel:"low",cat:2,tip:"Ít calo hơn đậu phụ cứng. Phù hợp cho người giảm cân."},
+{name:"Đậu nành",unit:"100g hạt luộc",kcal:173.0,protein:17.0,carb:10.0,fat:9.0,purin:190.0,purinLevel:"mid",cat:2,tip:"Đậu nành nguyên hạt purin cao. Ưu tiên đậu phụ thay đậu nành."},
+{name:"Cơm trắng",unit:"1 chén 200g",kcal:260.0,protein:5.4,carb:57.0,fat:0.4,purin:25.0,purinLevel:"low",cat:2,tip:"Purin thấp nhưng GI cao. Kiểm soát ≤1.5 chén/bữa."},
+{name:"Gạo lứt",unit:"1 chén 200g",kcal:216.0,protein:4.5,carb:45.0,fat:1.8,purin:28.0,purinLevel:"low",cat:2,tip:"Nhiều chất xơ hơn gạo trắng. Purin thấp."},
+{name:"Yến mạch",unit:"40g 1 khẩu phần",kcal:152.0,protein:5.5,carb:27.0,fat:2.6,purin:30.0,purinLevel:"low",cat:2,tip:"Ngũ cốc lành mạnh, giàu chất xơ hòa tan. Purin thấp."},
+{name:"Dưa hấu",unit:"200g",kcal:60.0,protein:1.2,carb:15.0,fat:0.2,purin:18.0,purinLevel:"low",cat:3,tip:"Giải nhiệt, giàu kali. Purin thấp, hỗ trợ thận đào thải uric acid."},
+{name:"Chuối",unit:"1 quả 100g",kcal:89.0,protein:1.1,carb:23.0,fat:0.3,purin:57.0,purinLevel:"low",cat:3,tip:"Giàu kali giúp thải uric acid. Purin thấp. Ăn 1–2 quả/ngày."},
+{name:"Xoài",unit:"100g",kcal:60.0,protein:0.8,carb:15.0,fat:0.4,purin:12.0,purinLevel:"low",cat:3,tip:"Giàu vitamin C. Purin thấp. Người thừa cân hạn chế vì đường cao."},
+{name:"Ổi",unit:"100g",kcal:68.0,protein:2.6,carb:14.0,fat:1.0,purin:14.0,purinLevel:"low",cat:3,tip:"Giàu vitamin C nhất. Vitamin C giúp giảm uric acid máu."},
+{name:"Đu đủ chín",unit:"100g",kcal:43.0,protein:0.5,carb:11.0,fat:0.3,purin:16.0,purinLevel:"low",cat:3,tip:"Ít calo, tốt cho tiêu hóa. Purin thấp."},
+{name:"Thanh long",unit:"100g",kcal:60.0,protein:1.2,carb:13.0,fat:0.4,purin:18.0,purinLevel:"low",cat:3,tip:"Đặc sản Việt Nam, giàu chất xơ và vitamin C. Purin thấp."},
+{name:"Bưởi",unit:"100g",kcal:42.0,protein:0.8,carb:11.0,fat:0.1,purin:14.0,purinLevel:"low",cat:3,tip:"Giàu vitamin C. Chú ý: bưởi có thể tương tác với một số thuốc gút."},
+{name:"Cam",unit:"1 quả 130g",kcal:62.0,protein:1.2,carb:15.0,fat:0.2,purin:19.0,purinLevel:"low",cat:3,tip:"Vitamin C cao giúp thận đào thải uric acid."},
+{name:"Dứa (thơm)",unit:"100g",kcal:50.0,protein:0.5,carb:13.0,fat:0.1,purin:22.0,purinLevel:"low",cat:3,tip:"Enzyme bromelain chống viêm. Purin thấp."},
+{name:"Nho",unit:"100g",kcal:69.0,protein:0.7,carb:18.0,fat:0.2,purin:27.0,purinLevel:"low",cat:3,tip:"Purin thấp. Hạn chế vì đường cao."},
+{name:"Táo",unit:"1 quả 150g",kcal:78.0,protein:0.4,carb:21.0,fat:0.2,purin:14.0,purinLevel:"low",cat:3,tip:"Giàu chất xơ pectin, purin thấp."},
+{name:"Lê",unit:"1 quả 180g",kcal:101.0,protein:0.6,carb:27.0,fat:0.2,purin:10.0,purinLevel:"low",cat:3,tip:"Purin thấp, ít calo."},
+{name:"Sầu riêng",unit:"100g",kcal:147.0,protein:1.5,carb:27.0,fat:5.0,purin:25.0,purinLevel:"low",cat:3,tip:"Purin thấp nhưng cực kỳ nhiều calo. Người thừa cân nên TRÁNH."},
+{name:"Dừa tươi",unit:"240ml nước",kcal:45.0,protein:0.5,carb:9.0,fat:0.5,purin:8.0,purinLevel:"low",cat:3,tip:"Bổ điện giải, purin thấp. Uống 1 trái/ngày."},
+{name:"Nhãn",unit:"100g",kcal:60.0,protein:1.3,carb:15.0,fat:0.1,purin:15.0,purinLevel:"low",cat:3,tip:"Purin thấp nhưng đường cao. Ăn 10–15 hạt/lần."},
+{name:"Vải",unit:"100g",kcal:66.0,protein:0.8,carb:17.0,fat:0.4,purin:18.0,purinLevel:"low",cat:3,tip:"Purin thấp. Đường cao, hạn chế khi thừa cân."},
+{name:"Mãng cầu",unit:"100g",kcal:94.0,protein:2.1,carb:24.0,fat:0.3,purin:20.0,purinLevel:"low",cat:3,tip:"Purin thấp nhưng đường khá cao."},
+{name:"Chôm chôm",unit:"100g",kcal:82.0,protein:0.9,carb:21.0,fat:0.2,purin:15.0,purinLevel:"low",cat:3,tip:"Ngọt, purin thấp. Giàu vitamin C."},
+{name:"Bơ quả",unit:"100g",kcal:160.0,protein:2.0,carb:9.0,fat:15.0,purin:22.0,purinLevel:"low",cat:3,tip:"Chất béo lành mạnh (MUFA), purin thấp. Ăn nửa quả/ngày."},
+{name:"Chanh",unit:"30ml nước cốt",kcal:8.0,protein:0.1,carb:2.6,fat:0.1,purin:4.0,purinLevel:"low",cat:3,tip:"Vitamin C cao, purin gần 0. Nước chanh ấm buổi sáng giúp thận tốt hơn."},
+{name:"Trứng gà",unit:"1 quả 60g",kcal:78.0,protein:6.0,carb:0.6,fat:5.0,purin:2.0,purinLevel:"low",cat:4,tip:"Gần như không có purin. An toàn nhất cho người bị gút. 1–2 quả/ngày."},
+{name:"Trứng vịt",unit:"1 quả 70g",kcal:130.0,protein:9.0,carb:1.0,fat:10.0,purin:3.0,purinLevel:"low",cat:4,tip:"Purin rất thấp. Ăn 1 quả/ngày là hợp lý."},
+{name:"Trứng vịt lộn",unit:"1 quả 70g",kcal:182.0,protein:13.0,carb:9.0,fat:10.0,purin:50.0,purinLevel:"low",cat:4,tip:"Purin thấp. Ăn 3–4 quả/tuần với người bị gút."},
+{name:"Trứng cút",unit:"5 quả 50g",kcal:79.0,protein:5.5,carb:0.4,fat:5.6,purin:2.0,purinLevel:"low",cat:4,tip:"Purin rất thấp tương đương trứng gà."},
+{name:"Sữa tươi",unit:"240ml",kcal:149.0,protein:8.0,carb:11.7,fat:8.0,purin:0.0,purinLevel:"low",cat:4,tip:"Không có purin và giúp GIẢM nguy cơ gút. Uống 1–2 ly/ngày."},
+{name:"Sữa tươi ít béo",unit:"240ml",kcal:102.0,protein:8.0,carb:12.0,fat:2.4,purin:0.0,purinLevel:"low",cat:4,tip:"Tốt hơn cho người thừa cân. Không có purin."},
+{name:"Sữa chua",unit:"100g",kcal:61.0,protein:3.5,carb:4.7,fat:3.3,purin:8.0,purinLevel:"low",cat:4,tip:"Purin rất thấp, giúp giảm nguy cơ gút. Chọn loại không đường."},
+{name:"Sữa chua Hy Lạp",unit:"100g",kcal:59.0,protein:10.0,carb:3.6,fat:0.4,purin:5.0,purinLevel:"low",cat:4,tip:"Giàu protein hơn sữa chua thường, purin thấp."},
+{name:"Phô mai",unit:"30g 1 lát",kcal:113.0,protein:7.0,carb:0.4,fat:9.0,purin:5.0,purinLevel:"low",cat:4,tip:"Purin thấp. Nhiều béo bão hòa và muối. Ăn ≤30g/ngày."},
+{name:"Sữa đậu nành",unit:"240ml",kcal:80.0,protein:7.0,carb:4.0,fat:4.0,purin:18.0,purinLevel:"low",cat:4,tip:"Purin thấp hơn nhiều so với đậu nành nguyên hạt."},
+{name:"Hạt điều",unit:"30g 20 hạt",kcal:163.0,protein:5.0,carb:9.0,fat:13.0,purin:50.0,purinLevel:"low",cat:4,tip:"Chất béo không bão hòa tốt. Purin thấp. Ăn 30g/ngày."},
+{name:"Hạt hạnh nhân",unit:"30g",kcal:164.0,protein:6.0,carb:6.0,fat:14.0,purin:37.0,purinLevel:"low",cat:4,tip:"Giàu vitamin E. Purin thấp. Ăn vặt lành mạnh."},
+{name:"Hạt óc chó",unit:"30g",kcal:185.0,protein:4.3,carb:4.0,fat:18.0,purin:25.0,purinLevel:"low",cat:4,tip:"Giàu Omega-3. Purin thấp. Ăn ≤30g/ngày vì nhiều calo."},
+{name:"Đậu phộng",unit:"30g",kcal:166.0,protein:7.0,carb:4.5,fat:14.0,purin:79.0,purinLevel:"low",cat:4,tip:"Purin thấp nhưng nhiều calo. Ăn ≤30g/ngày."},
+{name:"Bia",unit:"330ml 1 lon",kcal:153.0,protein:1.3,carb:12.6,fat:0.0,purin:55.0,purinLevel:"mid",cat:4,tip:"⚠️ Cồn làm tăng uric acid VÀ giảm thải qua thận. TRÁNH HOÀN TOÀN khi bị gút."},
+{name:"Rượu vang đỏ",unit:"150ml",kcal:125.0,protein:0.1,carb:3.8,fat:0.0,purin:0.0,purinLevel:"mid",cat:4,tip:"⚠️ Cồn vẫn làm tăng uric acid dù ít purin hơn bia. Hạn chế tối đa."},
+{name:"Trà xanh",unit:"240ml",kcal:2.0,protein:0.0,carb:0.5,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"EGCG có thể giảm nồng độ uric acid. Uống 2–3 tách/ngày không đường."},
+{name:"Cà phê đen",unit:"240ml",kcal:2.0,protein:0.3,carb:0.0,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"Cà phê giúp GIẢM nguy cơ gút theo nghiên cứu. Uống đen không đường, ≤3 tách/ngày."},
+{name:"Nước ngọt có ga",unit:"330ml",kcal:140.0,protein:0.0,carb:38.0,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"⚠️ Fructose làm tăng uric acid máu. TRÁNH HOÀN TOÀN khi bị gút."},
+{name:"Nước atiso",unit:"240ml",kcal:10.0,protein:0.0,carb:2.0,fat:0.0,purin:2.0,purinLevel:"low",cat:4,tip:"Thức uống rất tốt cho người bị gút. Giúp gan và thận khỏe, hỗ trợ đào thải uric acid."},
+{name:"Nước ép bí đao",unit:"240ml",kcal:13.0,protein:0.5,carb:3.0,fat:0.1,purin:5.0,purinLevel:"low",cat:4,tip:"Lợi tiểu tự nhiên, cực tốt cho thận. Uống buổi sáng rất có lợi cho người bị gút."},
+{name:"Nước lọc",unit:"200ml",kcal:0.0,protein:0.0,carb:0.0,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"✅ Uống 2–3 lít/ngày giúp thận đào thải uric acid. THỨC UỐNG TỐT NHẤT cho gút."},
+{name:"Tỏi",unit:"3 tép 10g",kcal:13.0,protein:0.6,carb:3.0,fat:0.04,purin:8.0,purinLevel:"low",cat:4,tip:"Allicin kháng viêm. Purin thấp. Tốt cho tim mạch."},
+{name:"Gừng",unit:"5g tươi",kcal:4.0,protein:0.1,carb:0.9,fat:0.04,purin:5.0,purinLevel:"low",cat:4,tip:"Gingerol chống viêm rất mạnh, có thể giúp giảm đau trong cơn gút."},
+{name:"Nghệ",unit:"1 muỗng cà phê bột",kcal:9.0,protein:0.3,carb:2.0,fat:0.3,purin:3.0,purinLevel:"low",cat:4,tip:"Curcumin chống viêm mạnh mẽ, hỗ trợ tốt cho người bị gút."},
+{name:"Kim chi",unit:"100g",kcal:33.0,protein:2.0,carb:6.0,fat:0.6,purin:25.0,purinLevel:"low",cat:4,tip:"Probiotic tốt, purin thấp. Nhưng nhiều muối, ăn vừa phải."},
+{name:"Gỏi cuốn",unit:"2 cuốn 120g",kcal:145.0,protein:8.0,carb:22.0,fat:3.0,purin:65.0,purinLevel:"low",cat:4,tip:"Món gỏi tươi lành mạnh, purin thấp."},
+{name:"Giấm táo",unit:"1 muỗng canh",kcal:3.0,protein:0.0,carb:0.1,fat:0.0,purin:0.0,purinLevel:"low",cat:4,tip:"Không có purin. Có thể hỗ trợ kiểm soát uric acid."},
+{name:"Nước mắm",unit:"15ml",kcal:6.0,protein:1.0,carb:0.5,fat:0.0,purin:5.0,purinLevel:"low",cat:4,tip:"Purin thấp nhưng rất nhiều muối. Hạn chế muối để giảm áp lực thận."}
+];
 
 // ─── NAVIGATION ───────────────────────────────────────────────────
 
@@ -748,23 +934,34 @@ function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u03
 async function searchFoodsDB(q) {
   try {
     const r = await fetch(`${FOODS_API}?q=${encodeURIComponent(q)}`);
-    if (!r.ok) return [];
-    const data = await r.json();
-    // Map DB columns to app format
-    return data.map(row => ({
-      name:       row.name,
-      unit:       row.unit,
-      kcal:       row.kcal,
-      protein:    row.protein,
-      carb:       row.carb,
-      fat:        row.fat,
-      purin:      row.purin,
-      purinLevel: row.purin_level,
-      cat:        row.cat,
-      tip:        row.tip || '',
-      source:     row.source || 'builtin',
-    }));
-  } catch(e) { return []; }
+    if (r.ok) {
+      const data = await r.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map(row => ({
+          name:       row.name,
+          unit:       row.unit,
+          kcal:       Number(row.kcal),
+          protein:    Number(row.protein),
+          carb:       Number(row.carb),
+          fat:        Number(row.fat),
+          purin:      Number(row.purin),
+          purinLevel: row.purin_level,
+          cat:        Number(row.cat),
+          tip:        row.tip || '',
+          source:     row.source || 'builtin',
+        }));
+      }
+    } else {
+      console.warn('searchFoodsDB returned:', r.status, '— searching builtin');
+    }
+  } catch(e) {
+    console.warn('searchFoodsDB API failed:', e.message, '— searching builtin');
+  }
+  // Fallback: search in builtin 155 foods
+  const nq = norm(q.trim());
+  return BUILTIN_FOODS.filter(f =>
+    norm(f.name).includes(nq) || nq.includes(norm(f.name))
+  );
 }
 
 // Find best match from DB results
@@ -805,23 +1002,34 @@ async function loadAllFoods() {
   if (foodsCache.length) return foodsCache;
   try {
     const r = await fetch(FOODS_API);
-    if (!r.ok) return [];
-    const data = await r.json();
-    foodsCache = data.map(row => ({
-      name:       row.name,
-      unit:       row.unit,
-      kcal:       row.kcal,
-      protein:    row.protein,
-      carb:       row.carb,
-      fat:        row.fat,
-      purin:      row.purin,
-      purinLevel: row.purin_level,
-      cat:        row.cat,
-      tip:        row.tip || '',
-      source:     row.source || 'builtin',
-    }));
-    return foodsCache;
-  } catch(e) { return []; }
+    if (r.ok) {
+      const data = await r.json();
+      if (Array.isArray(data) && data.length > 0) {
+        foodsCache = data.map(row => ({
+          name:       row.name,
+          unit:       row.unit,
+          kcal:       Number(row.kcal),
+          protein:    Number(row.protein),
+          carb:       Number(row.carb),
+          fat:        Number(row.fat),
+          purin:      Number(row.purin),
+          purinLevel: row.purin_level,
+          cat:        Number(row.cat),
+          tip:        row.tip || '',
+          source:     row.source || 'builtin',
+        }));
+        console.log('loadAllFoods: loaded', foodsCache.length, 'foods from DB');
+        return foodsCache;
+      }
+    } else {
+      console.warn('loadAllFoods API returned:', r.status, '— using builtin fallback');
+    }
+  } catch(e) {
+    console.warn('loadAllFoods API failed:', e.message, '— using builtin fallback');
+  }
+  // Fallback: builtin foods always work
+  foodsCache = [...BUILTIN_FOODS];
+  return foodsCache;
 }
 
 function renderFood(f, isAI = false) {
@@ -1692,6 +1900,5 @@ function showToast(msg, ok) {
 }
 
 </script>
-
 </body>
 </html>
