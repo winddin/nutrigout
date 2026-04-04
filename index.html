@@ -1299,152 +1299,70 @@ function toggleRow(rid) {
 // FRIDGE & SHOPPING — API-backed with KV storage
 // ══════════════════════════════════════════════
 
-const FRIDGE_API = '/api/fridge';
-// (fridge state vars moved to top)
+const LEDGER_API = '/api/ledger';
+let trips = [];
 
-// ─── SUB-TAB TOGGLE ───────────────────────────
 function setFridgeTab(tab, btn) {
   fridgeTab = tab;
   document.querySelectorAll('.fridge-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Toggle active class on panes (CSS handles display)
-  const invPane  = document.getElementById('fridge-inv-pane');
-  const shopPane = document.getElementById('fridge-shop-pane');
-  if (tab === 'inv') {
-    invPane.classList.add('active');
-    shopPane.classList.remove('active');
-  } else {
-    shopPane.classList.add('active');
-    invPane.classList.remove('active');
-    renderShop(); // ensure shop list is rendered when tab opens
-  }
+  const inv  = document.getElementById('fridge-inv-pane');
+  const shop = document.getElementById('fridge-shop-pane');
+  if (tab === 'inv') { inv.classList.add('active'); shop.classList.remove('active'); }
+  else { shop.classList.add('active'); inv.classList.remove('active'); renderShop(); }
 }
 
-// ─── LOAD DATA FROM SERVER ─────────────────────
 async function renderFridge() {
-  if (!fridgeLoaded) {
-    await loadFridgeData();
-    fridgeLoaded = true;
-  }
-  renderInv();
-  renderShop();
-  updateSummary();
-  updateFridgeBadge();
+  if (!fridgeLoaded) { await loadFridgeData(); fridgeLoaded = true; }
+  renderInv(); renderShop(); updateSummary(); updateFridgeBadge();
 }
 
-async function getAuthHeaders() {
-  if (!initSupabase()) {
-    console.warn('getAuthHeaders: Supabase not initialized');
-    return { 'Content-Type': 'application/json' };
-  }
-  const { data: { session }, error } = await sbClient.auth.getSession();
-  if (error) console.warn('getAuthHeaders session error:', error.message);
-  const token = session?.access_token || '';
-  if (!token) console.warn('getAuthHeaders: no access token — user may not be signed in');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-  };
+async function apiCall(method, body, qs = '') {
+  const headers = await getAuthHeaders();
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(LEDGER_API + qs, opts);
+  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.error || r.status); }
+  return r.json();
 }
 
 async function loadFridgeData() {
   try {
-    const headers = await getAuthHeaders();
-    const res = await fetch(FRIDGE_API, { headers });
-    if (res.status === 401) {
-      console.error('loadFridgeData: 401 Unauthorized — token may be missing');
-      showToast('⚠️ Phiên đăng nhập hết hạn, thử đăng xuất và đăng nhập lại', false);
-      inventory = [];
-      shopping  = [];
-      return;
-    }
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    inventory = data.inventory || [];
-    shopping  = data.shopping  || [];
-    console.log('loadFridgeData OK:', inventory.length, 'inv,', shopping.length, 'shop');
+    const [inv, shop] = await Promise.all([
+      apiCall('GET', null, '?type=inventory'),
+      apiCall('GET', null, '?type=shopping'),
+    ]);
+    inventory = inv || [];
+    trips = shop || [];
   } catch(e) {
-    console.error('loadFridgeData error:', e);
-    inventory = [];
-    shopping  = [];
-    showToast('⚠️ Không kết nối được server', false);
+    console.error('loadFridgeData:', e.message);
+    showToast('Không tải được dữ liệu', false);
   }
 }
 
-// ─── SERVER WRITE HELPERS ──────────────────────
-async function saveInventory() {
-  try {
-    const headers = await getAuthHeaders();
-    const r = await fetch(FRIDGE_API, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ type: 'inventory', data: inventory }),
-    });
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      console.error('saveInventory failed:', r.status, err);
-      showToast('❌ Lỗi lưu: ' + (err.error || r.status), false);
-    }
-  } catch(e) {
-    console.error('saveInventory error:', e);
-    showToast('Lỗi lưu dữ liệu', false);
-  }
-}
-
-async function saveShopping() {
-  try {
-    const headers = await getAuthHeaders();
-    const r = await fetch(FRIDGE_API, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ type: 'shopping', data: shopping }),
-    });
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      console.error('saveShopping failed:', r.status, err);
-      showToast('❌ Lỗi lưu: ' + (err.error || r.status), false);
-    }
-  } catch(e) {
-    console.error('saveShopping error:', e);
-    showToast('Lỗi lưu dữ liệu', false);
-  }
-}
-
-// ─── BADGE ─────────────────────────────────────
-function updateFridgeBadge() {
-  const lowCount = inventory.filter(i => i.qty <= i.minQty && i.qty > 0).length;
-  const outCount = inventory.filter(i => i.qty <= 0).length;
-  const total = lowCount + outCount;
-  const badge = document.getElementById('fridgeBadge');
-  if (!badge) return;
-  if (total > 0) {
-    badge.textContent = total > 9 ? '9+' : total;
-    badge.classList.add('show');
-  } else {
-    badge.classList.remove('show');
-  }
-}
-
-// ─── RENDER INVENTORY ──────────────────────────
-// ─── UPDATE SUMMARY COUNTS ───────────────────
 function updateSummary() {
-  const okCount  = inventory.filter(i => i.qty > i.minQty).length;
-  const lowCount = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty).length;
-  const outCount = inventory.filter(i => i.qty <= 0).length;
-  const okEl  = document.getElementById('sumOk');
-  const lowEl = document.getElementById('sumLow');
-  const outEl = document.getElementById('sumOut');
-  if (okEl)  okEl.textContent  = okCount;
-  if (lowEl) lowEl.textContent = lowCount;
-  if (outEl) outEl.textContent = outCount;
+  const ok  = inventory.filter(i => i.qty > (i.minQty||0)).length;
+  const low = inventory.filter(i => i.qty > 0 && i.qty <= (i.minQty||0)).length;
+  const out = inventory.filter(i => i.qty <= 0).length;
+  const el = (id) => document.getElementById(id);
+  if(el('sumOk'))  el('sumOk').textContent  = ok;
+  if(el('sumLow')) el('sumLow').textContent = low;
+  if(el('sumOut')) el('sumOut').textContent = out;
 }
 
-// ─── FILTER ──────────────────────────────────
+function updateFridgeBadge() {
+  const n = inventory.filter(i => i.qty <= (i.minQty||0)).length;
+  const b = document.getElementById('fridgeBadge');
+  if (!b) return;
+  if (n > 0) { b.textContent = n > 9 ? '9+' : n; b.classList.add('show'); }
+  else b.classList.remove('show');
+}
+
 function setInvFilter(f) {
   invFilter = invFilter === f ? 'all' : f;
   ['ok','low','out'].forEach(s => {
-    const card = document.getElementById('sum-card-' + s);
-    if (card) card.classList.toggle('active-filter', invFilter === s);
+    const c = document.getElementById('sum-card-' + s);
+    if (c) c.classList.toggle('active-filter', invFilter === s);
   });
   renderInv();
 }
@@ -1452,155 +1370,104 @@ function setInvFilter(f) {
 function renderInv() {
   const el = document.getElementById('invList');
   updateSummary();
-  if (!inventory.length) {
-    el.innerHTML = '<div class="fridge-empty"><div class="ei">🧊</div><p>Chưa có gì trong tủ lạnh<br>Bấm "+ Thêm đồ" để bắt đầu</p></div>';
+  let items = [...inventory];
+  if (invFilter === 'ok')  items = items.filter(i => i.qty > (i.minQty||0));
+  if (invFilter === 'low') items = items.filter(i => i.qty > 0 && i.qty <= (i.minQty||0));
+  if (invFilter === 'out') items = items.filter(i => i.qty <= 0);
+  if (!items.length) {
+    el.innerHTML = `<div class="fridge-empty"><div class="ei">${invFilter!=='all'?'🔍':'🧊'}</div><p>${invFilter!=='all'?'Không có món nào':'Chưa có gì trong tủ lạnh<br>Bấm "+ Thêm" để bắt đầu'}</p></div>`;
     return;
   }
-  // Apply filter
-  let items = inventory;
-  if (invFilter === 'ok')  items = inventory.filter(i => i.qty > i.minQty);
-  if (invFilter === 'low') items = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty);
-  if (invFilter === 'out') items = inventory.filter(i => i.qty <= 0);
-  if (!items.length && invFilter !== 'all') {
-    el.innerHTML = '<div class="fridge-empty"><div class="ei">🔍</div><p>Không có món nào trong nhóm này</p></div>';
-    updateSummary();
-    return;
-  }
-
-  // Group by category
-  const cats = { meat:'🥩 Thịt & Cá', veg:'🥦 Rau củ', fruit:'🍎 Trái cây', dairy:'🥛 Trứng & Sữa', other:'📦 Khác' };
+  const cats = {meat:'🥩 Thịt & Cá',veg:'🥦 Rau củ',fruit:'🍎 Trái cây',dairy:'🥛 Trứng & Sữa',other:'📦 Khác'};
   const catOrder = ['meat','veg','fruit','dairy','other'];
   const grouped = {};
-  items.forEach(item => {
-    const cat = item.category || 'other';
-    if (!grouped[cat]) grouped[cat] = [];
-    grouped[cat].push(item);
-  });
-
+  items.forEach(item => { const c=item.category||'other'; if(!grouped[c]) grouped[c]=[]; grouped[c].push(item); });
   let html = '';
   catOrder.forEach(cat => {
-    if (!grouped[cat] || !grouped[cat].length) return;
+    if (!grouped[cat]?.length) return;
     html += `<div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:12px 0 7px">${cats[cat]}</div>`;
     grouped[cat].forEach(item => {
       const isOut = item.qty <= 0;
-      const isLow = !isOut && item.qty <= item.minQty;
-      const qtyClass = isOut ? 'empty' : isLow ? 'low' : 'ok';
-      const itemClass = isOut ? 'out-of-stock' : isLow ? 'low-stock' : '';
-      const qtyText = `${fmtQty(item.qty)}${item.unit}`;
-      let expiryHtml = '';
+      const isLow = !isOut && item.qty <= (item.minQty||item.min_qty||0);
+      const qc = isOut?'empty':isLow?'low':'ok';
+      const ic = isOut?'out-of-stock':isLow?'low-stock':'';
+      let exp = '';
       if (item.expiry) {
-        const days = Math.ceil((new Date(item.expiry) - new Date()) / 86400000);
-        const expiryClass = days <= 2 ? 'expiring' : '';
-        const expiryText = days < 0 ? 'Hết hạn' : days === 0 ? 'Hôm nay' : `${days} ngày`;
-        expiryHtml = `<span class="inv-expiry ${expiryClass}">⏱ ${expiryText}</span>`;
+        const d = Math.ceil((new Date(item.expiry)-new Date())/86400000);
+        exp = `<span class="inv-expiry ${d<=2?'expiring':''}">${d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày'}</span>`;
       }
-      html += `<div class="inv-item ${itemClass}" id="inv-${item.id}">
-        <span class="inv-icon">${item.emoji || '🍱'}</span>
+      const safeId = item.id.replace(/'/g,"\\'");
+      const safeName = item.name.replace(/'/g,"\\'");
+      html += `<div class="inv-item ${ic}" id="inv-${item.id}">
+        <span class="inv-icon" onclick="showItemLog('${safeId}','${safeName}')" style="cursor:pointer" title="Xem lịch sử">${item.emoji||'🍱'}</span>
         <div class="inv-info">
           <div class="inv-name">${item.name}</div>
           <div class="inv-meta">
-            <span class="inv-qty ${qtyClass}">${qtyText}</span>
-            ${isLow ? '<span style="font-size:.65rem;color:var(--amber)">⚠ Sắp hết</span>' : ''}
-            ${isOut ? '<span style="font-size:.65rem;color:var(--red)">✕ Hết rồi</span>' : ''}
-            ${expiryHtml}
+            <span class="inv-qty ${qc}">${fmtQty(item.qty)}${item.unit}</span>
+            ${isLow?'<span style="font-size:.65rem;color:var(--amber)">⚠ Sắp hết</span>':''}
+            ${isOut?'<span style="font-size:.65rem;color:var(--red)">✕ Hết rồi</span>':''}
+            ${exp}
           </div>
         </div>
         <div class="inv-controls">
-          <button class="inv-btn minus" onclick="openAdjustModal('${item.id}','minus')" title="Lấy ra">−</button>
-          <button class="inv-btn plus"  onclick="openAdjustModal('${item.id}','plus')"  title="Thêm vào">+</button>
-          <button class="inv-btn delete" onclick="deleteInvItem('${item.id}')" title="Xóa">🗑</button>
+          <button class="inv-btn minus" onclick="openAdjustModal('${safeId}','minus')">−</button>
+          <button class="inv-btn plus"  onclick="openAdjustModal('${safeId}','plus')">+</button>
+          <button class="inv-btn delete" onclick="deleteInvItem('${safeId}')">🗑</button>
         </div>
       </div>`;
     });
   });
   el.innerHTML = html;
-  updateSummary();
 }
 
-// ─── RENDER SHOPPING LIST ──────────────────────
-function renderShop() {
-  const el = document.getElementById('shopList');
-  if (!shopping.length) {
-    el.innerHTML = '<div class="fridge-empty"><div class="ei">🛒</div><p>Danh sách trống<br>Bấm "+ Thêm món" để lên kế hoạch</p></div>';
-    return;
-  }
-  const today = new Date().toISOString().slice(0,10);
-  const tomorrow = new Date(Date.now()+86400000).toISOString().slice(0,10);
-  const sorted = [...shopping].sort((a,b) => (a.shopDate||'9999') < (b.shopDate||'9999') ? -1 : 1);
-  const groups = {};
-  sorted.forEach(item => {
-    const d = item.shopDate || 'later';
-    if (!groups[d]) groups[d] = [];
-    groups[d].push(item);
-  });
-  let html = '';
-  Object.entries(groups).forEach(([date, items]) => {
-    let label, badgeClass;
-    if (date === today) { label = `Hôm nay (${fmtDate(date)})`; badgeClass = 'badge-today'; }
-    else if (date === tomorrow) { label = `Ngày mai (${fmtDate(date)})`; badgeClass = 'badge-soon'; }
-    else if (date === 'later') { label = 'Chưa định ngày'; badgeClass = 'badge-later'; }
-    else { label = fmtDate(date); badgeClass = date < today ? 'badge-soon' : 'badge-later'; }
-
-    html += `<div class="shop-date-group">
-      <div class="shop-date-label">📅 ${label} <span class="shop-date-badge ${badgeClass}">${items.length} món</span></div>`;
-    items.forEach(item => {
-      html += `<div class="shop-item" id="shop-${item.id}">
-        <div class="shop-check" onclick="markBought('${item.id}')">✓</div>
-        <div class="shop-item-info">
-          <div class="shop-item-name">${item.emoji||'🛍'} ${item.name}</div>
-          ${item.note ? `<div class="shop-item-meta">${item.note}</div>` : ''}
-        </div>
-        <span class="shop-item-qty">${fmtQty(item.qty)}${item.unit}</span>
-        <button class="shop-del" onclick="deleteShopItem('${item.id}')">✕</button>
-      </div>`;
-    });
-    html += '</div>';
-  });
-  el.innerHTML = html;
-}
-
-// Format number with thousand separator: 1000 → 1,000
-function fmtQty(qty) {
-  return Number(qty).toLocaleString('en-US');
-}
-
-function fmtDate(d) {
-  if (!d || d === 'later') return '';
-  const dt = new Date(d + 'T00:00:00');
-  return dt.toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit'});
-}
-
-// ─── ADJUST MODAL (- / +) ──────────────────────
-function openAdjustModal(id, mode) {
-  adjustTarget = inventory.find(i => i.id === id);
-  adjustMode = mode;
-  if (!adjustTarget) return;
-
-  const isPlusMinus = mode === 'minus';
-  const title = mode === 'minus' ? `Lấy ra khỏi tủ` : `Thêm vào tủ`;
-  const color  = mode === 'minus' ? 'var(--red)' : 'var(--accent)';
-  const sign   = mode === 'minus' ? '-' : '+';
-  const unit   = adjustTarget.unit;
-  const cur    = adjustTarget.qty;
-
-  // Quick presets: if gram-based show g, else show 1,2,3,5
-  const isGram = ['g','gram','kg'].includes(unit.toLowerCase());
-  const quickAmts = isGram ? [10, 50, 100, 200] : [1, 2, 3, 5];
-  const quickLabels = isGram
-    ? quickAmts.map(a => a >= 1000 ? (a/1000)+'kg' : a+'g')
-    : quickAmts.map(a => sign + a + ' ' + unit);
-
+async function showItemLog(itemId, itemName) {
+  openModalFn();
   document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title" style="color:${color}">${mode==='minus'?'−':'+'} ${title}</div>
-    <div class="adjust-food-name">${adjustTarget.emoji||'🍱'} ${adjustTarget.name}</div>
-    <div class="adjust-current">Hiện có: <strong style="color:var(--accent)">${cur}${unit}</strong></div>
-    <div class="adjust-quick" id="adjQuick">
-      ${quickAmts.map((a,i) => `<button class="adj-quick-btn" onclick="selectQuickAdj(${a})">${sign}${quickLabels[i]}</button>`).join('')}
-    </div>
+    <div class="modal-title">📋 ${itemName}</div>
+    <div id="logList" style="max-height:280px;overflow-y:auto"><div style="text-align:center;padding:20px;color:var(--text3)">Đang tải...</div></div>`;
+  try {
+    const logs = await apiCall('GET', null, `?type=inventory_log&item_id=${encodeURIComponent(itemId)}`);
+    if (!logs.length) { document.getElementById('logList').innerHTML='<div style="text-align:center;padding:20px;color:var(--text3)">Chưa có giao dịch nào</div>'; return; }
+    let running = 0;
+    const sorted = [...logs].reverse();
+    const rows = sorted.map(log => {
+      running += Number(log.delta);
+      const isPos = log.delta > 0;
+      const dt = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:.9rem">${isPos?'➕':'➖'}</span>
+        <div style="flex:1">
+          <div style="font-size:.82rem;font-weight:600;color:${isPos?'var(--accent)':'var(--red)'}">${isPos?'+':''}${fmtQty(log.delta)}${log.unit}</div>
+          <div style="font-size:.7rem;color:var(--text3)">${log.note||'—'} · ${dt}</div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:var(--text2);min-width:50px;text-align:right">= ${fmtQty(running)}${log.unit}</div>
+      </div>`;
+    });
+    document.getElementById('logList').innerHTML = rows.reverse().join('');
+  } catch(e) { document.getElementById('logList').innerHTML=`<div style="color:var(--red);padding:12px">Lỗi: ${e.message}</div>`; }
+}
+
+function openAdjustModal(id, mode) {
+  window._selectedQuickAdj = null;
+  const item = inventory.find(i => i.id === id);
+  if (!item) return;
+  adjustTarget = item; adjustMode = mode;
+  const isGram = ['g','kg','gram'].includes((item.unit||'g').toLowerCase());
+  const quickAmts = isGram ? [10,50,100,200] : [1,2,3,5];
+  const sign = mode==='minus' ? '-' : '+';
+  const color = mode==='minus' ? 'var(--red)' : 'var(--accent)';
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-title" style="color:${color}">${mode==='minus'?'− Lấy ra':'+ Thêm vào'}</div>
+    <div class="adjust-food-name">${item.emoji||'🍱'} ${item.name}</div>
+    <div class="adjust-current">Hiện có: <strong style="color:var(--accent)">${fmtQty(item.qty)}${item.unit}</strong></div>
+    <div class="adjust-quick">${quickAmts.map(a=>`<button class="adj-quick-btn" onclick="selectQuickAdj(${a})">${sign}${fmtQty(a)}</button>`).join('')}</div>
     <div class="adjust-custom">
-      <input type="number" class="adj-custom-input" id="adjCustom" placeholder="Nhập số khác" min="0"
-        oninput="updateAdjPreview()">
-      <span class="adj-unit-label">${unit}</span>
+      <input type="number" class="adj-custom-input" id="adjCustom" placeholder="Nhập số khác" min="0" oninput="updateAdjPreview()">
+      <span class="adj-unit-label">${item.unit}</span>
+    </div>
+    <div class="modal-field" style="margin-top:8px">
+      <div class="modal-label">Ghi chú (tuỳ chọn)</div>
+      <input class="modal-input" id="adjNote" placeholder="${mode==='minus'?'vd: Nấu canh':'vd: Mua thêm'}">
     </div>
     <div class="adj-result-preview" id="adjPreview">Chọn số lượng</div>
     <div class="modal-btn-row">
@@ -1610,96 +1477,68 @@ function openAdjustModal(id, mode) {
   openModalFn();
 }
 
-window._selectedQuickAdj = null;
 function selectQuickAdj(amt) {
-  _selectedQuickAdj = amt;
+  window._selectedQuickAdj = amt;
   document.getElementById('adjCustom').value = '';
   document.querySelectorAll('.adj-quick-btn').forEach(b => b.classList.remove('selected'));
   event.target.classList.add('selected');
   updateAdjPreview();
 }
+
 function updateAdjPreview() {
-  const customVal = parseFloat(document.getElementById('adjCustom')?.value);
-  if (!isNaN(customVal) && customVal > 0) _selectedQuickAdj = customVal;
-  const amt = _selectedQuickAdj;
-  const preview = document.getElementById('adjPreview');
-  if (!preview || !adjustTarget || !amt) { if(preview) preview.textContent = 'Chọn số lượng'; return; }
-  const newQty = adjustMode === 'minus'
-    ? Math.max(0, adjustTarget.qty - amt)
-    : adjustTarget.qty + amt;
-  preview.innerHTML = `${fmtQty(adjustTarget.qty)}${adjustTarget.unit} → <span>${fmtQty(newQty)}${adjustTarget.unit}</span>`;
+  const cv = parseFloat(document.getElementById('adjCustom')?.value);
+  if (!isNaN(cv) && cv > 0) window._selectedQuickAdj = cv;
+  const amt = window._selectedQuickAdj;
+  const p = document.getElementById('adjPreview');
+  if (!p || !adjustTarget || !amt) { if(p) p.textContent='Chọn số lượng'; return; }
+  const nq = adjustMode==='minus' ? Math.max(0,adjustTarget.qty-amt) : adjustTarget.qty+amt;
+  p.innerHTML = `${fmtQty(adjustTarget.qty)}${adjustTarget.unit} → <span>${fmtQty(nq)}${adjustTarget.unit}</span>`;
 }
 
 async function confirmAdjust() {
-  const customVal = parseFloat(document.getElementById('adjCustom')?.value);
-  if (!isNaN(customVal) && customVal > 0) _selectedQuickAdj = customVal;
-  const amt = _selectedQuickAdj;
+  const cv = parseFloat(document.getElementById('adjCustom')?.value);
+  if (!isNaN(cv) && cv > 0) window._selectedQuickAdj = cv;
+  const amt = window._selectedQuickAdj;
   if (!amt || !adjustTarget) { showToast('Chọn số lượng trước!', false); return; }
-  const item = inventory.find(i => i.id === adjustTarget.id);
-  if (!item) return;
-  if (adjustMode === 'minus') {
-    item.qty = Math.max(0, item.qty - amt);
-    showToast(`✓ Đã lấy ${fmtQty(amt)}${item.unit} ${item.name}`, true);
-  } else {
-    item.qty = item.qty + amt;
-    showToast(`✓ Đã thêm ${fmtQty(amt)}${item.unit} ${item.name}`, true);
-  }
-  _selectedQuickAdj = null;
-  closeModalFn();
-  await saveInventory();
-  renderInv();
-  updateFridgeBadge();
+  const note = document.getElementById('adjNote')?.value.trim() || '';
+  const delta = adjustMode==='minus' ? -amt : amt;
+  try {
+    await apiCall('POST', { type:'log_transaction', item_id:adjustTarget.id, item_name:adjustTarget.name, unit:adjustTarget.unit, delta, note });
+    const item = inventory.find(i => i.id===adjustTarget.id);
+    if (item) item.qty = Math.max(0, item.qty + delta);
+    window._selectedQuickAdj = null;
+    closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
+    showToast(`✓ ${adjustMode==='minus'?'Đã lấy':'Đã thêm'} ${fmtQty(amt)}${adjustTarget.unit} ${adjustTarget.name}`, true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
-// ─── ADD INVENTORY MODAL ──────────────────────
-const CATEGORY_OPTIONS = [
-  {v:'meat', l:'🥩 Thịt & Cá'},
-  {v:'veg',  l:'🥦 Rau củ'},
-  {v:'fruit',l:'🍎 Trái cây'},
-  {v:'dairy',l:'🥛 Trứng & Sữa'},
-  {v:'other',l:'📦 Khác'},
-];
+const CATEGORY_OPTIONS = [{v:'meat',l:'🥩 Thịt & Cá'},{v:'veg',l:'🥦 Rau củ'},{v:'fruit',l:'🍎 Trái cây'},{v:'dairy',l:'🥛 Trứng & Sữa'},{v:'other',l:'📦 Khác'}];
 const UNIT_OPTIONS = ['g','kg','cái','hộp','túi','chai','lon','bó','quả','ml','L'];
+const catEmoji = {meat:'🥩',veg:'🥦',fruit:'🍎',dairy:'🥛',other:'📦'};
 
-function openAddInventoryModal(prefillName) {
-  _selectedQuickAdj = null;
+function openAddInventoryModal(prefill) {
+  window._selectedQuickAdj = null;
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-title">+ Thêm vào tủ lạnh</div>
-    <div class="modal-field">
-      <div class="modal-label">Tên đồ ăn</div>
-      <input class="modal-input" id="invName" placeholder="vd: Cá hồi, Trứng gà..." value="${prefillName||''}">
+    <div class="modal-field"><div class="modal-label">Tên đồ ăn</div>
+      <input class="modal-input" id="invName" placeholder="vd: Cá hồi, Trứng gà..." value="${prefill||''}"></div>
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Số lượng hiện có</div>
+        <input type="number" class="modal-input" id="invQty" placeholder="500" min="0"></div>
+      <div class="modal-field"><div class="modal-label">Đơn vị</div>
+        <select class="modal-input" id="invUnit">${UNIT_OPTIONS.map(u=>`<option>${u}</option>`).join('')}</select></div>
     </div>
     <div class="modal-row">
-      <div class="modal-field">
-        <div class="modal-label">Số lượng</div>
-        <input type="number" class="modal-input" id="invQty" placeholder="500" min="0">
-      </div>
-      <div class="modal-field">
-        <div class="modal-label">Đơn vị</div>
-        <select class="modal-input" id="invUnit">
-          ${UNIT_OPTIONS.map(u => `<option value="${u}">${u}</option>`).join('')}
-        </select>
-      </div>
+      <div class="modal-field"><div class="modal-label">Báo sắp hết khi còn</div>
+        <input type="number" class="modal-input" id="invMin" placeholder="100" min="0"></div>
+      <div class="modal-field"><div class="modal-label">Danh mục</div>
+        <select class="modal-input" id="invCat">${CATEGORY_OPTIONS.map(c=>`<option value="${c.v}">${c.l}</option>`).join('')}</select></div>
     </div>
     <div class="modal-row">
-      <div class="modal-field">
-        <div class="modal-label">Báo sắp hết khi còn</div>
-        <input type="number" class="modal-input" id="invMin" placeholder="100" min="0">
-      </div>
-      <div class="modal-field">
-        <div class="modal-label">Hạn dùng (nếu có)</div>
-        <input type="date" class="modal-input" id="invExpiry">
-      </div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Nhóm</div>
-      <select class="modal-input" id="invCat">
-        ${CATEGORY_OPTIONS.map(c => `<option value="${c.v}">${c.l}</option>`).join('')}
-      </select>
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Emoji (tùy chọn)</div>
-      <input class="modal-input" id="invEmoji" placeholder="🥩 🐟 🥦 ..." maxlength="4">
+      <div class="modal-field"><div class="modal-label">Emoji</div>
+        <input class="modal-input" id="invEmoji" placeholder="🥩" maxlength="4"></div>
+      <div class="modal-field"><div class="modal-label">Hạn dùng</div>
+        <input type="date" class="modal-input" id="invExpiry"></div>
     </div>
     <div class="modal-btn-row">
       <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
@@ -1709,172 +1548,173 @@ function openAddInventoryModal(prefillName) {
 }
 
 async function confirmAddInv() {
-  const name  = document.getElementById('invName').value.trim();
-  const qty   = parseFloat(document.getElementById('invQty').value) || 0;
-  const unit  = document.getElementById('invUnit').value;
-  const minQ  = parseFloat(document.getElementById('invMin').value) || 0;
-  const expiry= document.getElementById('invExpiry').value || null;
-  const cat   = document.getElementById('invCat').value;
-  const emoji = document.getElementById('invEmoji').value.trim() || categoryEmoji(cat);
-  if (!name) { showToast('Nhập tên đồ ăn đi!', false); return; }
-  const item = { id: Date.now().toString(), name, qty, unit, minQty: minQ, expiry, category: cat, emoji };
-  inventory.push(item);
-  closeModalFn();
-  await saveInventory();
-  renderInv();
-  updateFridgeBadge();
-  showToast(`✓ Đã thêm ${name}`, true);
+  const name   = document.getElementById('invName').value.trim();
+  const qty    = parseFloat(document.getElementById('invQty').value) || 0;
+  const unit   = document.getElementById('invUnit').value;
+  const minQty = parseFloat(document.getElementById('invMin').value) || 0;
+  const cat    = document.getElementById('invCat').value;
+  const emoji  = document.getElementById('invEmoji').value.trim() || catEmoji[cat] || '🍱';
+  const expiry = document.getElementById('invExpiry').value || null;
+  if (!name) { showToast('Nhập tên đồ ăn!', false); return; }
+  const item = { id: Date.now().toString(), name, unit, min_qty: minQty, minQty, category: cat, emoji, expiry, qty: 0 };
+  try {
+    await apiCall('POST', { type:'add_inventory_item', item, initialQty: qty, note:'Khởi tạo' });
+    item.qty = qty;
+    inventory.push(item);
+    closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
+    showToast(`✓ Đã thêm ${name}`, true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
-function categoryEmoji(cat) {
-  return {meat:'🥩',veg:'🥦',fruit:'🍎',dairy:'🥛',other:'📦'}[cat] || '🍱';
-}
-
-// ─── DELETE INVENTORY ─────────────────────────
 async function deleteInvItem(id) {
   const item = inventory.find(i => i.id === id);
-  if (!item) return;
-  if (!confirm(`Xóa "${item.name}" khỏi tủ lạnh?`)) return;
-  inventory = inventory.filter(i => i.id !== id);
-  await saveInventory();
-  renderInv();
-  updateFridgeBadge();
-  showToast(`🗑 Đã xóa ${item.name}`, true);
+  if (!item || !confirm(`Xóa "${item.name}" và toàn bộ lịch sử?`)) return;
+  try {
+    await apiCall('POST', { type:'delete_inventory_item', item_id: id });
+    inventory = inventory.filter(i => i.id !== id);
+    renderInv(); updateSummary(); updateFridgeBadge();
+    showToast(`🗑 Đã xóa ${item.name}`, true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
-// ─── ADD SHOPPING ITEM ────────────────────────
-function openAddShopModal() {
+function renderShop() {
+  const el = document.getElementById('shopList');
+  if (!trips.length) {
+    el.innerHTML = '<div class="fridge-empty"><div class="ei">🛍️</div><p>Chưa có chuyến đi chợ<br>Bấm "+ Chuyến mới" để bắt đầu</p></div>';
+    return;
+  }
+  const today = new Date().toISOString().slice(0,10);
+  el.innerHTML = trips.map(trip => {
+    const items = trip.items || [];
+    const bought = items.filter(i => i.bought).length;
+    const done = trip.status==='done' || (items.length > 0 && bought===items.length);
+    const dt = trip.trip_date ? new Date(trip.trip_date+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}) : 'Chưa định ngày';
+    const isToday = trip.trip_date === today;
+    const badgeCls = done?'badge-today':isToday?'badge-soon':'badge-later';
+    const tId = trip.id.replace(/'/g,"\\'");
+    return `<div class="shop-date-group">
+      <div class="shop-date-label" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        📅 ${trip.note||'Chuyến chợ '+dt}
+        <span class="shop-date-badge ${badgeCls}">${done?'✓ Xong':isToday?'Hôm nay':dt}</span>
+        <span class="shop-date-badge badge-later">${bought}/${items.length} món</span>
+        <button onclick="deleteTripModal('${tId}')" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 6px">🗑</button>
+      </div>
+      ${items.map(item => {
+        const iId = item.id.replace(/'/g,"\\'");
+        return `<div class="shop-item" style="${item.bought?'opacity:.55':''}">
+          <div class="shop-check" onclick="markBought('${iId}','${tId}')" style="${item.bought?'background:var(--accent);color:#000':''}">${item.bought?'✓':''}</div>
+          <div class="shop-item-info">
+            <div class="shop-item-name">${item.emoji||'🛍'} ${item.name}</div>
+            ${item.note?`<div class="shop-item-meta">${item.note}</div>`:''}
+            ${item.bought&&item.bought_at?`<div class="shop-item-meta">✓ ${new Date(item.bought_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
+          </div>
+          <span class="shop-item-qty">${fmtQty(item.qty)}${item.unit}</span>
+          <button class="shop-del" onclick="deleteTripItem('${iId}','${tId}')">✕</button>
+        </div>`;
+      }).join('')}
+      <button onclick="openAddTripItemModal('${tId}')" style="width:100%;margin-top:6px;padding:7px;background:rgba(74,222,128,.06);border:1px dashed rgba(74,222,128,.25);border-radius:9px;color:var(--accent);font-size:.75rem;cursor:pointer">+ Thêm món</button>
+    </div>`;
+  }).join('');
+}
+
+function openAddTripModal() {
+  const today = new Date().toISOString().slice(0,10);
   document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title">🛒 Thêm vào danh sách mua</div>
-    <div class="modal-field">
-      <div class="modal-label">Tên đồ ăn</div>
-      <input class="modal-input" id="shopName" placeholder="vd: Gà ta, Rau muống...">
-    </div>
-    <div class="modal-row">
-      <div class="modal-field">
-        <div class="modal-label">Số lượng cần mua</div>
-        <input type="number" class="modal-input" id="shopQty" placeholder="500" min="0">
-      </div>
-      <div class="modal-field">
-        <div class="modal-label">Đơn vị</div>
-        <select class="modal-input" id="shopUnit">
-          ${UNIT_OPTIONS.map(u => `<option value="${u}">${u}</option>`).join('')}
-        </select>
-      </div>
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Ngày đi chợ</div>
-      <input type="date" class="modal-input" id="shopDate" value="${new Date().toISOString().slice(0,10)}">
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Ghi chú (tùy chọn)</div>
-      <input class="modal-input" id="shopNote" placeholder="vd: Mua loại tươi, không đông lạnh">
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Emoji</div>
-      <input class="modal-input" id="shopEmoji" placeholder="🛍" maxlength="4">
-    </div>
+    <div class="modal-title">🛍️ Chuyến đi chợ mới</div>
+    <div class="modal-field"><div class="modal-label">Tên / Ghi chú</div>
+      <input class="modal-input" id="tripNote" placeholder="vd: Chợ cuối tuần, Siêu thị..."></div>
+    <div class="modal-field"><div class="modal-label">Ngày đi</div>
+      <input type="date" class="modal-input" id="tripDate" value="${today}"></div>
     <div class="modal-btn-row">
       <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
-      <button class="modal-btn confirm" onclick="confirmAddShop()">Thêm vào list</button>
+      <button class="modal-btn confirm" onclick="confirmAddTrip()">Tạo chuyến</button>
     </div>`;
   openModalFn();
 }
 
-async function confirmAddShop() {
-  const name  = document.getElementById('shopName').value.trim();
-  const qty   = parseFloat(document.getElementById('shopQty').value) || 1;
-  const unit  = document.getElementById('shopUnit').value;
-  const date  = document.getElementById('shopDate').value || null;
-  const note  = document.getElementById('shopNote').value.trim();
-  const emoji = document.getElementById('shopEmoji').value.trim() || '🛍';
-  if (!name) { showToast('Nhập tên đồ ăn đi!', false); return; }
-  const item = { id: Date.now().toString(), name, qty, unit, shopDate: date, note, emoji };
-  shopping.push(item);
-  closeModalFn();
-  await saveShopping();
-  renderShop();
-  showToast(`✓ Đã thêm ${name} vào danh sách mua`, true);
-}
-
-// ─── MARK BOUGHT: move from shopping → inventory ───
-async function markBought(id) {
-  const item = shopping.find(i => i.id === id);
-  if (!item) return;
-
-  // Check if already in inventory
-  const existing = inventory.find(i => i.name.toLowerCase() === item.name.toLowerCase());
-
-  if (existing) {
-    // Just add qty to existing
-    existing.qty += item.qty;
-    shopping = shopping.filter(i => i.id !== id);
-    await saveInventory();
-    await saveShopping();
-    renderInv();
+async function confirmAddTrip() {
+  const note = document.getElementById('tripNote').value.trim();
+  const date = document.getElementById('tripDate').value;
+  const trip = { id: Date.now().toString(), trip_date: date||null, note, status:'pending', items:[] };
+  try {
+    await apiCall('POST', { type:'create_trip', trip });
+    trips.unshift(trip);
+    closeModal();
+    setFridgeTab('shop', document.getElementById('ftab-shop'));
     renderShop();
-    updateFridgeBadge();
-    showToast(`✓ Cộng ${fmtQty(item.qty)}${item.unit} ${item.name} vào tủ lạnh`, true);
-  } else {
-    // Need to set minQty — open quick confirm modal
-    document.getElementById('modalContent').innerHTML = `
-      <div class="modal-title" style="color:var(--accent)">✓ Đã mua ${item.emoji} ${item.name}</div>
-      <p style="font-size:.82rem;color:var(--text2);margin-bottom:14px">Thêm vào tủ lạnh với thông tin sau:</p>
-      <div class="modal-row">
-        <div class="modal-field">
-          <div class="modal-label">Số lượng đã mua</div>
-          <input type="number" class="modal-input" id="boughtQty" value="${item.qty}">
-        </div>
-        <div class="modal-field">
-          <div class="modal-label">Đơn vị</div>
-          <select class="modal-input" id="boughtUnit">
-            ${UNIT_OPTIONS.map(u => `<option value="${u}" ${u===item.unit?'selected':''}>${u}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="modal-field">
-          <div class="modal-label">Báo sắp hết khi còn</div>
-          <input type="number" class="modal-input" id="boughtMin" placeholder="100">
-        </div>
-        <div class="modal-field">
-          <div class="modal-label">Nhóm</div>
-          <select class="modal-input" id="boughtCat">
-            ${CATEGORY_OPTIONS.map(c => `<option value="${c.v}">${c.l}</option>`).join('')}
-          </select>
-        </div>
-      </div>
-      <div class="modal-btn-row">
-        <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
-        <button class="modal-btn confirm" onclick="confirmMarkBought('${id}','${item.name}','${item.emoji}')">✓ Thêm vào tủ lạnh</button>
-      </div>`;
-    openModalFn();
-  }
+    showToast('✓ Đã tạo chuyến', true);
+    setTimeout(() => openAddTripItemModal(trip.id), 300);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
-async function confirmMarkBought(shopId, name, emoji) {
-  const qty   = parseFloat(document.getElementById('boughtQty').value) || 0;
-  const unit  = document.getElementById('boughtUnit').value;
-  const minQ  = parseFloat(document.getElementById('boughtMin').value) || 0;
-  const cat   = document.getElementById('boughtCat').value;
-  inventory.push({ id: Date.now().toString(), name, qty, unit, minQty: minQ, expiry: null, category: cat, emoji });
-  shopping = shopping.filter(i => i.id !== shopId);
-  closeModalFn();
-  await saveInventory();
-  await saveShopping();
-  renderInv();
-  renderShop();
-  updateSummary();
-  updateFridgeBadge();
-  showToast(`✓ Đã thêm ${name} vào tủ lạnh`, true);
+function openAddTripItemModal(tripId) {
+  const tId = tripId.replace(/'/g,"\\'");
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-title">+ Thêm món cần mua</div>
+    <div class="modal-field"><div class="modal-label">Tên đồ ăn</div>
+      <input class="modal-input" id="siName" placeholder="vd: Gà ta, Rau muống..."></div>
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Số lượng</div>
+        <input type="number" class="modal-input" id="siQty" value="1" min="0"></div>
+      <div class="modal-field"><div class="modal-label">Đơn vị</div>
+        <select class="modal-input" id="siUnit">${UNIT_OPTIONS.map(u=>`<option>${u}</option>`).join('')}</select></div>
+    </div>
+    <div class="modal-field"><div class="modal-label">Ghi chú</div>
+      <input class="modal-input" id="siNote" placeholder="vd: Mua loại tươi"></div>
+    <div class="modal-field"><div class="modal-label">Emoji</div>
+      <input class="modal-input" id="siEmoji" placeholder="🛍" maxlength="4"></div>
+    <div class="modal-btn-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
+      <button class="modal-btn confirm" onclick="confirmAddTripItem('${tId}')">Thêm vào list</button>
+    </div>`;
+  openModalFn();
 }
 
-// ─── DELETE SHOPPING ITEM ─────────────────────
-async function deleteShopItem(id) {
-  shopping = shopping.filter(i => i.id !== id);
-  await saveShopping();
-  renderShop();
-  showToast('🗑 Đã xóa', true);
+async function confirmAddTripItem(tripId) {
+  const name  = document.getElementById('siName').value.trim();
+  const qty   = parseFloat(document.getElementById('siQty').value) || 1;
+  const unit  = document.getElementById('siUnit').value;
+  const note  = document.getElementById('siNote').value.trim();
+  const emoji = document.getElementById('siEmoji').value.trim() || '🛍';
+  if (!name) { showToast('Nhập tên đồ ăn!', false); return; }
+  const item = { id: Date.now().toString(), trip_id: tripId, name, qty, unit, note, emoji, bought: false };
+  try {
+    await apiCall('POST', { type:'add_trip_item', item });
+    const trip = trips.find(t => t.id === tripId);
+    if (trip) { if (!trip.items) trip.items=[]; trip.items.push(item); }
+    closeModal(); renderShop();
+    showToast(`✓ Đã thêm ${name}`, true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+async function markBought(itemId, tripId) {
+  const trip = trips.find(t => t.id===tripId);
+  const item = trip?.items?.find(i => i.id===itemId);
+  if (!item || item.bought) return;
+  try {
+    await apiCall('POST', { type:'mark_bought', item_id: itemId, trip_item: item });
+    item.bought = true; item.bought_at = new Date().toISOString();
+    renderShop();
+    showToast(`✓ Đã mua ${item.name}`, true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+async function deleteTripItem(itemId, tripId) {
+  try {
+    await apiCall('POST', { type:'delete_trip_item', item_id: itemId });
+    const trip = trips.find(t => t.id===tripId);
+    if (trip) trip.items = (trip.items||[]).filter(i => i.id!==itemId);
+    renderShop();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+async function deleteTripModal(tripId) {
+  if (!confirm('Xóa chuyến đi chợ này?')) return;
+  try {
+    await apiCall('POST', { type:'delete_trip', trip_id: tripId });
+    trips = trips.filter(t => t.id!==tripId);
+    renderShop(); showToast('🗑 Đã xóa', true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
 // ─── MODAL HELPERS ────────────────────────────
