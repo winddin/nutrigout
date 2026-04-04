@@ -152,8 +152,19 @@ module.exports = async function handler(req, res) {
       if (type === 'add_inventory_item') {
         const { item, initialQty, note } = body;
         if (!item?.id || !item?.name) return res.status(400).json({ error: 'item required' });
-        // Upsert master record (no qty stored here)
-        await sbPost('inventory', { ...item, user_id: userId, qty: 0 });
+        // Upsert master record — only send known DB columns
+        const invRow = {
+          id:       item.id,
+          user_id:  userId,
+          name:     item.name,
+          unit:     item.unit     || 'g',
+          min_qty:  item.min_qty  || item.minQty || 0,
+          category: item.category || 'other',
+          emoji:    item.emoji    || null,
+          expiry:   item.expiry   || null,
+          qty:      0,
+        };
+        await sbPost('inventory', invRow);
         // Log initial quantity
         if (initialQty && initialQty !== 0) {
           await sbPost('inventory_log', {
