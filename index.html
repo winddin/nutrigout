@@ -1202,7 +1202,7 @@ function openModal(html) {
 function closeModal(e) {
   if (!e || e.target === document.getElementById('modalOverlay')) {
     document.getElementById('modalOverlay').classList.remove('show');
-    if (typeof _selectedQuickAdj !== 'undefined') _selectedQuickAdj = null;
+    window._selectedQuickAdj = null;
   }
 }
 
@@ -1794,7 +1794,7 @@ function openAdjustModal(id, mode) {
   openModalFn();
 }
 
-let _selectedQuickAdj = null;
+window._selectedQuickAdj = null;
 function selectQuickAdj(amt) {
   _selectedQuickAdj = amt;
   document.getElementById('adjCustom').value = '';
@@ -2066,7 +2066,7 @@ function openModalFn() {
 }
 function closeModalFn() {
   document.getElementById('modalOverlay').classList.remove('show');
-  if (typeof _selectedQuickAdj !== 'undefined') _selectedQuickAdj = null;
+  window._selectedQuickAdj = null;
 }
 
 // ─── TOAST ────────────────────────────────────
