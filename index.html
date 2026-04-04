@@ -164,7 +164,7 @@ button{font-family:'Inter',sans-serif;}
 .subtab-bar{display:flex;background:var(--card2);border-radius:12px;padding:3px;gap:2px;margin-bottom:14px;border:1px solid var(--border);}
 .subtab-btn{flex:1;padding:8px 4px;border:none;background:none;border-radius:9px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--text3);transition:all .15s;font-family:'Inter',sans-serif;}
 .subtab-btn.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3);}
-.subtab-pane{display:none;}.subtab-pane.active{display:block;}
+.subtab-pane{display:none;}.subtab-pane.active{display:block;}.fridge-tab-pane{display:none;}.fridge-tab-pane.active{display:block;}
 
 /* Section header */
 .fridge-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
@@ -486,24 +486,24 @@ button{font-family:'Inter',sans-serif;}
 
       <!-- Sub-tabs -->
       <div class="subtab-bar">
-        <button class="subtab-btn active" onclick="switchSubtab('inventory',this)">🧊 Tủ lạnh</button>
-        <button class="subtab-btn" onclick="switchSubtab('shopping',this)">🛍️ Đi chợ</button>
+        <button class="fridge-tab active" id="ftab-inv" onclick="setFridgeTab('inv',this)">🧊 Tủ lạnh</button>
+        <button class="fridge-tab" id="ftab-shop" onclick="setFridgeTab('shop',this)">🛍️ Đi chợ</button>
       </div>
 
       <!-- SUB-PANE: INVENTORY -->
-      <div class="subtab-pane active" id="subtab-inventory">
+      <div class="fridge-tab-pane active" id="fridge-inv-pane">
         <div class="fridge-section-header">
           <span class="fridge-section-title">Đồ đang có ở nhà</span>
-          <button class="add-btn" onclick="openAddInventory()">+ Thêm</button>
+          <button class="add-btn" onclick="openAddInventoryModal()">+ Thêm</button>
         </div>
         <div id="inventoryList"></div>
       </div>
 
       <!-- SUB-PANE: SHOPPING -->
-      <div class="subtab-pane" id="subtab-shopping">
+      <div class="fridge-tab-pane" id="fridge-shop-pane">
         <div class="fridge-section-header">
           <span class="fridge-section-title">Lịch đi chợ</span>
-          <button class="add-btn" onclick="openAddTrip()">+ Chuyến mới</button>
+          <button class="add-btn" onclick="openAddShopModal()">+ Chuyến mới</button>
         </div>
         <div id="shoppingList"></div>
       </div>
