@@ -496,7 +496,7 @@ button{font-family:'Inter',sans-serif;}
           <span class="fridge-section-title">Đồ đang có ở nhà</span>
           <button class="add-btn" onclick="openAddInventoryModal()">+ Thêm</button>
         </div>
-        <div id="inventoryList"></div>
+        <div id="invList"></div>
       </div>
 
       <!-- SUB-PANE: SHOPPING -->
@@ -505,7 +505,7 @@ button{font-family:'Inter',sans-serif;}
           <span class="fridge-section-title">Lịch đi chợ</span>
           <button class="add-btn" onclick="openAddShopModal()">+ Chuyến mới</button>
         </div>
-        <div id="shoppingList"></div>
+        <div id="shopList"></div>
       </div>
 
       <div style="height:20px"></div>
@@ -1259,7 +1259,7 @@ async function confirmAdjust() {
     showToast(`✓ Đã thêm ${amt}${item.unit} ${item.name}`, true);
   }
   _selectedQuickAdj = null;
-  closeModal();
+  closeModalFn();
   await saveInventory();
   renderInv();
   updateFridgeBadge();
@@ -1333,7 +1333,7 @@ async function confirmAddInv() {
   if (!name) { showToast('Nhập tên đồ ăn đi!', false); return; }
   const item = { id: Date.now().toString(), name, qty, unit, minQty: minQ, expiry, category: cat, emoji };
   inventory.push(item);
-  closeModal();
+  closeModalFn();
   await saveInventory();
   renderInv();
   updateFridgeBadge();
@@ -1405,7 +1405,7 @@ async function confirmAddShop() {
   if (!name) { showToast('Nhập tên đồ ăn đi!', false); return; }
   const item = { id: Date.now().toString(), name, qty, unit, shopDate: date, note, emoji };
   shopping.push(item);
-  closeModal();
+  closeModalFn();
   await saveShopping();
   renderShop();
   showToast(`✓ Đã thêm ${name} vào danh sách mua`, true);
@@ -1473,7 +1473,7 @@ async function confirmMarkBought(shopId, name, emoji) {
   const cat   = document.getElementById('boughtCat').value;
   inventory.push({ id: Date.now().toString(), name, qty, unit, minQty: minQ, expiry: null, category: cat, emoji });
   shopping = shopping.filter(i => i.id !== shopId);
-  closeModal();
+  closeModalFn();
   await saveInventory();
   await saveShopping();
   renderInv();
@@ -1497,6 +1497,9 @@ function openModalFn() {
 function closeModalFn() {
   document.getElementById('modalOverlay').classList.remove('show');
   window._selectedQuickAdj = null;
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modalOverlay')) closeModalFn();
 }
 
 // ─── TOAST ────────────────────────────────────
