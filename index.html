@@ -1034,25 +1034,6 @@ const catMeta = {
   4:{icon:'🥚',label:'Trứng, Sữa & Đồ uống'},
 };
 
-function renderRank() {
-  const sorted = sortedFoods();
-  const out = document.getElementById('rankContent');
-  if (rankCat === 'all') {
-    out.innerHTML = [1,2,3,4].map(catId => {
-      const items = sorted.filter(f => f.cat === catId);
-      if (!items.length) return '';
-      const m = catMeta[catId];
-      return `<div>
-        <div class="sec-header"><span class="sec-icon">${m.icon}</span><span class="sec-title">${m.label}</span><span class="sec-count">${items.length}</span></div>
-        <div class="food-list">${items.map((f,i) => buildRow(f,i,`${catId}-${i}`)).join('')}</div>
-      </div>`;
-    }).join('');
-  } else {
-    const m = catMeta[rankCat] || {icon:'🍽️',label:'Thực phẩm'};
-    out.innerHTML = `<div class="sec-header"><span class="sec-icon">${m.icon}</span><span class="sec-title">${m.label}</span><span class="sec-count">${sorted.length}</span></div>
-      <div class="food-list">${sorted.map((f,i) => buildRow(f,i,`c${rankCat}-${i}`)).join('')}</div>`;
-  }
-}
 
 function buildRow(f, i, rid) {
   const ratio = f.kcal > 0 ? (f.protein/f.kcal*100).toFixed(1) : 0;
