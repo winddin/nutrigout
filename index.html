@@ -648,18 +648,32 @@ function handleSignedOut() {
 }
 
 async function signInWithGoogle() {
-  if (!initSupabase()) { showToast('Lỗi kết nối SDK', false); return; }
-  const btn = document.querySelector('.google-btn');
-  if (btn) { btn.textContent = 'Đang kết nối...'; btn.disabled = true; }
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin + window.location.pathname,
+  try {
+    if (!initSupabase()) {
+      alert('Lỗi: Supabase SDK chưa load. Thử reload trang.');
+      return;
     }
-  });
-  if (error) {
-    showToast('Lỗi đăng nhập: ' + error.message, false);
-    if (btn) { btn.textContent = 'Đăng nhập bằng Google'; btn.disabled = false; }
+    const btn = document.getElementById('googleSignInBtn');
+    if (btn) { btn.textContent = 'Đang kết nối...'; btn.disabled = true; }
+
+    const redirectTo = window.location.origin + window.location.pathname;
+    console.log('Redirecting to:', redirectTo);
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo }
+    });
+
+    console.log('OAuth result:', data, error);
+
+    if (error) {
+      alert('Lỗi đăng nhập: ' + error.message);
+      if (btn) { btn.textContent = 'Đăng nhập bằng Google'; btn.disabled = false; }
+    }
+    // If no error: browser will redirect to Google — no code needed here
+  } catch(e) {
+    console.error('signInWithGoogle error:', e);
+    alert('Lỗi: ' + e.message);
   }
 }
 
@@ -669,16 +683,16 @@ async function signOut() {
   showToast('Đã đăng xuất', true);
 }
 
-// Expose auth functions to window scope immediately
+// Expose auth functions to window scope
 window.signInWithGoogle = signInWithGoogle;
 window.signOut = signOut;
 
-// Start auth check
-document.addEventListener('DOMContentLoaded', function() {
+// Bind button and start auth — script is at end of body so DOM is ready
+(function() {
   var btn = document.getElementById('googleSignInBtn');
   if (btn) btn.addEventListener('click', signInWithGoogle);
   initAuth();
-});
+})();
 
 // ─── NAVIGATION ───────────────────────────────────────────────────
 let currentScreen = 'search';
@@ -1205,15 +1219,6 @@ function setInvFilter(f) {
 function renderInv() {
   const el = document.getElementById('invList');
   updateSummary();
-  // Apply filter
-  let items = inventory;
-  if (invFilter === 'ok')  items = inventory.filter(i => i.qty > i.minQty);
-  if (invFilter === 'low') items = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty);
-  if (invFilter === 'out') items = inventory.filter(i => i.qty <= 0);
-  if (!items.length && invFilter !== 'all') {
-    el.innerHTML = '<div class="fridge-empty"><div class="ei">🔍</div><p>Không có món nào</p></div>';
-    return;
-  }
   if (!inventory.length) {
     el.innerHTML = '<div class="fridge-empty"><div class="ei">🧊</div><p>Chưa có gì trong tủ lạnh<br>Bấm "+ Thêm đồ" để bắt đầu</p></div>';
     return;
@@ -1223,7 +1228,6 @@ function renderInv() {
   if (invFilter === 'ok')  items = inventory.filter(i => i.qty > i.minQty);
   if (invFilter === 'low') items = inventory.filter(i => i.qty > 0 && i.qty <= i.minQty);
   if (invFilter === 'out') items = inventory.filter(i => i.qty <= 0);
-
   if (!items.length && invFilter !== 'all') {
     el.innerHTML = '<div class="fridge-empty"><div class="ei">🔍</div><p>Không có món nào trong nhóm này</p></div>';
     updateSummary();
