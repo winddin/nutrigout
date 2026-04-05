@@ -109,26 +109,65 @@ module.exports = async function handler(req, res) {
           sbGet('inventory', `?user_id=eq.${userId}&order=sort_order.asc,name.asc`),
           sbGet('inventory_log', `?user_id=eq.${userId}&order=created_at.asc`),
         ]);
-        // Compute balance per item_id
-        const balances = {};
+        // Group logs by item_id, compute FIFO balance + earliest active expiry
+        const byItem = {};
         for (const log of logs) {
-          balances[log.item_id] = (balances[log.item_id] || 0) + Number(log.delta);
+          if (!byItem[log.item_id]) byItem[log.item_id] = [];
+          byItem[log.item_id].push(log);
         }
-        // Compute earliest active expiry (FIFO) per item
-        // Active = has expiry + positive delta batches not yet consumed
-        const expiryMap = {};
-        for (const log of logs) {
-          if (log.delta > 0 && log.expiry) {
-            if (!expiryMap[log.item_id] || log.expiry < expiryMap[log.item_id]) {
-              expiryMap[log.item_id] = log.expiry;
+
+        function computeFIFO(itemLogs) {
+          // Sort all logs chronologically
+          const sorted = [...itemLogs].sort((a,b) => a.created_at < b.created_at ? -1 : 1);
+          // Build batch queue: positive entries with expiry, sorted by expiry (FIFO)
+          // Batches without expiry are treated as infinite/no-expiry
+          const batches = []; // {qty, expiry}
+          let noExpiryQty = 0;
+
+          for (const log of sorted) {
+            const d = Number(log.delta);
+            if (d > 0) {
+              if (log.expiry) {
+                batches.push({ qty: d, expiry: log.expiry });
+              } else {
+                noExpiryQty += d;
+              }
+            } else {
+              // Deduct FIFO: oldest expiry first
+              let remaining = Math.abs(d);
+              batches.sort((a,b) => a.expiry < b.expiry ? -1 : 1);
+              for (const batch of batches) {
+                if (remaining <= 0) break;
+                const take = Math.min(batch.qty, remaining);
+                batch.qty -= take;
+                remaining -= take;
+              }
+              // Remaining deduction from no-expiry pool
+              noExpiryQty = Math.max(0, noExpiryQty - remaining);
             }
           }
+
+          // Total balance
+          const totalQty = batches.reduce((s,b) => s + b.qty, 0) + noExpiryQty;
+          // Earliest active expiry = smallest expiry with qty > 0
+          const activeBatches = batches.filter(b => b.qty > 0).sort((a,b) => a.expiry < b.expiry ? -1 : 1);
+          const earliestExpiry = activeBatches.length > 0 ? activeBatches[0].expiry : null;
+          // All active batches for display
+          const activeBatchList = activeBatches.map(b => ({ qty: b.qty, expiry: b.expiry }));
+
+          return { totalQty, earliestExpiry, activeBatchList };
         }
-        const result = items.map(item => ({
-          ...item,
-          qty: balances[item.id] || 0,
-          earliest_expiry: expiryMap[item.id] || item.expiry || null,
-        }));
+
+        const result = items.map(item => {
+          const itemLogs = byItem[item.id] || [];
+          const { totalQty, earliestExpiry, activeBatchList } = computeFIFO(itemLogs);
+          return {
+            ...item,
+            qty: totalQty,
+            earliest_expiry: earliestExpiry || item.expiry || null,
+            active_batches: activeBatchList,
+          };
+        });
         return res.status(200).json(result);
       }
 
@@ -212,6 +251,17 @@ module.exports = async function handler(req, res) {
         if (expiry) row.expiry = expiry; // optional expiry per batch
         const entry = await sbPost('inventory_log', row, 'return=representation');
         return res.status(200).json({ ok: true, entry: Array.isArray(entry) ? entry[0] : entry });
+      }
+
+      // Update expiry of a specific inventory_log entry (batch edit)
+      if (type === 'update_log_expiry') {
+        const { log_id, expiry } = body;
+        if (!log_id) return res.status(400).json({ error: 'log_id required' });
+        await sbPatch('inventory_log',
+          `?id=eq.${encodeURIComponent(log_id)}&user_id=eq.${userId}`,
+          { expiry: expiry || null }
+        );
+        return res.status(200).json({ ok: true });
       }
 
       // Update inventory master (name, unit, emoji, etc.) — NOT qty
