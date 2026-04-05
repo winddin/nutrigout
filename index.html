@@ -400,6 +400,10 @@ button{font-family:'Inter',sans-serif;}
 .shop-item-qty{font-size:.8rem;font-weight:700;color:var(--amber);flex-shrink:0;}
 .shop-del{width:26px;height:26px;border-radius:7px;border:none;background:none;color:var(--text3);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
 .shop-del:active{color:var(--red);}
+.shop-edit{width:26px;height:26px;border-radius:7px;border:none;background:none;color:var(--text3);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:color .15s;}
+.shop-edit:active{color:var(--accent);}
+.shop-item-qty{font-size:.82rem;font-weight:700;color:var(--amber);flex-shrink:0;cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .15s;}
+.shop-item-qty:hover{background:rgba(245,158,11,.12);}
 
 /* EMPTY STATE */
 .fridge-empty{text-align:center;padding:36px 20px;color:var(--text3);}
@@ -1884,7 +1888,8 @@ function renderShop() {
             ${item.note&&item.note!=='Hết / sắp hết'?`<div class="shop-item-meta">${item.note}</div>`:''}
             ${item.bought&&item.bought_at?`<div class="shop-item-meta">✓ ${new Date(item.bought_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
           </div>
-          <span class="shop-item-qty">${fmtQty(item.qty)}${item.unit}</span>
+          <span class="shop-item-qty" onclick="editTripItem('${iId}','${tId}')" title="Chỉnh số lượng">${fmtQty(item.qty)}${item.unit}</span>
+          ${!item.bought?`<button class="shop-edit" onclick="editTripItem('${iId}','${tId}')" title="Chỉnh sửa">✏️</button>`:''}
           <button class="shop-del" onclick="deleteTripItem('${iId}','${tId}')">✕</button>
         </div>`;
       }).join('')}
@@ -2094,6 +2099,57 @@ async function markBought(itemId, tripId) {
     renderShop();
     const suffix = item.inventory_item_id ? ' → Đã cộng vào tủ lạnh' : '';
     showToast(`✓ Đã mua ${item.name}${suffix}`, true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+function editTripItem(itemId, tripId) {
+  const trip = trips.find(t => t.id === tripId);
+  const item = trip?.items?.find(i => i.id === itemId);
+  if (!item || item.bought) return; // can't edit bought items
+  const iId = itemId.replace(/'/g, "\'");
+  const tId = tripId.replace(/'/g, "\'");
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-title">✏️ Chỉnh sửa món chợ</div>
+    <div class="adjust-food-name">${item.emoji||'🛍'} ${item.name}</div>
+    ${item.inventory_item_id?'<div class="shop-linked" style="margin-bottom:12px">🔗 Linked với tủ lạnh</div>':''}
+    <div class="modal-row">
+      <div class="modal-field">
+        <div class="modal-label">Số lượng</div>
+        <input type="number" class="modal-input" id="editQty" value="${item.qty}" min="0.1" step="any">
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Đơn vị</div>
+        <select class="modal-input" id="editUnit">
+          ${['g','kg','cái','hộp','túi','chai','lon','bó','quả','ml','L'].map(u =>
+            `<option${u===item.unit?' selected':''}>${u}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Ghi chú</div>
+      <input class="modal-input" id="editNote" value="${item.note||''}" placeholder="Ghi chú...">
+    </div>
+    <div class="modal-btn-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
+      <button class="modal-btn confirm" onclick="confirmEditTripItem('${iId}','${tId}')">Lưu</button>
+    </div>`;
+  openModalFn();
+}
+
+async function confirmEditTripItem(itemId, tripId) {
+  const qty  = parseFloat(document.getElementById('editQty').value);
+  const unit = document.getElementById('editUnit').value;
+  const note = document.getElementById('editNote').value.trim();
+  if (!qty || qty <= 0) { showToast('Số lượng phải lớn hơn 0', false); return; }
+  try {
+    await apiCall('POST', { type:'update_trip_item', item_id: itemId, qty, unit, note });
+    // Update local state
+    const trip = trips.find(t => t.id === tripId);
+    const item = trip?.items?.find(i => i.id === itemId);
+    if (item) { item.qty = qty; item.unit = unit; item.note = note; }
+    closeModal();
+    renderShop();
+    showToast('✓ Đã cập nhật', true);
   } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
