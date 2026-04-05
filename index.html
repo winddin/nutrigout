@@ -1584,9 +1584,11 @@ function buildInvItem(item, cat) {
   const qc = isOut?'empty':isLow?'low':'ok';
   const ic = isOut?'out-of-stock':isLow?'low-stock':'';
   let exp = '';
-  if (item.expiry) {
-    const d = Math.ceil((new Date(item.expiry)-new Date())/86400000);
-    exp = `<span class="inv-expiry ${d<=2?'expiring':''}">${d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày'}</span>`;
+  const activeExpiry = item.earliest_expiry || item.expiry;
+  if (activeExpiry) {
+    const d = Math.ceil((new Date(activeExpiry+"T00:00:00")-new Date())/86400000);
+    const label = d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày';
+    exp = `<span class="inv-expiry ${d<=2?'expiring':''}" title="FIFO: lô gần nhất hết hạn">⏱ ${label}</span>`;
   }
   const sid = item.id.replace(/'/g,"\\'");
   const sname = item.name.replace(/'/g,"\\'");
@@ -1672,10 +1674,11 @@ async function showItemLog(itemId, itemName) {
       running += Number(log.delta);
       const isPos = log.delta > 0;
       const dt = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const expiryStr = log.expiry ? `<span style="font-size:.65rem;background:rgba(245,158,11,.15);color:var(--amber);border-radius:50px;padding:1px 6px;margin-left:4px">HSD ${new Date(log.expiry+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</span>` : '';
       return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
         <span style="font-size:.9rem">${isPos?'➕':'➖'}</span>
         <div style="flex:1">
-          <div style="font-size:.82rem;font-weight:600;color:${isPos?'var(--accent)':'var(--red)'}">${isPos?'+':''}${fmtQty(log.delta)}${log.unit}</div>
+          <div style="font-size:.82rem;font-weight:600;color:${isPos?'var(--accent)':'var(--red)'};display:flex;align-items:center;flex-wrap:wrap;gap:4px">${isPos?'+':''}${fmtQty(log.delta)}${log.unit}${expiryStr}</div>
           <div style="font-size:.7rem;color:var(--text3)">${log.note||'—'} · ${dt}</div>
         </div>
         <div style="font-size:.8rem;font-weight:700;color:var(--text2);min-width:50px;text-align:right">= ${fmtQty(running)}${log.unit}</div>
@@ -1703,9 +1706,15 @@ function openAdjustModal(id, mode) {
       <input type="number" class="adj-custom-input" id="adjCustom" placeholder="Nhập số khác" min="0" oninput="updateAdjPreview()">
       <span class="adj-unit-label">${item.unit}</span>
     </div>
-    <div class="modal-field" style="margin-top:8px">
-      <div class="modal-label">Ghi chú (tuỳ chọn)</div>
-      <input class="modal-input" id="adjNote" placeholder="${mode==='minus'?'vd: Nấu canh':'vd: Mua thêm'}">
+    <div class="modal-row" style="margin-top:8px">
+      <div class="modal-field">
+        <div class="modal-label">Ghi chú</div>
+        <input class="modal-input" id="adjNote" placeholder="${mode==='minus'?'vd: Nấu canh':'vd: Mua thêm'}">
+      </div>
+      ${mode==='plus'?`<div class="modal-field">
+        <div class="modal-label">Hạn sử dụng lô này</div>
+        <input type="date" class="modal-input" id="adjExpiry">
+      </div>`:''}
     </div>
     <div class="adj-result-preview" id="adjPreview">Chọn số lượng</div>
     <div class="modal-btn-row">
@@ -1738,10 +1747,11 @@ async function confirmAdjust() {
   if (!isNaN(cv) && cv > 0) window._selectedQuickAdj = cv;
   const amt = window._selectedQuickAdj;
   if (!amt || !adjustTarget) { showToast('Chọn số lượng trước!', false); return; }
-  const note = document.getElementById('adjNote')?.value.trim() || '';
-  const delta = adjustMode==='minus' ? -amt : amt;
+  const note   = document.getElementById('adjNote')?.value.trim() || '';
+  const expiry = document.getElementById('adjExpiry')?.value || null;
+  const delta  = adjustMode==='minus' ? -amt : amt;
   try {
-    await apiCall('POST', { type:'log_transaction', item_id:adjustTarget.id, item_name:adjustTarget.name, unit:adjustTarget.unit, delta, note });
+    await apiCall('POST', { type:'log_transaction', item_id:adjustTarget.id, item_name:adjustTarget.name, unit:adjustTarget.unit, delta, note, ...(expiry?{expiry}:{}) });
     const item = inventory.find(i => i.id===adjustTarget.id);
     if (item) item.qty = Math.max(0, item.qty + delta);
     window._selectedQuickAdj = null;
@@ -2143,10 +2153,11 @@ async function confirmAddToFridgeFromShop(shopItemId, name) {
   const unit   = document.getElementById('atfUnit').value;
   const cat    = document.getElementById('atfCat').value;
   const minQty = parseFloat(document.getElementById('atfMin').value) || 0;
+  const expiry = document.getElementById('atfExpiry')?.value || null;
   const emoji  = catEmoji[cat] || '🍱';
   const item = {
     id: Date.now().toString(), name, unit,
-    min_qty: minQty, minQty, category: cat, emoji, expiry: null, qty: 0,
+    min_qty: minQty, minQty, category: cat, emoji, expiry, qty: 0,
   };
   try {
     await apiCall('POST', { type:'add_inventory_item', item, initialQty: qty, note:'Từ đi chợ' });
