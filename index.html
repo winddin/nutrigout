@@ -1717,41 +1717,40 @@ function _renderInfoTab(item) {
 
 function _renderBatchesTab(item, logs) {
   const sid = item.id.replace(/'/g,"\'");
-  // Show positive-delta logs (batches added), allow edit HSD per log
-  const batches = logs.filter(l => l.delta > 0).sort((a,b) => {
-    // Sort by expiry asc (FIFO order), no-expiry last
-    if (!a.expiry && !b.expiry) return 0;
-    if (!a.expiry) return 1;
-    if (!b.expiry) return -1;
-    return a.expiry < b.expiry ? -1 : 1;
-  });
+  // Use active_batches from FIFO-computed server data (remaining qty per batch)
+  // Fall back to filtering positive logs if active_batches not available
+  const activeBatches = item.active_batches && item.active_batches.length
+    ? item.active_batches  // {qty, expiry, log_id, note, created_at}
+    : [];
 
-  const batchHtml = batches.length ? batches.map(log => {
-    const dt  = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'2-digit'});
-    const expVal = log.expiry || '';
-    const expLabel = log.expiry
-      ? (() => { const d=Math.ceil((new Date(log.expiry+'T00:00:00')-new Date())/86400000); return d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày'; })()
-      : 'Chưa có HSD';
-    const expColor = log.expiry
-      ? (Math.ceil((new Date(log.expiry+'T00:00:00')-new Date())/86400000)<=2?'var(--red)':'var(--amber)')
-      : 'var(--text3)';
-    const logId = log.id;
+  // Also need log_id for expiry editing — active_batches includes log_id from server
+  const batchHtml = activeBatches.length ? activeBatches.map(batch => {
+    const dt  = batch.created_at
+      ? new Date(batch.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'2-digit'})
+      : '—';
+    const expVal = batch.expiry || '';
+    const daysLeft = batch.expiry
+      ? Math.ceil((new Date(batch.expiry+'T00:00:00')-new Date())/86400000)
+      : null;
+    const expLabel = daysLeft===null?'Chưa có HSD':daysLeft<0?'Hết hạn':daysLeft===0?'Hôm nay':daysLeft+' ngày';
+    const expColor = daysLeft===null?'var(--text3)':daysLeft<=2?'var(--red)':'var(--amber)';
+    const logId = batch.log_id;
     return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="flex:1">
-        <div style="font-size:.88rem;font-weight:600;color:var(--accent)">+${fmtQty(log.delta)}${log.unit}</div>
-        <div style="font-size:.7rem;color:var(--text3);margin-top:2px">${log.note||'Nhập kho'} · ${dt}</div>
+        <div style="font-size:.9rem;font-weight:700;color:var(--accent)">${fmtQty(batch.qty)}${item.unit} còn lại</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:2px">${batch.note||'Nhập kho'} · ${dt}</div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <input type="date" value="${expVal}"
-          style="font-size:.72rem;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:${expColor};width:120px;font-family:Inter,sans-serif;color-scheme:dark;"
-          onchange="updateBatchExpiry(${logId},'${sid}',this.value)"
-          title="${expLabel}">
-      </div>
+      <input type="date" value="${expVal}"
+        style="font-size:.72rem;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:${expColor};width:130px;font-family:Inter,sans-serif;color-scheme:dark;flex-shrink:0"
+        onchange="updateBatchExpiry(${logId},'${sid}',this.value)"
+        title="${expLabel}">
     </div>`;
-  }).join('') : '<div style="text-align:center;padding:20px;color:var(--text3);font-size:.82rem">Chưa có lô nào</div>';
+  }).join('') : `<div style="text-align:center;padding:20px;color:var(--text3);font-size:.82rem">
+    ${item.qty > 0 ? 'Tất cả lô chưa có HSD — xem tab Lịch sử' : 'Hết hàng'}
+  </div>`;
 
   return `
-    <div style="max-height:250px;overflow-y:auto;margin-bottom:12px">${batchHtml}</div>
+    <div style="max-height:260px;overflow-y:auto;margin-bottom:12px">${batchHtml}</div>
     <button onclick="closeModal();setTimeout(()=>openAdjustModal('${sid}','plus'),100);" class="modal-btn confirm" style="width:100%">+ Thêm lô mới</button>
     <button class="modal-btn cancel" onclick="closeModal()" style="margin-top:8px;width:100%">Đóng</button>`;
 }
@@ -1759,13 +1758,19 @@ function _renderBatchesTab(item, logs) {
 async function updateBatchExpiry(logId, itemId, expiry) {
   try {
     await apiCall('POST', { type:'update_log_expiry', log_id: logId, expiry: expiry || null });
-    // Reload item data to recompute FIFO
+    // Reload inventory to recompute FIFO
     const updated = await apiCall('GET', null, '?type=inventory');
     if (Array.isArray(updated)) {
       updated.forEach(u => {
         const idx = inventory.findIndex(i => i.id === u.id);
         if (idx >= 0) inventory[idx] = u;
       });
+      // Refresh the batches tab with new data
+      const item = inventory.find(i => i.id === itemId);
+      if (item) {
+        const content = document.getElementById('detail-tab-content');
+        if (content) content.innerHTML = _renderBatchesTab(item, _detailLogs);
+      }
     }
     renderInv(); updateSummary(); updateFridgeBadge();
     showToast('✓ Đã cập nhật hạn sử dụng', true);
