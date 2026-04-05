@@ -175,7 +175,6 @@ module.exports = async function handler(req, res) {
         const result = items.map(item => {
           const itemLogs = byItem[item.id] || [];
           const { totalQty, earliestExpiry, activeBatchList } = computeFIFO(itemLogs);
-          console.log('[FIFO]', item.name, '| qty:', totalQty, '| earliest:', earliestExpiry, '| batches:', activeBatchList.map(b=>b.qty+'@'+b.expiry));
           return {
             ...item,
             qty: totalQty,
