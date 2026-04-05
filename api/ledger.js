@@ -12,6 +12,9 @@ const ALLOWED_ORIGINS = [
   'http://127.0.0.1:5500',
 ];
 
+// ─── HELPERS ──────────────────────────────────────────────────────
+function fmtN(n) { return Number(n) % 1 === 0 ? Number(n) : Number(n).toFixed(1); }
+
 // ─── JWT decode ──────────────────────────────────────────────────
 function decodeJWT(token) {
   try {
@@ -232,7 +235,20 @@ module.exports = async function handler(req, res) {
       if (type === 'add_trip_item') {
         const { item } = body;
         if (!item?.id || !item?.trip_id) return res.status(400).json({ error: 'item required' });
-        const saved = await sbPost('shopping_items', { ...item, user_id: userId });
+        // Only pass known DB columns
+        const row = {
+          id:                 item.id,
+          user_id:            userId,
+          trip_id:            item.trip_id,
+          name:               item.name,
+          qty:                Number(item.qty) || 1,
+          unit:               item.unit || 'g',
+          note:               item.note || null,
+          emoji:              item.emoji || null,
+          bought:             false,
+          inventory_item_id:  item.inventory_item_id || null,
+        };
+        const saved = await sbPost('shopping_items', row);
         return res.status(200).json({ ok: true, item: Array.isArray(saved) ? saved[0] : saved });
       }
 
@@ -240,12 +256,13 @@ module.exports = async function handler(req, res) {
       if (type === 'mark_bought') {
         const { item_id, trip_item } = body;
         if (!item_id) return res.status(400).json({ error: 'item_id required' });
+        const now = new Date().toISOString();
         // Mark bought in shopping_items
         await sbPatch('shopping_items',
-          `?id=eq.${item_id}&user_id=eq.${userId}`,
-          { bought: true, bought_at: new Date().toISOString() }
+          `?id=eq.${encodeURIComponent(item_id)}&user_id=eq.${userId}`,
+          { bought: true, bought_at: now }
         );
-        // Auto-log to inventory_log if linked to inventory item
+        // Auto-log to inventory if linked
         if (trip_item?.inventory_item_id) {
           await sbPost('inventory_log', {
             user_id:   userId,
@@ -253,7 +270,7 @@ module.exports = async function handler(req, res) {
             item_name: trip_item.name,
             unit:      trip_item.unit || 'g',
             delta:     Number(trip_item.qty),
-            note:      `Mua ${trip_item.qty}${trip_item.unit} — ${trip_item.trip_note || ''}`.trim(),
+            note:      `🛒 Đi chợ${trip_item.note ? ' · ' + trip_item.note : ''}`,
           }, 'return=representation');
         }
         return res.status(200).json({ ok: true });
