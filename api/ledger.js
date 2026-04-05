@@ -167,7 +167,7 @@ module.exports = async function handler(req, res) {
             });
 
           const totalQty = activeBatches.reduce((s,b) => s + b.qty, 0);
-          const earliestExpiry = activeBatches.find(b => b.expiry)?.expiry || null;
+          const earliestExpiry = activeBatches[0]?.expiry || null; // activeBatches sorted asc by expiry
 
           return { totalQty, earliestExpiry, activeBatchList: activeBatches };
         }
@@ -175,6 +175,7 @@ module.exports = async function handler(req, res) {
         const result = items.map(item => {
           const itemLogs = byItem[item.id] || [];
           const { totalQty, earliestExpiry, activeBatchList } = computeFIFO(itemLogs);
+          console.log('[FIFO]', item.name, '| qty:', totalQty, '| earliest:', earliestExpiry, '| batches:', activeBatchList.map(b=>b.qty+'@'+b.expiry));
           return {
             ...item,
             qty: totalQty,
