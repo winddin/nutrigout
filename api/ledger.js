@@ -114,9 +114,20 @@ module.exports = async function handler(req, res) {
         for (const log of logs) {
           balances[log.item_id] = (balances[log.item_id] || 0) + Number(log.delta);
         }
+        // Compute earliest active expiry (FIFO) per item
+        // Active = has expiry + positive delta batches not yet consumed
+        const expiryMap = {};
+        for (const log of logs) {
+          if (log.delta > 0 && log.expiry) {
+            if (!expiryMap[log.item_id] || log.expiry < expiryMap[log.item_id]) {
+              expiryMap[log.item_id] = log.expiry;
+            }
+          }
+        }
         const result = items.map(item => ({
           ...item,
           qty: balances[item.id] || 0,
+          earliest_expiry: expiryMap[item.id] || item.expiry || null,
         }));
         return res.status(200).json(result);
       }
@@ -157,7 +168,8 @@ module.exports = async function handler(req, res) {
         if (!item?.id || !item?.name) return res.status(400).json({ error: 'item required' });
         // Upsert master record — only send known DB columns
         // Build row with only columns that exist in DB
-        // sort_order = timestamp ms → always unique, always newest last
+        // sort_order: use count of existing items + 1 (safe integer range)
+        const existing = await sbGet('inventory', `?user_id=eq.${userId}&select=id`);
         const invRow = {
           id:         item.id,
           user_id:    userId,
@@ -165,7 +177,7 @@ module.exports = async function handler(req, res) {
           unit:       item.unit     || 'g',
           min_qty:    item.min_qty  || item.minQty || 0,
           category:   item.category || 'other',
-          sort_order: Date.now(),
+          sort_order: existing.length,
           qty:        0,
         };
         if (item.emoji)  invRow.emoji  = item.emoji;
@@ -173,26 +185,32 @@ module.exports = async function handler(req, res) {
         await sbPost('inventory', invRow);
         // Log initial quantity
         if (initialQty && initialQty !== 0) {
-          await sbPost('inventory_log', {
+          const logRow = {
             user_id:   userId,
             item_id:   item.id,
             item_name: item.name,
             unit:      item.unit || 'g',
             delta:     Number(initialQty),
             note:      note || 'Khởi tạo',
-          }, 'return=representation');
+          };
+          if (item.expiry) logRow.expiry = item.expiry;
+          await sbPost('inventory_log', logRow, 'return=representation');
         }
         return res.status(200).json({ ok: true });
       }
 
       // Log a transaction (+ or -)
       if (type === 'log_transaction') {
-        const { item_id, item_name, unit, delta, note } = body;
+        const { item_id, item_name, unit, delta, note, expiry } = body;
         if (!item_id || delta === undefined) return res.status(400).json({ error: 'item_id and delta required' });
-        const entry = await sbPost('inventory_log', {
-          user_id: userId, item_id, item_name, unit: unit || 'g',
-          delta: Number(delta), note: note || '',
-        }, 'return=representation');
+        const row = {
+          user_id: userId, item_id, item_name,
+          unit: unit || 'g',
+          delta: Number(delta),
+          note: note || '',
+        };
+        if (expiry) row.expiry = expiry; // optional expiry per batch
+        const entry = await sbPost('inventory_log', row, 'return=representation');
         return res.status(200).json({ ok: true, entry: Array.isArray(entry) ? entry[0] : entry });
       }
 
@@ -271,6 +289,7 @@ module.exports = async function handler(req, res) {
             unit:      trip_item.unit || 'g',
             delta:     Number(trip_item.qty),
             note:      `🛒 Đi chợ${trip_item.note ? ' · ' + trip_item.note : ''}`,
+            ...(trip_item.expiry ? { expiry: trip_item.expiry } : {}),
           }, 'return=representation');
         }
         return res.status(200).json({ ok: true });
