@@ -388,6 +388,13 @@ button{font-family:'Inter',sans-serif;}
 .shop-date-group{margin-bottom:18px;}
 .shop-date-label{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);}
 .shop-date-badge{padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:700;}
+.trip-status-btn{border:none;border-radius:7px;padding:3px 9px;font-size:.68rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.trip-status-btn.done{background:rgba(74,222,128,.12);color:var(--accent);}
+.trip-status-btn.done:active{background:rgba(74,222,128,.25);}
+.trip-status-btn.reopen{background:var(--card2);color:var(--text3);border:1px solid var(--border);}
+.trip-status-btn.reopen:active{color:var(--text);}
+.trip-status-btn.del{background:none;color:var(--text3);}
+.trip-status-btn.del:active{color:var(--red);}
 .badge-today{background:rgba(74,222,128,.15);color:var(--accent);}
 .badge-soon{background:rgba(245,158,11,.15);color:var(--amber);}
 .badge-later{background:var(--card2);color:var(--text3);}
@@ -1876,7 +1883,13 @@ function renderShop() {
         📅 ${trip.note||'Chuyến chợ '+dt}
         <span class="shop-date-badge ${badgeCls}">${done?'✓ Xong':isToday?'Hôm nay':dt}</span>
         <span class="shop-date-badge badge-later">${bought}/${items.length} món</span>
-        <button onclick="deleteTripModal('${tId}')" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:2px 6px">🗑</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:4px;">
+          ${done
+            ? `<button onclick="setTripStatus('${tId}','pending')" class="trip-status-btn reopen">↩ Mở lại</button>`
+            : `<button onclick="setTripStatus('${tId}','done')" class="trip-status-btn done">✓ Xong</button>`
+          }
+          <button onclick="deleteTripModal('${tId}')" class="trip-status-btn del">🗑</button>
+        </div>
       </div>
       ${items.map(item => {
         const iId = item.id.replace(/'/g,"\\'");
@@ -2105,13 +2118,30 @@ async function markBought(itemId, tripId) {
 function editTripItem(itemId, tripId) {
   const trip = trips.find(t => t.id === tripId);
   const item = trip?.items?.find(i => i.id === itemId);
-  if (!item || item.bought) return; // can't edit bought items
+  if (!item || item.bought) return;
   const iId = itemId.replace(/'/g, "\'");
   const tId = tripId.replace(/'/g, "\'");
+
+  // Build inventory picker (items not already linked to another shop item in this trip)
+  const linkedIds = new Set((trip.items||[]).filter(i=>i.inventory_item_id&&i.id!==itemId).map(i=>i.inventory_item_id));
+  const invOptions = inventory
+    .filter(i => !linkedIds.has(i.id))
+    .sort((a,b)=>(a.qty<=0?0:1)-(b.qty<=0?0:1));
+  const invSelect = invOptions.length
+    ? `<select class="modal-input" id="editInvLink">
+        <option value="">— Không link —</option>
+        ${invOptions.map(inv => {
+          const isOut = inv.qty<=0;
+          const isLow = !isOut && inv.qty<=(inv.min_qty||inv.minQty||0);
+          const flag = isOut?' 🔴':isLow?' 🟡':'';
+          return `<option value="${inv.id}"${item.inventory_item_id===inv.id?' selected':''}>${inv.emoji||'🍱'} ${inv.name}${flag}</option>`;
+        }).join('')}
+      </select>`
+    : '<div style="font-size:.8rem;color:var(--text3);padding:8px 0">Chưa có món nào trong tủ lạnh</div>';
+
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-title">✏️ Chỉnh sửa món chợ</div>
     <div class="adjust-food-name">${item.emoji||'🛍'} ${item.name}</div>
-    ${item.inventory_item_id?'<div class="shop-linked" style="margin-bottom:12px">🔗 Linked với tủ lạnh</div>':''}
     <div class="modal-row">
       <div class="modal-field">
         <div class="modal-label">Số lượng</div>
@@ -2129,6 +2159,11 @@ function editTripItem(itemId, tripId) {
       <div class="modal-label">Ghi chú</div>
       <input class="modal-input" id="editNote" value="${item.note||''}" placeholder="Ghi chú...">
     </div>
+    <div class="modal-field">
+      <div class="modal-label">🔗 Liên kết với tủ lạnh</div>
+      <div style="font-size:.7rem;color:var(--text3);margin-bottom:6px">Khi tick ✓ sẽ tự cộng vào tủ lạnh</div>
+      ${invSelect}
+    </div>
     <div class="modal-btn-row">
       <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
       <button class="modal-btn confirm" onclick="confirmEditTripItem('${iId}','${tId}')">Lưu</button>
@@ -2137,19 +2172,19 @@ function editTripItem(itemId, tripId) {
 }
 
 async function confirmEditTripItem(itemId, tripId) {
-  const qty  = parseFloat(document.getElementById('editQty').value);
-  const unit = document.getElementById('editUnit').value;
-  const note = document.getElementById('editNote').value.trim();
+  const qty   = parseFloat(document.getElementById('editQty').value);
+  const unit  = document.getElementById('editUnit').value;
+  const note  = document.getElementById('editNote').value.trim();
+  const invId = document.getElementById('editInvLink')?.value || null;
   if (!qty || qty <= 0) { showToast('Số lượng phải lớn hơn 0', false); return; }
   try {
-    await apiCall('POST', { type:'update_trip_item', item_id: itemId, qty, unit, note });
-    // Update local state
+    await apiCall('POST', { type:'update_trip_item', item_id: itemId, qty, unit, note, inventory_item_id: invId || null });
     const trip = trips.find(t => t.id === tripId);
     const item = trip?.items?.find(i => i.id === itemId);
-    if (item) { item.qty = qty; item.unit = unit; item.note = note; }
+    if (item) { item.qty = qty; item.unit = unit; item.note = note; item.inventory_item_id = invId || null; }
     closeModal();
     renderShop();
-    showToast('✓ Đã cập nhật', true);
+    showToast(invId ? '✓ Đã cập nhật & liên kết tủ lạnh' : '✓ Đã cập nhật', true);
   } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
@@ -2159,6 +2194,17 @@ async function deleteTripItem(itemId, tripId) {
     const trip = trips.find(t => t.id===tripId);
     if (trip) trip.items = (trip.items||[]).filter(i => i.id!==itemId);
     renderShop();
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+async function setTripStatus(tripId, status) {
+  const trip = trips.find(t => t.id === tripId);
+  if (!trip) return;
+  try {
+    await apiCall('POST', { type:'update_trip', trip_id: tripId, status });
+    trip.status = status;
+    renderShop();
+    showToast(status === 'done' ? '✓ Chuyến chợ đã xong' : '↩ Đã mở lại chuyến chợ', true);
   } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
