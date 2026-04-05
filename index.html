@@ -2251,10 +2251,19 @@ async function markBought(itemId, tripId) {
     if (item.inventory_item_id) {
       const invItem = inventory.find(i => i.id === item.inventory_item_id);
       if (invItem) {
+        // Optimistic update qty locally first
         invItem.qty = (invItem.qty || 0) + Number(item.qty);
-        renderInv();          // ← render lại tủ lạnh ngay
-        updateSummary();
-        updateFridgeBadge();
+        if (item.expiry) invItem.earliest_expiry = invItem.earliest_expiry || item.expiry;
+        renderInv(); updateSummary(); updateFridgeBadge();
+        // Then reload from server to get correct FIFO expiry
+        apiCall('GET', null, '?type=inventory').then(updated => {
+          if (!Array.isArray(updated)) return;
+          updated.forEach(u => {
+            const idx = inventory.findIndex(i => i.id === u.id);
+            if (idx >= 0) inventory[idx] = u;
+          });
+          renderInv(); updateSummary(); updateFridgeBadge();
+        }).catch(() => {});
       }
     }
 
@@ -2270,12 +2279,20 @@ async function markBought(itemId, tripId) {
 }
 
 function askAddToFridge(shopItem) {
-  const iId = shopItem.id.replace(/'/g,"\'");
+  const iId    = shopItem.id.replace(/'/g,"\'");
+  const sname  = shopItem.name.replace(/'/g,"\'");
+  const sEmoji = (shopItem.emoji||'🛍').replace(/'/g,"\'");
+  // Try to guess category from shopping item note or default 'other'
+  const guessedCat = shopItem.category || 'other';
   document.getElementById('modalContent').innerHTML = `
     <div class="modal-title">🧊 Thêm vào tủ lạnh?</div>
-    <div class="adjust-food-name">${shopItem.emoji||'🛍'} ${shopItem.name}</div>
-    <div style="font-size:.8rem;color:var(--text3);margin-bottom:16px">
-      Bạn vừa mua ${fmtQty(shopItem.qty)}${shopItem.unit}. Thêm vào tủ lạnh để theo dõi?
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <input class="modal-input" id="atfEmoji" value="${sEmoji}"
+        maxlength="4" style="width:56px;text-align:center;font-size:1.5rem;flex-shrink:0;padding:6px">
+      <div>
+        <div style="font-size:.95rem;font-weight:700">${shopItem.name}</div>
+        <div style="font-size:.75rem;color:var(--text3)">Bạn vừa mua ${fmtQty(shopItem.qty)}${shopItem.unit}</div>
+      </div>
     </div>
     <div class="modal-row">
       <div class="modal-field">
@@ -2292,27 +2309,33 @@ function askAddToFridge(shopItem) {
     <div class="modal-row">
       <div class="modal-field">
         <div class="modal-label">Danh mục</div>
-        <select class="modal-input" id="atfCat">${CATEGORY_OPTIONS.map(c=>`<option value="${c.v}">${c.l}</option>`).join('')}</select>
+        <select class="modal-input" id="atfCat">
+          ${CATEGORY_OPTIONS.map(c=>`<option value="${c.v}"${c.v===guessedCat?' selected':''}>${c.l}</option>`).join('')}
+        </select>
       </div>
       <div class="modal-field">
         <div class="modal-label">Báo sắp hết khi còn</div>
         <input type="number" class="modal-input" id="atfMin" placeholder="0" min="0">
       </div>
     </div>
+    <div class="modal-field">
+      <div class="modal-label">Hạn sử dụng lô này</div>
+      <input type="date" class="modal-input" id="atfExpiry" value="${shopItem.expiry||''}">
+    </div>
     <div class="modal-btn-row">
       <button class="modal-btn cancel" onclick="closeModal()">Bỏ qua</button>
-      <button class="modal-btn confirm" onclick="confirmAddToFridgeFromShop('${iId}','${shopItem.name.replace(/'/g,"\'")}')">Thêm vào tủ</button>
+      <button class="modal-btn confirm" onclick="confirmAddToFridgeFromShop('${iId}','${sname}','${sEmoji}')">Thêm vào tủ</button>
     </div>`;
   openModalFn();
 }
 
-async function confirmAddToFridgeFromShop(shopItemId, name) {
+async function confirmAddToFridgeFromShop(shopItemId, name, defaultEmoji) {
   const qty    = parseFloat(document.getElementById('atfQty').value) || 0;
   const unit   = document.getElementById('atfUnit').value;
   const cat    = document.getElementById('atfCat').value;
   const minQty = parseFloat(document.getElementById('atfMin').value) || 0;
   const expiry = document.getElementById('atfExpiry')?.value || null;
-  const emoji  = catEmoji[cat] || '🍱';
+  const emoji  = document.getElementById('atfEmoji')?.value.trim() || defaultEmoji || catEmoji[cat] || '🍱';
   const item = {
     id: Date.now().toString(), name, unit,
     min_qty: minQty, minQty, category: cat, emoji, expiry, qty: 0,
@@ -2320,6 +2343,7 @@ async function confirmAddToFridgeFromShop(shopItemId, name) {
   try {
     await apiCall('POST', { type:'add_inventory_item', item, initialQty: qty, note:'Từ đi chợ' });
     item.qty = qty;
+    item.earliest_expiry = expiry;
     inventory.push(item);
     fridgeLoaded = true;
     closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
