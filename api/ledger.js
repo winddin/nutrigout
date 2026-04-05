@@ -292,6 +292,18 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true });
       }
 
+      // Update shopping item (qty, unit, note)
+      if (type === 'update_trip_item') {
+        const { item_id, qty, unit, note } = body;
+        if (!item_id) return res.status(400).json({ error: 'item_id required' });
+        if (!qty || qty <= 0) return res.status(400).json({ error: 'qty must be > 0' });
+        await sbPatch('shopping_items',
+          `?id=eq.${encodeURIComponent(item_id)}&user_id=eq.${userId}`,
+          { qty: Number(qty), unit: unit || 'g', note: note || null }
+        );
+        return res.status(200).json({ ok: true });
+      }
+
       // Delete shopping item
       if (type === 'delete_trip_item') {
         const { item_id } = body;
