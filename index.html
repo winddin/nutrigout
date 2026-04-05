@@ -2069,15 +2069,28 @@ async function markBought(itemId, tripId) {
   if (!item || item.bought) return;
   try {
     await apiCall('POST', { type:'mark_bought', item_id: itemId, trip_item: item });
-    item.bought = true; item.bought_at = new Date().toISOString();
-    // If linked to inventory → update local qty cache + log
+    item.bought = true;
+    item.bought_at = new Date().toISOString();
+
+    // ── Update tủ lạnh nếu item linked ─────────────────────────
     if (item.inventory_item_id) {
       const invItem = inventory.find(i => i.id === item.inventory_item_id);
       if (invItem) {
         invItem.qty = (invItem.qty || 0) + Number(item.qty);
-        updateSummary(); updateFridgeBadge();
+        renderInv();          // ← render lại tủ lạnh ngay
+        updateSummary();
+        updateFridgeBadge();
       }
     }
+
+    // ── Auto-set trip status = done khi tick hết tất cả ────────
+    if (trip?.items?.length > 0 && trip.items.every(i => i.bought)) {
+      trip.status = 'done';
+      // Persist to DB (fire-and-forget)
+      apiCall('POST', { type:'update_trip', trip_id: trip.id, status: 'done' })
+        .catch(e => console.warn('update_trip status:', e.message));
+    }
+
     renderShop();
     const suffix = item.inventory_item_id ? ' → Đã cộng vào tủ lạnh' : '';
     showToast(`✓ Đã mua ${item.name}${suffix}`, true);
