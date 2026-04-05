@@ -233,10 +233,10 @@ button{font-family:'Inter',sans-serif;}
 .empty-fridge p{font-size:.82rem;}
 
 /* ── MODAL / DRAWER ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:flex-end;justify-content:center;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.show{display:flex;}
-.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px calc(20px + var(--safe-bottom));animation:slideUp .22s ease;}
-.modal-handle{width:36px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 16px;}
+.modal-sheet{background:var(--card);border-radius:18px;width:100%;max-width:440px;padding:22px 20px;animation:fadeIn .18s ease;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.modal-handle{display:none;}
 .modal-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px;}
 .form-group{margin-bottom:13px;}
 .form-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:5px;display:block;}
@@ -388,13 +388,8 @@ button{font-family:'Inter',sans-serif;}
 .shop-date-group{margin-bottom:18px;}
 .shop-date-label{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border);}
 .shop-date-badge{padding:2px 8px;border-radius:50px;font-size:.65rem;font-weight:700;}
-.trip-status-btn{border:none;border-radius:7px;padding:3px 9px;font-size:.68rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
-.trip-status-btn.done{background:rgba(74,222,128,.12);color:var(--accent);}
-.trip-status-btn.done:active{background:rgba(74,222,128,.25);}
-.trip-status-btn.reopen{background:var(--card2);color:var(--text3);border:1px solid var(--border);}
-.trip-status-btn.reopen:active{color:var(--text);}
-.trip-status-btn.del{background:none;color:var(--text3);}
-.trip-status-btn.del:active{color:var(--red);}
+.trip-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;padding:3px 6px;border-radius:6px;transition:color .15s;}
+.trip-del-btn:active{color:var(--red);}
 .badge-today{background:rgba(74,222,128,.15);color:var(--accent);}
 .badge-soon{background:rgba(245,158,11,.15);color:var(--amber);}
 .badge-later{background:var(--card2);color:var(--text3);}
@@ -1815,7 +1810,7 @@ async function quickAddToShop(itemId) {
   if (!inv) return;
 
   // If no active trip, ask to create one first
-  const activeTrips = trips.filter(t => t.status !== 'done');
+  const activeTrips = trips;
   if (!activeTrips.length) {
     if (!confirm(`Chưa có chuyến đi chợ nào.\nTạo chuyến mới và thêm "${inv.name}"?`)) return;
     const today = new Date().toISOString().slice(0,10);
@@ -1827,7 +1822,7 @@ async function quickAddToShop(itemId) {
   }
 
   // Pick trip if multiple active
-  const trip = trips.find(t => t.status !== 'done') || trips[0];
+  const trip = trips[0];
 
   // Add to trip linked to inventory item
   const shopItem = {
@@ -1873,23 +1868,17 @@ function renderShop() {
   el.innerHTML = trips.map(trip => {
     const items = trip.items || [];
     const bought = items.filter(i => i.bought).length;
-    const done = trip.status==='done' || (items.length > 0 && bought===items.length);
+    const allBought = items.length > 0 && bought === items.length;
     const dt = trip.trip_date ? new Date(trip.trip_date+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'}) : 'Chưa định ngày';
     const isToday = trip.trip_date === today;
-    const badgeCls = done?'badge-today':isToday?'badge-soon':'badge-later';
+    const dateBadgeCls = allBought?'badge-today':isToday?'badge-soon':'badge-later';
     const tId = trip.id.replace(/'/g,"\\'");
     return `<div class="shop-date-group">
       <div class="shop-date-label" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         📅 ${trip.note||'Chuyến chợ '+dt}
-        <span class="shop-date-badge ${badgeCls}">${done?'✓ Xong':isToday?'Hôm nay':dt}</span>
+        <span class="shop-date-badge ${dateBadgeCls}">${allBought?'✓ Xong':isToday?'Hôm nay':dt}</span>
         <span class="shop-date-badge badge-later">${bought}/${items.length} món</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:4px;">
-          ${done
-            ? `<button onclick="setTripStatus('${tId}','pending')" class="trip-status-btn reopen">↩ Mở lại</button>`
-            : `<button onclick="setTripStatus('${tId}','done')" class="trip-status-btn done">✓ Xong</button>`
-          }
-          <button onclick="deleteTripModal('${tId}')" class="trip-status-btn del">🗑</button>
-        </div>
+        <button onclick="deleteTripModal('${tId}')" class="trip-del-btn" style="margin-left:auto">🗑</button>
       </div>
       ${items.map(item => {
         const iId = item.id.replace(/'/g,"\\'");
@@ -2101,17 +2090,71 @@ async function markBought(itemId, tripId) {
       }
     }
 
-    // ── Auto-set trip status = done khi tick hết tất cả ────────
-    if (trip?.items?.length > 0 && trip.items.every(i => i.bought)) {
-      trip.status = 'done';
-      // Persist to DB (fire-and-forget)
-      apiCall('POST', { type:'update_trip', trip_id: trip.id, status: 'done' })
-        .catch(e => console.warn('update_trip status:', e.message));
-    }
-
     renderShop();
-    const suffix = item.inventory_item_id ? ' → Đã cộng vào tủ lạnh' : '';
-    showToast(`✓ Đã mua ${item.name}${suffix}`, true);
+    if (item.inventory_item_id) {
+      showToast(`✓ Đã mua ${item.name} → Đã cộng vào tủ lạnh`, true);
+    } else {
+      // Hỏi có muốn thêm vào tủ lạnh không
+      showToast(`✓ Đã mua ${item.name}`, true);
+      setTimeout(() => askAddToFridge(item), 400);
+    }
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+function askAddToFridge(shopItem) {
+  const iId = shopItem.id.replace(/'/g,"\'");
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-title">🧊 Thêm vào tủ lạnh?</div>
+    <div class="adjust-food-name">${shopItem.emoji||'🛍'} ${shopItem.name}</div>
+    <div style="font-size:.8rem;color:var(--text3);margin-bottom:16px">
+      Bạn vừa mua ${fmtQty(shopItem.qty)}${shopItem.unit}. Thêm vào tủ lạnh để theo dõi?
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <div class="modal-label">Số lượng</div>
+        <input type="number" class="modal-input" id="atfQty" value="${shopItem.qty}" min="0">
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Đơn vị</div>
+        <select class="modal-input" id="atfUnit">
+          ${UNIT_OPTIONS.map(u=>`<option${u===shopItem.unit?' selected':''}>${u}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field">
+        <div class="modal-label">Danh mục</div>
+        <select class="modal-input" id="atfCat">${CATEGORY_OPTIONS.map(c=>`<option value="${c.v}">${c.l}</option>`).join('')}</select>
+      </div>
+      <div class="modal-field">
+        <div class="modal-label">Báo sắp hết khi còn</div>
+        <input type="number" class="modal-input" id="atfMin" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="modal-btn-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Bỏ qua</button>
+      <button class="modal-btn confirm" onclick="confirmAddToFridgeFromShop('${iId}','${shopItem.name.replace(/'/g,"\'")}')">Thêm vào tủ</button>
+    </div>`;
+  openModalFn();
+}
+
+async function confirmAddToFridgeFromShop(shopItemId, name) {
+  const qty    = parseFloat(document.getElementById('atfQty').value) || 0;
+  const unit   = document.getElementById('atfUnit').value;
+  const cat    = document.getElementById('atfCat').value;
+  const minQty = parseFloat(document.getElementById('atfMin').value) || 0;
+  const emoji  = catEmoji[cat] || '🍱';
+  const item = {
+    id: Date.now().toString(), name, unit,
+    min_qty: minQty, minQty, category: cat, emoji, expiry: null, qty: 0,
+  };
+  try {
+    await apiCall('POST', { type:'add_inventory_item', item, initialQty: qty, note:'Từ đi chợ' });
+    item.qty = qty;
+    inventory.push(item);
+    fridgeLoaded = true;
+    closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
+    showToast(`✓ Đã thêm ${name} vào tủ lạnh`, true);
   } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
@@ -2194,17 +2237,6 @@ async function deleteTripItem(itemId, tripId) {
     const trip = trips.find(t => t.id===tripId);
     if (trip) trip.items = (trip.items||[]).filter(i => i.id!==itemId);
     renderShop();
-  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
-}
-
-async function setTripStatus(tripId, status) {
-  const trip = trips.find(t => t.id === tripId);
-  if (!trip) return;
-  try {
-    await apiCall('POST', { type:'update_trip', trip_id: tripId, status });
-    trip.status = status;
-    renderShop();
-    showToast(status === 'done' ? '✓ Chuyến chợ đã xong' : '↩ Đã mở lại chuyến chợ', true);
   } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
 }
 
