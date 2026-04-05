@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>NutriGout – Tra cứu dinh dưỡng & Purin</title>
 <meta name="description" content="Tra cứu dinh dưỡng, Calories & Purin cho người bị Gút & thừa cân">
 <meta name="theme-color" content="#0d1117">
@@ -19,6 +19,8 @@
   --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
   --r:14px;--rr:20px;
   --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
 }
 /* ── LIGHT THEME ── */
 .light{
@@ -39,18 +41,20 @@ body{font-family:'Inter',sans-serif;color:var(--text);display:flex;flex-directio
 button{font-family:'Inter',sans-serif;}
 
 /* APP */
-#app{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;width:100%;}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(70px + var(--safe-bottom));}
-@media(min-width:480px){#app{border-left:1px solid var(--border);border-right:1px solid var(--border);}
-  .bottom-nav{width:480px;}}
+#app{display:flex;flex-direction:column;height:100%;width:100%;margin:0 auto;}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(70px + var(--safe-bottom));padding-left:var(--safe-left);padding-right:var(--safe-right);}
+@media(min-width:600px){
+  #app{max-width:480px;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  .bottom-nav{width:480px!important;}
+}
 
 /* HEADER */
-.app-header{flex-shrink:0;padding:14px 18px 10px;background:var(--bg);border-bottom:1px solid var(--border);}
+.app-header{flex-shrink:0;padding:14px calc(18px + var(--safe-right)) 10px calc(18px + var(--safe-left));background:var(--bg);border-bottom:1px solid var(--border);}
 .header-title{font-size:1.1rem;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;}
 .header-sub{font-size:.68rem;color:var(--text3);margin-top:2px;}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(13,17,23,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));z-index:100;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;width:100%;background:rgba(13,17,23,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));z-index:100;}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 3px;cursor:pointer;border:none;background:none;color:var(--text3);transition:color .15s;}
 .nav-item.active{color:var(--accent);}
 .nav-icon{font-size:1.3rem;line-height:1;}
@@ -233,7 +237,7 @@ button{font-family:'Inter',sans-serif;}
 .empty-fridge p{font-size:.82rem;}
 
 /* ── MODAL / DRAWER ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;padding-left:max(20px,var(--safe-left));padding-right:max(20px,var(--safe-right));}
 .modal-overlay.show{display:flex;}
 .modal-sheet{background:var(--card);border-radius:18px;width:100%;max-width:440px;padding:22px 20px;animation:fadeIn .18s ease;max-height:85vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .modal-handle{display:none;}
