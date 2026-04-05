@@ -278,9 +278,13 @@ module.exports = async function handler(req, res) {
 
       // Update trip status
       if (type === 'update_trip') {
-        const { trip_id, ...fields } = body;
+        const { trip_id, status } = body;
         if (!trip_id) return res.status(400).json({ error: 'trip_id required' });
-        await sbPatch('shopping_trips', `?id=eq.${trip_id}&user_id=eq.${userId}`, fields);
+        // Only allow updating specific safe fields
+        const fields = {};
+        if (status !== undefined) fields.status = status;
+        if (!Object.keys(fields).length) return res.status(400).json({ error: 'no fields to update' });
+        await sbPatch('shopping_trips', `?id=eq.${encodeURIComponent(trip_id)}&user_id=eq.${userId}`, fields);
         return res.status(200).json({ ok: true });
       }
 
@@ -294,12 +298,18 @@ module.exports = async function handler(req, res) {
 
       // Update shopping item (qty, unit, note)
       if (type === 'update_trip_item') {
-        const { item_id, qty, unit, note } = body;
+        const { item_id, qty, unit, note, inventory_item_id } = body;
         if (!item_id) return res.status(400).json({ error: 'item_id required' });
         if (!qty || qty <= 0) return res.status(400).json({ error: 'qty must be > 0' });
+        const patch = {
+          qty:  Number(qty),
+          unit: unit || 'g',
+          note: note || null,
+          inventory_item_id: inventory_item_id || null,
+        };
         await sbPatch('shopping_items',
           `?id=eq.${encodeURIComponent(item_id)}&user_id=eq.${userId}`,
-          { qty: Number(qty), unit: unit || 'g', note: note || null }
+          patch
         );
         return res.status(200).json({ ok: true });
       }
