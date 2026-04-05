@@ -1662,8 +1662,24 @@ async function openItemDetail(itemId) {
   if (!item) return;
   openModalFn();
   _renderDetailInfo(item);
-  // Preload logs in background
-  _loadDetailLogs(item);
+  // Load logs + reload inventory (for active_batches) in parallel
+  _loadDetailLogs(item).then(() => {
+    // After logs loaded, also refresh inventory to get FIFO active_batches
+    apiCall('GET', null, '?type=inventory').then(updated => {
+      if (!Array.isArray(updated)) return;
+      updated.forEach(u => {
+        const idx = inventory.findIndex(i => i.id === u.id);
+        if (idx >= 0) inventory[idx] = u;
+      });
+      // If batches tab is open, re-render it with fresh data
+      const activeDtab = document.querySelector('.trip-src-btn.active[id^="dtab-"]');
+      if (activeDtab?.id === 'dtab-batches') {
+        const freshItem = inventory.find(i => i.id === itemId);
+        const content = document.getElementById('detail-tab-content');
+        if (content && freshItem) content.innerHTML = _renderBatchesTab(freshItem, _detailLogs);
+      }
+    }).catch(() => {});
+  });
 }
 
 let _detailLogs = [];
@@ -1715,13 +1731,42 @@ function _renderInfoTab(item) {
     </div>`;
 }
 
+// Frontend FIFO helper (mirrors server logic, used when active_batches not loaded yet)
+function _computeFIFOFromLogs(logs, unit) {
+  const sorted = [...logs].sort((a,b) => a.created_at < b.created_at ? -1 : 1);
+  const batchMap = {};
+  for (const log of sorted) {
+    const d = Number(log.delta);
+    if (d > 0) {
+      batchMap[log.id] = { log_id: log.id, qty: d, expiry: log.expiry||null, note: log.note||'', created_at: log.created_at };
+    } else {
+      let remaining = Math.abs(d);
+      const active = Object.values(batchMap).filter(b => b.qty > 0).sort((a,b) => {
+        if (!a.expiry && !b.expiry) return a.created_at < b.created_at ? -1 : 1;
+        if (!a.expiry) return 1; if (!b.expiry) return -1;
+        return a.expiry < b.expiry ? -1 : a.expiry > b.expiry ? 1 : 0;
+      });
+      for (const batch of active) {
+        if (remaining <= 0) break;
+        const take = Math.min(batch.qty, remaining);
+        batch.qty -= take; remaining -= take;
+      }
+    }
+  }
+  return Object.values(batchMap).filter(b => b.qty > 0).sort((a,b) => {
+    if (!a.expiry && !b.expiry) return a.created_at < b.created_at ? -1 : 1;
+    if (!a.expiry) return 1; if (!b.expiry) return -1;
+    return a.expiry < b.expiry ? -1 : a.expiry > b.expiry ? 1 : 0;
+  });
+}
+
 function _renderBatchesTab(item, logs) {
   const sid = item.id.replace(/'/g,"\'");
-  // Use active_batches from FIFO-computed server data (remaining qty per batch)
-  // Fall back to filtering positive logs if active_batches not available
-  const activeBatches = item.active_batches && item.active_batches.length
-    ? item.active_batches  // {qty, expiry, log_id, note, created_at}
-    : [];
+  // Prefer server-computed active_batches (has remaining qty after FIFO)
+  // Fall back: compute FIFO from raw logs in frontend
+  let activeBatches = (item.active_batches && item.active_batches.length)
+    ? item.active_batches
+    : _computeFIFOFromLogs(logs || [], item.unit);
 
   // Also need log_id for expiry editing — active_batches includes log_id from server
   const batchHtml = activeBatches.length ? activeBatches.map(batch => {
@@ -1805,6 +1850,7 @@ async function _loadDetailLogs(item) {
   try {
     _detailLogs = await apiCall('GET', null, `?type=inventory_log&item_id=${encodeURIComponent(item.id)}`);
   } catch(e) { _detailLogs = []; }
+  return _detailLogs;
 }
 
 function switchDetailTab(tab, itemId) {
