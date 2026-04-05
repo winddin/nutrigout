@@ -1577,7 +1577,7 @@ function saveSortOrder() {
   }, 800);
 }
 
-// ── BUILD ITEM HTML ──────────────────────────────────────────
+// ── BUILD ITEM HTML ──────────────────────────────────────
 function buildInvItem(item, cat) {
   const isOut = item.qty <= 0;
   const isLow = !isOut && item.qty <= (item.minQty||item.min_qty||0);
@@ -1588,10 +1588,9 @@ function buildInvItem(item, cat) {
   if (activeExpiry) {
     const d = Math.ceil((new Date(activeExpiry+"T00:00:00")-new Date())/86400000);
     const label = d<0?'Hết hạn':d===0?'Hôm nay':d+' ngày';
-    exp = `<span class="inv-expiry ${d<=2?'expiring':''}" title="FIFO: lô gần nhất hết hạn">⏱ ${label}</span>`;
+    exp = `<span class="inv-expiry ${d<=2?'expiring':''}" title="Lô gần hết hạn nhất">⏱ ${label}</span>`;
   }
-  const sid = item.id.replace(/'/g,"\\'");
-  const sname = item.name.replace(/'/g,"\\'");
+  const sid = item.id.replace(/'/g,"\'");
   return `<div class="inv-item ${ic}" id="inv-${item.id}"
     draggable="true"
     ondragstart="onDragStart(event,'${sid}','${cat}')"
@@ -1600,11 +1599,9 @@ function buildInvItem(item, cat) {
     ondrop="onDrop(event,'${sid}','${cat}')"
     ontouchmove="onTouchMove(event,'${cat}')"
     ontouchend="onTouchEnd(event,'${cat}')">
-    <span class="inv-drag-handle"
-      ontouchstart="onTouchStart(event,'${sid}','${cat}')"
-      title="Kéo để sắp xếp">⠿</span>
-    <span class="inv-icon" onclick="showItemLog('${sid}','${sname}')" style="cursor:pointer" title="Xem lịch sử">${item.emoji||'🍱'}</span>
-    <div class="inv-info">
+    <span class="inv-drag-handle" ontouchstart="onTouchStart(event,'${sid}','${cat}')" title="Kéo để sắp xếp">⠿</span>
+    <span class="inv-icon" onclick="openItemDetail('${sid}')" style="cursor:pointer">${item.emoji||'🍱'}</span>
+    <div class="inv-info" onclick="openItemDetail('${sid}')" style="cursor:pointer">
       <div class="inv-name">${item.name}</div>
       <div class="inv-meta">
         <span class="inv-qty ${qc}">${fmtQty(item.qty)}${item.unit}</span>
@@ -1617,11 +1614,9 @@ function buildInvItem(item, cat) {
       <button class="inv-btn minus" onclick="openAdjustModal('${sid}','minus')">−</button>
       <button class="inv-btn plus"  onclick="openAdjustModal('${sid}','plus')">+</button>
       ${(isOut||isLow)?`<button class="inv-btn buy" onclick="quickAddToShop('${sid}')" title="Thêm vào list chợ">🛒</button>`:''}
-      <button class="inv-btn delete" onclick="deleteInvItem('${sid}')">🗑</button>
     </div>
   </div>`;
 }
-
 // ── RENDER INVENTORY ─────────────────────────────────────────
 function renderInv() {
   const el = document.getElementById('invList');
@@ -1660,32 +1655,147 @@ function renderInv() {
   });
   el.innerHTML = out;
 }
-async function showItemLog(itemId, itemName) {
+// ── ITEM DETAIL MODAL ────────────────────────────────────────
+async function openItemDetail(itemId) {
+  const item = inventory.find(i => i.id === itemId);
+  if (!item) return;
   openModalFn();
+  _renderDetailInfo(item);
+  // Preload logs in background
+  _loadDetailLogs(item);
+}
+
+let _detailLogs = [];
+
+function _renderDetailInfo(item) {
+  const sid = item.id.replace(/'/g,"\'");
   document.getElementById('modalContent').innerHTML = `
-    <div class="modal-title">📋 ${itemName}</div>
-    <div id="logList" style="max-height:280px;overflow-y:auto"><div style="text-align:center;padding:20px;color:var(--text3)">Đang tải...</div></div>`;
-  try {
-    const logs = await apiCall('GET', null, `?type=inventory_log&item_id=${encodeURIComponent(itemId)}`);
-    if (!logs.length) { document.getElementById('logList').innerHTML='<div style="text-align:center;padding:20px;color:var(--text3)">Chưa có giao dịch nào</div>'; return; }
-    let running = 0;
-    const sorted = [...logs].reverse();
-    const rows = sorted.map(log => {
-      running += Number(log.delta);
-      const isPos = log.delta > 0;
-      const dt = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      const expiryStr = log.expiry ? `<span style="font-size:.65rem;background:rgba(245,158,11,.15);color:var(--amber);border-radius:50px;padding:1px 6px;margin-left:4px">HSD ${new Date(log.expiry+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</span>` : '';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:.9rem">${isPos?'➕':'➖'}</span>
-        <div style="flex:1">
-          <div style="font-size:.82rem;font-weight:600;color:${isPos?'var(--accent)':'var(--red)'};display:flex;align-items:center;flex-wrap:wrap;gap:4px">${isPos?'+':''}${fmtQty(log.delta)}${log.unit}${expiryStr}</div>
-          <div style="font-size:.7rem;color:var(--text3)">${log.note||'—'} · ${dt}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <span style="font-size:2.2rem;cursor:pointer" onclick="changeEmoji('${sid}')" title="Đổi emoji">${item.emoji||'🍱'}</span>
+      <div style="flex:1">
+        <div style="font-size:1.05rem;font-weight:700;color:var(--text)">${item.name}</div>
+        <div style="font-size:.78rem;color:var(--text3)">${item.unit} · ${item.category||'other'}</div>
+      </div>
+      <button onclick="deleteInvItem('${sid}');closeModal();" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;padding:4px">🗑</button>
+    </div>
+    <div class="trip-source-tabs" style="margin-bottom:14px">
+      <button class="trip-src-btn active" id="dtab-info"    onclick="switchDetailTab('info','${sid}')">⚙️ Thông tin</button>
+      <button class="trip-src-btn"        id="dtab-batches" onclick="switchDetailTab('batches','${sid}')">📦 Lô hàng</button>
+      <button class="trip-src-btn"        id="dtab-log"     onclick="switchDetailTab('log','${sid}')">📋 Lịch sử</button>
+    </div>
+    <div id="detail-tab-content">
+      ${_renderInfoTab(item)}
+    </div>`;
+}
+
+function _renderInfoTab(item) {
+  const sid = item.id.replace(/'/g,"\'");
+  const minQty = item.min_qty || item.minQty || 0;
+  return `
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Emoji</div>
+        <input class="modal-input" id="di-emoji" value="${item.emoji||''}" maxlength="4" placeholder="🍱" style="font-size:1.4rem;text-align:center">
+      </div>
+      <div class="modal-field"><div class="modal-label">Báo sắp hết khi còn</div>
+        <input type="number" class="modal-input" id="di-min" value="${minQty}" min="0">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field"><div class="modal-label">Danh mục</div>
+        <select class="modal-input" id="di-cat">${CATEGORY_OPTIONS.map(c=>`<option value="${c.v}"${item.category===c.v?' selected':''}>${c.l}</option>`).join('')}</select>
+      </div>
+      <div class="modal-field"><div class="modal-label">Đơn vị</div>
+        <select class="modal-input" id="di-unit">${UNIT_OPTIONS.map(u=>`<option${u===item.unit?' selected':''}>${u}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="modal-btn-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Đóng</button>
+      <button class="modal-btn confirm" onclick="saveItemInfo('${sid}')">Lưu thay đổi</button>
+    </div>`;
+}
+
+function _renderBatchesTab(item, logs) {
+  const sid = item.id.replace(/'/g,"\'");
+  // Positive logs = batches added, show with expiry
+  const batches = logs.filter(l => l.delta > 0).slice(0,20);
+  const batchHtml = batches.length ? batches.map(log => {
+    const dt  = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'2-digit'});
+    const exp = log.expiry ? `<span style="font-size:.65rem;background:rgba(245,158,11,.12);color:var(--amber);padding:1px 7px;border-radius:50px">HSD ${new Date(log.expiry+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</span>` : '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:1rem">📦</span>
+      <div style="flex:1">
+        <div style="font-size:.85rem;font-weight:600;color:var(--accent)">+${fmtQty(log.delta)}${log.unit} ${exp}</div>
+        <div style="font-size:.7rem;color:var(--text3)">${log.note||'Nhập kho'} · ${dt}</div>
+      </div>
+    </div>`;
+  }).join('') : '<div style="text-align:center;padding:20px;color:var(--text3);font-size:.82rem">Chưa có lô nào</div>';
+
+  return `
+    <div style="max-height:220px;overflow-y:auto;margin-bottom:12px">${batchHtml}</div>
+    <button onclick="openAdjustModal('${sid}','plus');closeModal();" class="modal-btn confirm" style="width:100%">+ Thêm lô mới</button>
+    <button class="modal-btn cancel" onclick="closeModal()" style="margin-top:8px;width:100%">Đóng</button>`;
+}
+
+function _renderLogTab(item, logs) {
+  let running = 0;
+  const sorted = [...logs].reverse();
+  const rows = sorted.map(log => {
+    running += Number(log.delta);
+    const isPos = log.delta > 0;
+    const dt  = new Date(log.created_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const exp = log.expiry ? `<span style="font-size:.62rem;background:rgba(245,158,11,.12);color:var(--amber);padding:1px 6px;border-radius:50px">HSD ${new Date(log.expiry+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</span>` : '';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:.85rem">${isPos?'➕':'➖'}</span>
+      <div style="flex:1">
+        <div style="font-size:.82rem;font-weight:600;color:${isPos?'var(--accent)':'var(--red)'};display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+          ${isPos?'+':''}${fmtQty(log.delta)}${log.unit} ${exp}
         </div>
-        <div style="font-size:.8rem;font-weight:700;color:var(--text2);min-width:50px;text-align:right">= ${fmtQty(running)}${log.unit}</div>
-      </div>`;
-    });
-    document.getElementById('logList').innerHTML = rows.reverse().join('');
-  } catch(e) { document.getElementById('logList').innerHTML=`<div style="color:var(--red);padding:12px">Lỗi: ${e.message}</div>`; }
+        <div style="font-size:.7rem;color:var(--text3)">${log.note||'—'} · ${dt}</div>
+      </div>
+      <div style="font-size:.78rem;font-weight:700;color:var(--text2);min-width:44px;text-align:right">=${fmtQty(running)}${log.unit}</div>
+    </div>`;
+  });
+  const html = rows.length ? rows.reverse().join('') : '<div style="text-align:center;padding:20px;color:var(--text3)">Chưa có giao dịch</div>';
+  return `<div style="max-height:260px;overflow-y:auto">${html}</div>
+    <button class="modal-btn cancel" onclick="closeModal()" style="margin-top:12px;width:100%">Đóng</button>`;
+}
+
+async function _loadDetailLogs(item) {
+  try {
+    _detailLogs = await apiCall('GET', null, `?type=inventory_log&item_id=${encodeURIComponent(item.id)}`);
+  } catch(e) { _detailLogs = []; }
+}
+
+function switchDetailTab(tab, itemId) {
+  const item = inventory.find(i => i.id === itemId);
+  if (!item) return;
+  ['info','batches','log'].forEach(t => {
+    document.getElementById('dtab-'+t)?.classList.toggle('active', t===tab);
+  });
+  const content = document.getElementById('detail-tab-content');
+  if (!content) return;
+  if (tab === 'info')    content.innerHTML = _renderInfoTab(item);
+  if (tab === 'batches') content.innerHTML = _renderBatchesTab(item, _detailLogs);
+  if (tab === 'log')     content.innerHTML = _renderLogTab(item, _detailLogs);
+}
+
+async function saveItemInfo(itemId) {
+  const item = inventory.find(i => i.id === itemId);
+  if (!item) return;
+  const emoji  = document.getElementById('di-emoji').value.trim() || item.emoji;
+  const minQty = parseFloat(document.getElementById('di-min').value) || 0;
+  const cat    = document.getElementById('di-cat').value;
+  const unit   = document.getElementById('di-unit').value;
+  try {
+    await apiCall('POST', { type:'update_inventory_item', item: { id: itemId, emoji, min_qty: minQty, category: cat, unit } });
+    Object.assign(item, { emoji, minQty, min_qty: minQty, category: cat, unit });
+    closeModal(); renderInv(); updateSummary(); updateFridgeBadge();
+    showToast('✓ Đã cập nhật', true);
+  } catch(e) { showToast('❌ Lỗi: ' + e.message, false); }
+}
+
+function changeEmoji(itemId) {
+  document.getElementById('di-emoji')?.focus();
 }
 
 function openAdjustModal(id, mode) {
@@ -1896,8 +2006,11 @@ function renderShop() {
           <div class="shop-check" onclick="markBought('${iId}','${tId}')" style="${item.bought?'background:var(--accent);color:#000':''}">${item.bought?'✓':''}</div>
           <div class="shop-item-info">
             <div class="shop-item-name">${item.emoji||'🛍'} ${item.name}</div>
-            ${item.inventory_item_id?'<span class="shop-linked">🔗 Tủ lạnh</span>':''}
-            ${item.note&&item.note!=='Hết / sắp hết'?`<div class="shop-item-meta">${item.note}</div>`:''}
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:2px">
+              ${item.inventory_item_id?'<span class="shop-linked">🔗 Tủ lạnh</span>':''}
+              ${item.expiry?`<span style="font-size:.62rem;background:rgba(245,158,11,.12);color:var(--amber);padding:1px 7px;border-radius:50px">HSD ${new Date(item.expiry+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</span>`:''}
+              ${item.note&&item.note!=='Hết / sắp hết'?`<span style="font-size:.68rem;color:var(--text3)">${item.note}</span>`:''}
+            </div>
             ${item.bought&&item.bought_at?`<div class="shop-item-meta">✓ ${new Date(item.bought_at).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>`:''}
           </div>
           <span class="shop-item-qty" onclick="editTripItem('${iId}','${tId}')" title="Chỉnh số lượng">${fmtQty(item.qty)}${item.unit}</span>
@@ -1984,8 +2097,12 @@ function openAddTripItemModal(tripId) {
           <div class="modal-field"><div class="modal-label">Đơn vị</div>
             <div class="modal-input" id="fpUnit" style="display:flex;align-items:center;color:var(--text2);cursor:default">—</div></div>
         </div>
-        <div class="modal-field"><div class="modal-label">Ghi chú</div>
-          <input class="modal-input" id="fpNote" placeholder="vd: Mua loại tươi"></div>
+        <div class="modal-row">
+          <div class="modal-field"><div class="modal-label">Ghi chú</div>
+            <input class="modal-input" id="fpNote" placeholder="vd: Mua loại tươi"></div>
+          <div class="modal-field"><div class="modal-label">Hạn sử dụng</div>
+            <input type="date" class="modal-input" id="fpExpiry"></div>
+        </div>
         <input type="hidden" id="fpInvId">
       </div>
       <div class="modal-btn-row">
@@ -2006,8 +2123,10 @@ function openAddTripItemModal(tripId) {
         <div class="modal-field"><div class="modal-label">Ghi chú</div>
           <input class="modal-input" id="siNote" placeholder="vd: Mua loại tươi"></div>
         <div class="modal-field"><div class="modal-label">Emoji</div>
-          <input class="modal-input" id="siEmoji" placeholder="🛍" maxlength="4"></div>
+          <input class="modal-input" id="siEmoji" placeholder="🛍" maxlength="4" style="text-align:center;font-size:1.2rem"></div>
       </div>
+      <div class="modal-field"><div class="modal-label">Hạn sử dụng (tuỳ chọn)</div>
+        <input type="date" class="modal-input" id="siExpiry"></div>
       <div class="modal-btn-row">
         <button class="modal-btn cancel" onclick="closeModal()">Hủy</button>
         <button class="modal-btn confirm" onclick="confirmAddTripItem('${tId}')">Thêm vào list</button>
@@ -2041,8 +2160,9 @@ async function confirmAddFromFridge(tripId) {
   if (!invId) { showToast('Chọn món từ tủ lạnh trước!', false); return; }
   const inv = inventory.find(i => i.id === invId);
   if (!inv) return;
-  const qty  = parseFloat(document.getElementById('fpQty').value) || 1;
-  const note = document.getElementById('fpNote').value.trim();
+  const qty    = parseFloat(document.getElementById('fpQty').value) || 1;
+  const note   = document.getElementById('fpNote').value.trim();
+  const expiry = document.getElementById('fpExpiry')?.value || null;
   const shopItem = {
     id: Date.now().toString(),
     trip_id: tripId,
@@ -2051,6 +2171,7 @@ async function confirmAddFromFridge(tripId) {
     unit: inv.unit,
     note,
     emoji: inv.emoji || '🛒',
+    expiry,
     bought: false,
     inventory_item_id: invId,
   };
@@ -2064,13 +2185,14 @@ async function confirmAddFromFridge(tripId) {
 }
 
 async function confirmAddTripItem(tripId) {
-  const name  = document.getElementById('siName').value.trim();
-  const qty   = parseFloat(document.getElementById('siQty').value) || 1;
-  const unit  = document.getElementById('siUnit').value;
-  const note  = document.getElementById('siNote').value.trim();
-  const emoji = document.getElementById('siEmoji').value.trim() || '🛍';
+  const name   = document.getElementById('siName').value.trim();
+  const qty    = parseFloat(document.getElementById('siQty').value) || 1;
+  const unit   = document.getElementById('siUnit').value;
+  const note   = document.getElementById('siNote').value.trim();
+  const emoji  = document.getElementById('siEmoji').value.trim() || '🛍';
+  const expiry = document.getElementById('siExpiry')?.value || null;
   if (!name) { showToast('Nhập tên đồ ăn!', false); return; }
-  const item = { id: Date.now().toString(), trip_id: tripId, name, qty, unit, note, emoji, bought: false };
+  const item = { id: Date.now().toString(), trip_id: tripId, name, qty, unit, note, emoji, expiry, bought: false };
   try {
     await apiCall('POST', { type:'add_trip_item', item });
     const trip = trips.find(t => t.id === tripId);
