@@ -117,45 +117,59 @@ module.exports = async function handler(req, res) {
         }
 
         function computeFIFO(itemLogs) {
-          // Sort all logs chronologically
+          // Process logs chronologically
           const sorted = [...itemLogs].sort((a,b) => a.created_at < b.created_at ? -1 : 1);
-          // Build batch queue: positive entries with expiry, sorted by expiry (FIFO)
-          // Batches without expiry are treated as infinite/no-expiry
-          const batches = []; // {qty, expiry}
-          let noExpiryQty = 0;
+
+          // Map: log.id → remaining qty (for + entries only)
+          // We track per-log-entry remaining so we can report accurate active batches
+          const batchMap = {}; // log.id → { qty, expiry, log_id, note, created_at }
 
           for (const log of sorted) {
             const d = Number(log.delta);
             if (d > 0) {
-              if (log.expiry) {
-                batches.push({ qty: d, expiry: log.expiry });
-              } else {
-                noExpiryQty += d;
-              }
+              batchMap[log.id] = {
+                log_id: log.id,
+                qty: d,
+                expiry: log.expiry || null,
+                note: log.note || '',
+                created_at: log.created_at,
+              };
             } else {
-              // Deduct FIFO: oldest expiry first
+              // Deduct FIFO: sort active batches by expiry asc (nulls last)
               let remaining = Math.abs(d);
-              batches.sort((a,b) => a.expiry < b.expiry ? -1 : 1);
-              for (const batch of batches) {
+              const active = Object.values(batchMap)
+                .filter(b => b.qty > 0)
+                .sort((a,b) => {
+                  if (!a.expiry && !b.expiry) return a.created_at < b.created_at ? -1 : 1;
+                  if (!a.expiry) return 1;   // no-expiry last
+                  if (!b.expiry) return -1;
+                  if (a.expiry !== b.expiry) return a.expiry < b.expiry ? -1 : 1;
+                  return a.created_at < b.created_at ? -1 : 1;
+                });
+              for (const batch of active) {
                 if (remaining <= 0) break;
                 const take = Math.min(batch.qty, remaining);
                 batch.qty -= take;
                 remaining -= take;
               }
-              // Remaining deduction from no-expiry pool
-              noExpiryQty = Math.max(0, noExpiryQty - remaining);
             }
           }
 
-          // Total balance
-          const totalQty = batches.reduce((s,b) => s + b.qty, 0) + noExpiryQty;
-          // Earliest active expiry = smallest expiry with qty > 0
-          const activeBatches = batches.filter(b => b.qty > 0).sort((a,b) => a.expiry < b.expiry ? -1 : 1);
-          const earliestExpiry = activeBatches.length > 0 ? activeBatches[0].expiry : null;
-          // All active batches for display
-          const activeBatchList = activeBatches.map(b => ({ qty: b.qty, expiry: b.expiry }));
+          // Active batches = those with qty > 0, sorted by expiry asc
+          const activeBatches = Object.values(batchMap)
+            .filter(b => b.qty > 0)
+            .sort((a,b) => {
+              if (!a.expiry && !b.expiry) return a.created_at < b.created_at ? -1 : 1;
+              if (!a.expiry) return 1;
+              if (!b.expiry) return -1;
+              if (a.expiry !== b.expiry) return a.expiry < b.expiry ? -1 : 1;
+              return a.created_at < b.created_at ? -1 : 1;
+            });
 
-          return { totalQty, earliestExpiry, activeBatchList };
+          const totalQty = activeBatches.reduce((s,b) => s + b.qty, 0);
+          const earliestExpiry = activeBatches.find(b => b.expiry)?.expiry || null;
+
+          return { totalQty, earliestExpiry, activeBatchList: activeBatches };
         }
 
         const result = items.map(item => {
