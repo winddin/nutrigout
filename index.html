@@ -49,9 +49,13 @@ button{font-family:'Inter',sans-serif;}
 }
 
 /* HEADER */
-.app-header{flex-shrink:0;padding:14px calc(18px + var(--safe-right)) 10px calc(18px + var(--safe-left));background:var(--bg);border-bottom:1px solid var(--border);}
-.header-title{font-size:1.1rem;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;}
-.header-sub{font-size:.68rem;color:var(--text3);margin-top:2px;}
+.app-header{flex-shrink:0;padding:10px calc(14px + var(--safe-right)) 10px calc(14px + var(--safe-left));background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;min-width:0;}
+.header-brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex:1;min-width:0;overflow:hidden;}
+.header-logo{height:34px;width:auto;object-fit:contain;flex-shrink:0;}
+.header-text{min-width:0;overflow:hidden;}
+.header-title{font-size:1rem;font-weight:800;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent),#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;white-space:nowrap;}
+.header-sub{font-size:.62rem;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 
 /* BOTTOM NAV */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;width:100%;background:rgba(13,17,23,.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border);display:flex;padding:6px 0 calc(6px + var(--safe-bottom));z-index:100;}
@@ -457,11 +461,12 @@ input[type="date"].modal-input{display:block;max-width:100%;color-scheme:dark;}
 .google-icon{width:20px;height:20px;flex-shrink:0;}
 .auth-note{font-size:.7rem;color:var(--text3);margin-top:20px;text-align:center;}
 /* User avatar in header */
-.user-bar{display:flex;align-items:center;gap:8px;margin-left:auto;}
-.user-avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);object-fit:cover;}
-.user-name{font-size:.72rem;color:var(--text2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.signout-btn{padding:4px 10px;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text3);font-size:.68rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;}
+.user-bar{display:flex;align-items:center;gap:6px;}
+.user-avatar{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);object-fit:cover;flex-shrink:0;}
+.user-name{font-size:.68rem;color:var(--text2);max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:none;}
+.signout-btn{padding:3px 8px;border-radius:50px;border:1px solid var(--border);background:none;color:var(--text3);font-size:.65rem;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap;}
 .signout-btn:hover{color:var(--red);border-color:var(--red);}
+@media(min-width:380px){.user-name{display:block;}}
 </style>
 </head>
 <body>
@@ -477,20 +482,22 @@ input[type="date"].modal-input{display:block;max-width:100%;color-scheme:dark;}
 </div>
 <div id="app" style="display:none">
   <!-- HEADER -->
-  <div class="app-header" style="display:flex;align-items:center;gap:10px;">
-    <a href="/" style="display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;">
-      <img src="/logo.png" alt="NutriGout" style="height:36px;width:auto;object-fit:contain;flex-shrink:0;">
-      <div>
+  <div class="app-header">
+    <a href="/" class="header-brand">
+      <img src="/logo.png" alt="NutriGout" class="header-logo">
+      <div class="header-text">
         <div class="header-title">NutriGout</div>
         <div class="header-sub">Dinh dưỡng & Purin • Gút & thừa cân</div>
       </div>
     </a>
-    <div class="user-bar" id="userBar" style="display:none">
-      <img class="user-avatar" id="userAvatar" src="" alt="">
-      <span class="user-name" id="userName"></span>
-      <button class="signout-btn" onclick="signOut()">Đăng xuất</button>
+    <div class="header-actions">
+      <div class="user-bar" id="userBar" style="display:none">
+        <img class="user-avatar" id="userAvatar" src="" alt="">
+        <span class="user-name" id="userName"></span>
+        <button class="signout-btn" onclick="signOut()">Đăng xuất</button>
+      </div>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
     </div>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
   </div>
 
   <div class="content" id="contentArea">
